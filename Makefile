@@ -5,17 +5,11 @@ CFFILE=	quota.fs
 OBJS= 	quota_clnt.o quota_xdr.o quota.o getconf.o
 CLEAN=	quota_xdr.c quota_clnt.c quota.h
 
-# UNICOS
-#CC=    /opt/ctl/bin/cc
-#CFLAGS=
-# everything else
 CC=	gcc
 CFLAGS=	-Wall
-
-# AIX, DEC/OSF, HP-UX, IRIX
-LIBS=	-lrpcsvc
-# Solaris
-#LIBS=	-lrpcsvc -lnsl -lsocket
+LIBS=	-lrpcsvc $(LIBADD)
+# uncomment for Solaris
+#LIBADD=	-lnsl -lsocket
 
 all:	quota
 

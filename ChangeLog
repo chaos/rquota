@@ -1,5 +1,9 @@
 2002-12-08 garlick
-	* Updated DISCLAIMER file according to release instructions.
+	* Updated source file headers and DISCLAIMER file according to release 
+	  instructions.
+	* Ran through "indent --no-tabs -kr *.[ch]" and installed standard
+	  vi footers.
+	* Updated to latest project Make-rpm.mk.
 	* Tag quota-1-3-1chaos.
 
 2002-11-19 garlick
