@@ -60,3 +60,5 @@ Wed Apr 10 12:25:05 PDT 2002 garlick
 
 Thu Apr 11 04:15:36 PDT 2002 garlick
 	Some minor code cleanup.
+
+	Use T/G/K abbreviations in 'file' quota report (GNATS#50)

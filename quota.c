@@ -104,28 +104,27 @@ static void usage(void);
  * 	ret (RETURN)   abbreviated value in M, G, or T
  */
 static char *
-abbrev(float kval)
+abbrev(float kval, char *str, int len)
 {
-	static char ret[TMPSTRSZ];
-
 	/* 
 	 * Note: try to display values above 1000 as the next unit,
 	 * i.e. 1000-1023MB should be displayed as GB.  Values should never
 	 * take up more chars than "999.9G".
 	 */
 	if (kval >= 1000*1024*1024) {
-                sprintf(ret, "%.1fT", kval / (1024*1024*1024));
+                snprintf(str, len, "%.1fT", kval / (1024*1024*1024));
         } else if (kval >= 1000*1024) {
-                sprintf(ret, "%.1fG", kval / (1024*1024));
+                snprintf(str, len, "%.1fG", kval / (1024*1024));
         } else if (kval >= 1000) {
-                sprintf(ret, "%.1fM", kval / 1024);
+                snprintf(str, len, "%.1fM", kval / 1024);
         } else if (kval > 0) {
-                sprintf(ret, "%.1fK", kval);
+                snprintf(str, len, "%.1fK", kval);
 	} else /* if (kval == 0) */ {
-                sprintf(ret, "-0-");
+                snprintf(str, len, "-0-");
 	}
+	str[len - 1] = '\0'; /* truncation is not fatal, ensure termination */
 
-        return ret;
+        return str;
 }
 
 /*
@@ -199,9 +198,9 @@ display_header(char *name)
 static void 
 long_report(char *fsname, struct rquota rq, int thresh)
 {
-	char bdays[TMPSTRSZ], fdays[TMPSTRSZ];
-	char *hardblock, *softblock;
+	char bdays[TMPSTRSZ], fdays[TMPSTRSZ], tmpstr[TMPSTRSZ];
 
+	/* build bdays[] */
 	if (HASBLOCK(rq) && OVERBLOCK(rq)) {
 		if (NSTARTBLOCK(rq))
 			sprintf(bdays, "[7 days]");
@@ -212,45 +211,56 @@ long_report(char *fsname, struct rquota rq, int thresh)
 				sprintf(bdays, "%.1f day%s",
 				    DAYSBLOCK(rq),
 				    DAYSBLOCK(rq) > 1.0 ? "s" : "");
-	} else
+	} else {
 		bdays[0] = '\0';
+	}
 
+	/* build fdays[] */
 	if (HASFILE(rq) && OVERFILE(rq)) {
-		if (NSTARTFILE(rq))
+		if (NSTARTFILE(rq)) {
 			sprintf(fdays, "[7 days]");
-		else
+		} else {
 			if (EXPFILE(rq))
 				sprintf(fdays, "expired");
 			else	/* if (rq.rq_ftimeleft > 0) */
 				sprintf(fdays, "%.1f day%s",
 				    DAYSFILE(rq),
 				    DAYSFILE(rq) > 1.0 ? "s" : "");
-	} else
+		}
+	} else {
 		fdays[0] = '\0';
+	}
 
+	/* filesystem name */
 	printf("%-15s", fsname);
 	if (strlen(fsname) > 14)
-		printf("\n%-15s", "");
-	printf("%-7s", abbrev((rq.rq_curblocks * SCALE(rq))));
+		printf("\n%-15s", ""); /* make future columns line up */
 
-
+	/* block used/quota/limit values */
+	printf("%-7s", abbrev(rq.rq_curblocks * SCALE(rq), tmpstr, TMPSTRSZ));
 	if (HASBLOCK(rq)) {
-		softblock = strdup(abbrev(rq.rq_bsoftlimit * SCALE(rq)));
-		hardblock = strdup(abbrev(rq.rq_bhardlimit * SCALE(rq)));
+		char softblock[TMPSTRSZ], hardblock[TMPSTRSZ];
+
+		abbrev(rq.rq_bsoftlimit * SCALE(rq), softblock, TMPSTRSZ);
+		abbrev(rq.rq_bhardlimit * SCALE(rq), hardblock, TMPSTRSZ);
 
 		printf("%-7s%-9s%-10s", softblock, hardblock, bdays);
-
-		free(hardblock); free(softblock);
-	} else
+	} else {
 		printf("%-7s%-9s%-10s", "n/a", "n/a", "");
+	}
 
-	printf("%-7d", (int) rq.rq_curfiles);
+	/* file used/quota/limit values */
+	printf("%-7s", abbrev(rq.rq_curfiles / 1024.0, tmpstr, TMPSTRSZ));
+	if (HASFILE(rq)) {
+		char softfile[TMPSTRSZ], hardfile[TMPSTRSZ];
 
-	if (HASFILE(rq))
-		printf("%-7d%-9d%s\n", (int) rq.rq_fsoftlimit, 
-		    (int) rq.rq_fhardlimit, fdays);
-	else
+		abbrev(rq.rq_fsoftlimit / 1024.0, softfile, TMPSTRSZ);
+		abbrev(rq.rq_fhardlimit / 1024.0, hardfile, TMPSTRSZ);
+
+		printf("%-7s%-9s%s\n", softfile, hardfile, fdays);
+	} else {
 		printf("%-7s%-9s\n", "n/a", "n/a");
+	}
 
 	/* tack on a line if over percentage specified in quota.fs */
 	if (HASBLOCK(rq) && HASTHRESH(thresh) && OVERTHRESH(rq, thresh))
@@ -267,17 +277,21 @@ long_report(char *fsname, struct rquota rq, int thresh)
 static void 
 short_report(char *fsname, struct rquota rq, int thresh)
 {
+	char tmpstr[TMPSTRSZ];
+
 	if (HASBLOCK(rq) && OVERBLOCK(rq)) {
 		printf("Over disk quota on %s, ", fsname);
 		if (NSTARTBLOCK(rq))
 			printf("remove %s within [7 days]\n",
-			    abbrev((REMOVEBLOCKS(rq) * SCALE(rq))));
+			    abbrev(REMOVEBLOCKS(rq) * SCALE(rq), 
+				    tmpstr, TMPSTRSZ));
 		else
 			if (EXPBLOCK(rq))
 				printf("time limit expired (run quota -v)\n");
 			else
 				printf("remove %s within %.1f days\n",
-				    abbrev((REMOVEBLOCKS(rq) * SCALE(rq))),
+				    abbrev(REMOVEBLOCKS(rq) * SCALE(rq), 
+					    tmpstr, TMPSTRSZ),
 				    DAYSBLOCK(rq));
 	} else if (HASBLOCK(rq) 
 	    && HASTHRESH(thresh) && OVERTHRESH(rq, thresh)) {
