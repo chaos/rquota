@@ -1,0 +1,45 @@
+\." $Id$
+.\"
+.TH QUOTA 1 "Release 1.0" "" "QUOTA"
+.SH NAME
+quota \- display remote filesystem quota information
+.SH SYNOPSIS
+.B quota 
+.I "[-v] [-r] [user]"
+.br
+.SH DESCRIPTION
+.B quota 
+is a utility for displaying remote filesystem quota information.
+This particular implentation does not report on local filesystem quotas
+as it is intended to run in a computing center where all user data
+resides on shared NFS servers.  In addition, quota only reports on 
+filesystems listed in the
+.I "quota.conf"
+file to avoid lengthly query times in environments where there are many
+NFS mounts, most of which are irrelevant to users logging in.
+.LP
+Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
+
+.SH OPTIONS
+Run without arguments, quota only reports quota problems.
+.LP
+.I "-v"
+Report on all filesystems, regardless of usage.
+.LP
+.I "-r"
+Display the real filesystem paths rather than description from the
+.I "quota.conf"
+file.
+.LP
+.I "user"
+[superuser only]  View the quota of another user.
+
+.SH "FILES"
+/etc/quota.conf
+
+.SH "ORIGIN"
+Written by Jim Garlick <garlick@llnl.gov> while at California State 
+University, Chico.
+
+.SH "SEE ALSO"
+quota.conf(5)

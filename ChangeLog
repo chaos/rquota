@@ -1,0 +1,36 @@
+Release 0.1 	Thu Jun 11 15:45:22 PDT 1998
+	Cleanup, port to DEC, Solaris, AIX.
+
+	Added MB / GB / TB abbreviations.
+
+	Added DEC_HACK for ignoring some bad data (see comment in quota.c).
+
+Release 0.2	Thu Aug 27 11:37:22 PDT 1998
+	Changed abbrev():quota.c so 1000-1023MB is displayed GB (one less char)
+	
+	Changed HASBLOCK, HASFILE macros so -1 also indicates no quota (NetApp)
+
+Release 0.3	Fri Aug 28 14:35:01 PDT 1998
+	Added field to quota.fs file for percentage, which, if nonzero,
+	causes quota to report when user has exceeded this percentage of hard
+	quota.  Added for benefit of simplitic quotas on NetApp boxes
+	(just implements hard quota; no soft quota, no grace period)
+
+rel1_0 (unofficial release):
+	quota.fs renamed to quota.conf, getfs.[c,h] renamed to getconf.[c.h].
+
+	Eliminated first field ("code") of quota.conf which was no longer used.
+
+	Use getopt() instead of ad-hoc argv processing.  (Now it is possible
+	to specify -v and -r at the same time).
+
+	Added quota.1 and quota.conf.5 man pages.
+
+rel1_1:
+	CSUC granted permission to release under GPL and (c) Jim Garlick.
+        Added GPL text to all .c files and GPL licence in ./GPL.
+
+<no tag yet>
+	Changed quota.conf path to /usr/local/etc.
+
+	Minor cleanup.

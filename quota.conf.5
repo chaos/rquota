@@ -1,0 +1,30 @@
+\." $Id$
+.\"
+.TH QUOTA.CONF 5 "Release 1.0" "" "QUOTA.CONF"
+.SH NAME
+quota.conf \- configuration file for RPC-only quota program
+.SH DESCRIPTION
+.B quota
+reads a list of filesystems from the
+.I "quota.conf"
+configuration file.  Filesystems are one per line, with no provision for
+continuation lines.  Each line has the following format:
+.IP
+   description:hostname:remote_path:percent
+.LP
+.I "description" 
+is the path that will be displayed by the quota program,
+typically the local mount point.
+.LP
+.I "hostname" 
+is the name of the host that exports the mount.
+.LP
+.I "remote_path"
+is the remote path of the exported filesystem.
+.LP
+.I "percent",
+if nonzero, is the threshold of hard quota which, when exceeded, causes quota
+to warn the user.  This is for the benefit of some NFS servers which do not 
+implement hard quotas.
+.SH "SEE ALSO"
+quota(1)
