@@ -41,4 +41,4 @@ Wed Apr  3 16:08:58 PST 2002 garlick
 	Fix overflow problem in OVERTHRESH macro in quota.c where 25G used
 	of 100G quota triggered 90% exceeded message.
 
-	Minor cleanup and rpmification for Linux.
+	Minor cleanup and RPMification for Linux.
