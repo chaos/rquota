@@ -29,7 +29,7 @@
 2002-04-10 garlick
 	* Add -f option to read config file from user-specified path.
 	* Tru64 users in >16 groups would fail authunix_create_default().
-	* Call authunix_create() instead (Dave Fox, GNATS #48).
+	  Call authunix_create() instead (Dave Fox, GNATS #48).
 	* Look for quota.conf in /usr/local/etc and override to /etc for
 	  spec file on Linux.
 	* Tag quota-1-2-2chaos.
