@@ -33,7 +33,12 @@ make CFLAGS="$RPM_OPT_FLAGS"
 %install
 rm -rf "$RPM_BUILD_ROOT"
 mkdir -p "$RPM_BUILD_ROOT/usr/bin"
-make install DESTDIR="$RPM_BUILD_ROOT"
+mkdir -p "$RPM_BUILD_ROOT/usr/man/man1"
+mkdir -p "$RPM_BUILD_ROOT/usr/man/man5"
+cp quota "$RPM_BUILD_ROOT/usr/bin"
+gzip quota.1 quota.conf.5
+cp quota.1.gz $RPM_BUILD_ROOT/usr/man/man1
+cp quota.conf.5.gz $RPM_BUILD_ROOT/usr/man/man5
 
 %clean
 rm -rf "$RPM_BUILD_ROOT"
@@ -43,3 +48,5 @@ rm -rf "$RPM_BUILD_ROOT"
 %doc ChangeLog README
 %doc README
 /usr/bin/quota
+/usr/man/man1/quota.1.gz
+/usr/man/man5/quota.conf.5.gz

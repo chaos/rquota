@@ -19,9 +19,6 @@ LIBS=	-lrpcsvc
 
 all:	quota
 
-install: quota
-	install -m 555 quota $(DESTDIR)/usr/bin/
-
 quota: $(OBJS) quota.h
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
 
