@@ -6,7 +6,7 @@
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
  *  
- *  This file is part of Quota, a remote console management program.
+ *  This file is part of Quota, a remote NFS quota program.
  *  For details, see <http://www.llnl.gov/linux/quota/>.
  *  
  *  Quota is free software; you can redistribute it and/or modify it under
