@@ -67,3 +67,8 @@ Tue Apr 23 21:17:14 PDT 2002
 	Fixed spec file to actually look in /etc for quota.conf.
 
 	Tag quota-1-2-3chaos.
+
+Mon Apr 29 09:52:23 PDT 2002
+	Cleanup including tear-down of rpc client.
+
+	Added debug flag (-d).

@@ -18,10 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- * Mystery: what is rq_active?
- */
-
 #include <ctype.h>
 #include <pwd.h>
 #include <rpc/rpc.h>
@@ -38,23 +34,6 @@
 
 /* timeleft > 1 year days means "not started" (0 - now) */
 #define MAX_TIMELEFT    (60*60*24*365)
-
-/*
- * Return values for getquota().
- */
-#define RV_OK           0
-#define RV_EPERM        1
-#define RV_NOQUOTA      2
-#define RV_CLNTCREATERR 3
-#define RV_CLNTCALLERR  4
-#define RV_BADRETVAL    5
-
-/*
- * Report header for -v output.
- */
-#define HDR1 "Filesystem     "
-#define HDR2 "used   quota  limit    timeleft  "
-#define HDR3 "files  quota  limit    timeleft"
 
 /*
  * Macros for manipulating struct rquota.
@@ -93,8 +72,13 @@
 #define MAX_SKEW      (60*60*24)
 #define NSTARTFILE(x) (EXPFILE(x) && abs((int)(x.rq_ftimeleft)+now)<=MAX_SKEW)
 #define NSTARTBLOCK(x)(EXPBLOCK(x) && abs((int)(x.rq_btimeleft)+now)<=MAX_SKEW)
-CLIENT *cl;
+
+typedef enum { false = 0, true = 1 } boolean_t;
+
+/* the current time, cached on program startup */
 static time_t now;
+
+static int debug = 0;
 
 static void usage(void);
 
@@ -129,64 +113,82 @@ abbrev(float kval, char *str, int len)
 
 /*
  * Look up quotas on remote system and return them in rq structure.
- * Function return value is one of the RV_* values above.
  * 	uid (IN)		uid to query
- * 	system (IN)		name of server
- * 	path (IN)		path on server
+ * 	fsname (IN)		filesystem name (for use in error strings)
+ * 	rem_host (IN)		hostname of NFS server
+ * 	loc_host (IN)		hostname of this host
+ * 	path (IN)		filesystem path on rem_host
+ * 	verbose (IN)		report errors only if true
  * 	rq (OUT) 		quota information
+ * 	RETURN			rq is valid only if true
  */
-static int 
-getquota(uid_t uid, char *system, char *path, struct rquota * rq)
+static boolean_t 
+getquota(uid_t uid, char *fsname, char *rem_host, char *loc_host, char *path, 
+		boolean_t verbose, struct rquota * rq)
 {
-	static getquota_args args;
+	getquota_args args;
 	getquota_rslt *result;
-	char myhost[MAXHOSTNAMELEN];
+	boolean_t rq_valid = false;
+	CLIENT *cl = NULL;
 
 	/* set up getquota_args */
-	args.gqa_pathp = strdup(path);
+	args.gqa_pathp = path;
 	args.gqa_uid = uid;
 
 	/* create client handle, adding AUTH_UNIX */
-	cl = clnt_create(system, RQUOTAPROG, RQUOTAVERS, "udp");
-	if (cl == NULL)
-		return RV_CLNTCREATERR;
+	cl = clnt_create(rem_host, RQUOTAPROG, RQUOTAVERS, "udp");
+	if (cl == NULL) {
+		if (verbose)
+			clnt_pcreateerror(fsname);
+		goto done;
+	}
 
-#if 0
-	/* GNATS #48 - fails if in >16 groups on Tru64 */
-	cl->cl_auth = authunix_create_default();
-#else
-	if (gethostname(myhost, MAXHOSTNAMELEN) != 0)
-		return RV_CLNTCREATERR;
-	cl->cl_auth = authunix_create(myhost, uid, getgid(), 0, NULL);
-#endif
+	/* GNATS #48: authunix_create_default fails if in >16 groups (Tru64) */
+	cl->cl_auth = authunix_create(loc_host, uid, getgid(), 0, NULL);
+	/* XXX presumably rpc call will fail if cl_auth create failed */
 
 	/* call remote procedure */
 	result = rquotaproc_getquota_1(&args, cl);
-	if (result == NULL)
-		return RV_CLNTCALLERR;
-
-	switch (result->gqr_status) {
-	case Q_NOQUOTA:
-		return RV_NOQUOTA;
-	case Q_EPERM:
-		return RV_EPERM;
-	case Q_OK:
-		memcpy(rq,
-		    &(result->getquota_rslt_u), sizeof(struct rquota));
-		return RV_OK;
+	if (result == NULL) {
+		if (verbose)
+			clnt_perror(cl, fsname);
+		goto done;
 	}
-	return RV_BADRETVAL;
-}
 
-/* 
- * Display header.
- * 	name (IN) 	name of user
- */
-static void 
-display_header(char *name)
-{
-	printf("Disk quotas for %s:\n", name);
-	printf("%s%s%s\n", HDR1, HDR2, HDR3);
+	/* examine results */
+	switch (result->gqr_status) {
+		case Q_NOQUOTA:
+			if (verbose)
+				printf("%-14s no quota\n", fsname);
+			break;
+		case Q_EPERM:
+			if (verbose)
+				printf("%-14s permission denied\n", fsname);
+			break;
+		case Q_OK:
+			memcpy(rq, &result->getquota_rslt_u, 
+					sizeof(struct rquota));
+			rq_valid = true;
+			break;
+		default:
+			if (verbose)
+				printf("%-14s unknown error: %d\n", 
+						fsname, result->gqr_status);
+			break;
+	}
+	if (rq_valid && debug) {
+		printf("blk=%d act=%d bhard=%lu bsoft=%lu bcur=%lu btime=%lu\n",
+				rq->rq_bsize, rq->rq_active, 
+				rq->rq_bhardlimit, rq->rq_bsoftlimit, 
+				rq->rq_curblocks, rq->rq_btimeleft);
+		printf("              fhard=%lu fsoft=%lu fcur=%lu ftime=%lu\n",
+				rq->rq_fhardlimit, rq->rq_fsoftlimit, 
+				rq->rq_curfiles, rq->rq_ftimeleft);
+	}
+done:
+	if (cl != NULL)
+		clnt_destroy(cl);
+	return rq_valid;
 }
 
 /*
@@ -316,78 +318,49 @@ short_report(char *fsname, struct rquota rq, int thresh)
 }
 
 /*
- * Decode/print error number 
- *	fsname (IN)	filesystem name
- * 	rv (IN) 	return code from getquota()
- */
-static void 
-display_error(char *fsname, int rv)
-{
-	char    tmp[TMPSTRSZ];
-
-	switch (rv) {
-	case RV_NOQUOTA:
-		printf("%-14s no quota\n", fsname);
-		break;
-	case RV_EPERM:
-		printf("%-14s permission denied\n", fsname);
-		break;
-	case RV_CLNTCREATERR:
-		sprintf(tmp, "%s", fsname);
-		clnt_pcreateerror(tmp);
-		break;
-	case RV_CLNTCALLERR:
-		sprintf(tmp, "%s", fsname);
-		clnt_perror(cl, tmp);
-		break;
-	case RV_BADRETVAL:
-		printf("%-14s bad RPC return value\n", fsname);
-		break;
-	default:
-		printf("%-14s unknown return value: %d\n", fsname, rv);
-		break;
-	}
-}
-
-/*
  * Display data about a filesystem.
  *	ropt (IN)	show real filesystem names rather than descriptive ones
  *	vopt (IN)	verbose mode
+ *	loc_host (IN)	local hostname
  *	conf (IN)	file system to get quota for
- *	pw (IN)		password entry for user to get quota for
+ *	uid (IN)	uid of user to get quota for
  */
 static void 
-report(int ropt, int vopt, confent_t *conf, struct passwd *pw)
+report(int ropt, int vopt, char *loc_host, confent_t *conf, uid_t uid)
 {
 	char    tmp[TMPSTRSZ];
-	int     rv;
 	struct rquota rq;
-	char   *desc;
+	char   *fsname;
 
 	if (ropt) {
 		sprintf(tmp, "%s:%s", conf->cf_host, conf->cf_path);
-		desc = tmp;
+		fsname = tmp;
 	} else
-		desc = conf->cf_desc;
-	rv = getquota(pw->pw_uid, conf->cf_host, conf->cf_path, &rq);
+		fsname = conf->cf_desc;
+
+	if (getquota(uid, fsname, conf->cf_host, loc_host, conf->cf_path, 
+				vopt, &rq)) {
 #ifdef DEC_HACK
-	/*
-	 * XXX Hack for DEC NFS servers running OSF/1.  The DEC RPC quota 
-	 * service returns 2-block limits on filesystems in some cases where 
-	 * the user has a zero limit in the quota file.  Turn these in to 
-	 * RV_NOQUOTA so we don't see them in our output.
-	 */
-	if (rv == RV_OK && rq.rq_bhardlimit == 2 && rq.rq_bsoftlimit == 2)
-		rv = RV_NOQUOTA;
+		/*
+		 * XXX Hack for DEC NFS servers running OSF/1.  The DEC RPC 
+		 * quota service returns 2-block limits on filesystems in some 
+		 * cases where the user has a zero limit in the quota file.  
+		 */
+		if (rq.rq_bhardlimit == 2 && rq.rq_bsoftlimit == 2)
+			return;
 #endif
-	if (rv == RV_OK) {
 		if (vopt)
-			long_report(desc, rq, conf->cf_thresh);
+			long_report(fsname, rq, conf->cf_thresh);
 		else
-			short_report(desc, rq, conf->cf_thresh);
-	} else
-		if (vopt && rv != RV_NOQUOTA)
-			display_error(desc, rv);
+			short_report(fsname, rq, conf->cf_thresh);
+	}
+}
+
+static void
+usage(void)
+{
+	fprintf(stderr, "Usage: quota [-v] [-r] [-f config_file] [user]\n");
+	exit(1);
 }
 
 int 
@@ -400,10 +373,21 @@ main(int argc, char *argv[])
 	int	c;
 	extern char *optarg;
 	extern int optind;
+	char myhostname[MAXHOSTNAMELEN];
 
-	now = time(0);
+	/* cache the current time */
+	if ((now = time(0)) == (time_t)(-1)) {
+		perror("time");
+		exit(1);
+	}
 
-	while ((c = getopt(argc, argv, "f:rv")) != EOF) {
+	if (gethostname(myhostname, sizeof(myhostname)) < 0) {
+		perror("gethostname");
+		exit(1);
+	}
+
+	/* handle args */
+	while ((c = getopt(argc, argv, "df:rv")) != EOF) {
 		switch(c) {
 			case 'r':	/* display remote mount pt. */
 				ropt = 1;
@@ -412,7 +396,10 @@ main(int argc, char *argv[])
 				vopt = 1;
 				break;
 			case 'f':	/* alternate config file */
-				setconfent(optarg);
+				setconfent(optarg); /* perror/exit on error */
+				break;
+			case 'd':	/* turn on debugging */
+				debug++;
 				break;
 			default:
 				usage();
@@ -448,20 +435,19 @@ main(int argc, char *argv[])
 	dup(1);
 
 	/* display initial header */
-	if (vopt)		
-		display_header(pw->pw_name);
+	if (vopt) {
+		printf("Disk quotas for %s:\n", pw->pw_name);
+		printf("%s\n", "Filesystem     used   quota  limit    timeleft  files  quota  limit    timeleft");
+	}
 
 	/* report on each configured filesystem */
 	while ((conf = getconfent()) != NULL) {
-		report(ropt, vopt, conf, pw);
+		if (debug)
+			printf("Entry: desc=%s host=%s path=%s thresh=%d\n",
+					conf->cf_desc, conf->cf_host, 
+					conf->cf_path, conf->cf_thresh);
+		report(ropt, vopt, myhostname, conf, pw->pw_uid);
 	}
 
 	return 0;
-}
-
-static void
-usage(void)
-{
-	fprintf(stderr, "Usage: quota [-v] [-r] [user]\n");
-	exit(1);
 }
