@@ -32,7 +32,7 @@ make CFLAGS="$RPM_OPT_FLAGS"
 
 %install
 rm -rf "$RPM_BUILD_ROOT"
-mkdir -p "$RPM_BUILD_ROOT"
+mkdir -p "$RPM_BUILD_ROOT/usr/bin"
 make install DESTDIR="$RPM_BUILD_ROOT"
 
 %clean
