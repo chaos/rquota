@@ -2,16 +2,16 @@
 # $Id$
 ##
 
-Name:    quota
-Version: 1.1
-Release: 1
+Name:    
+Version: 
+Release: 
 
 Summary: Quota utility for displaying remote NFS quotas
 Group:   System Environment/Base
 License: GPL
 Provides: quota
 
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
+BuildRoot: %{_tmppath}/%{name}-%{version}
 BuildRequires: /usr/bin/rpcgen
 
 Source0: %{name}-%{version}-%{release}.tgz
@@ -26,7 +26,7 @@ where there are many remote filesystems that are not configured with quotas.
 Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 
 %prep
-%setup -n %{name}-%{version}-%{release}
+%setup -n %{name}-%{version}
 
 %build
 make CFLAGS="$RPM_OPT_FLAGS -D_PATH_QUOTA_CONF=\\\"/etc/quota.conf\\\""
