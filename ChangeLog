@@ -46,3 +46,9 @@ Wed Apr  3 16:08:58 PST 2002 garlick
 	Changed quota.conf path to /etc.
 
 	Tag quota-1-2-1chaos.
+
+Wed Apr 10 12:25:05 PDT 2002 garlick
+	Add -f option to read config file from user-specified path.
+
+	Tru64 users in >16 groups would fail authunix_create_default().
+	Call authunix_create() instead (Dave Fox, GNATS #48).

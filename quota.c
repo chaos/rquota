@@ -29,6 +29,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/param.h> /* MAXHOSTNAMELEN */
 #include "getconf.h"
 #include "quota.h"
 
@@ -141,6 +142,7 @@ getquota(uid_t uid, char *system, char *path, struct rquota * rq)
 {
 	static getquota_args args;
 	getquota_rslt *result;
+	char myhost[MAXHOSTNAMELEN];
 
 	/* set up getquota_args */
 	args.gqa_pathp = strdup(path);
@@ -150,7 +152,15 @@ getquota(uid_t uid, char *system, char *path, struct rquota * rq)
 	cl = clnt_create(system, RQUOTAPROG, RQUOTAVERS, "udp");
 	if (cl == NULL)
 		return RV_CLNTCREATERR;
+
+#if 0
+	/* GNATS #48 - fails if in >16 groups on Tru64 */
 	cl->cl_auth = authunix_create_default();
+#else
+	if (gethostname(myhost, MAXHOSTNAMELEN) != 0)
+		return RV_CLNTCREATERR;
+	cl->cl_auth = authunix_create(myhost, uid, getgid(), 0, NULL);
+#endif
 
 	/* call remote procedure */
 	result = rquotaproc_getquota_1(&args, cl);
@@ -380,13 +390,16 @@ main(int argc, char *argv[])
 
 	now = time(0);
 
-	while ((c = getopt(argc, argv, "rv")) != EOF) {
+	while ((c = getopt(argc, argv, "f:rv")) != EOF) {
 		switch(c) {
 			case 'r':
 				ropt = 1;
 				break;
 			case 'v':
 				vopt = 1;
+				break;
+			case 'f':
+				setconf_ent(optarg);
 				break;
 			default:
 				usage();

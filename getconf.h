@@ -14,6 +14,6 @@ typedef struct {
 #define _PATH_QUOTA_CONF "/etc/quota.conf"
 #endif
 
-void setconf_ent();
+void setconf_ent(char *path);
 void endconf_ent();
 sysfs_t *getconf_ent();

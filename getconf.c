@@ -38,11 +38,15 @@ next_field(p, sep)
 static FILE *fsys = NULL;
 
 void
-setconf_ent()
+setconf_ent(char *path)
 {
-	if (!fsys)
-		fsys = fopen(_PATH_QUOTA_CONF, "r");
-	else
+	if (!fsys) {
+		fsys = fopen(path, "r");
+		if (fsys == NULL) {
+			perror(path);
+			exit(1);
+		}
+	} else
 		rewind(fsys);
 }
 
@@ -61,7 +65,7 @@ getconf_ent()
 	char *p;
 
 	if (!fsys)
-		setconf_ent();
+		setconf_ent(_PATH_QUOTA_CONF);
 
 	if (fsys && fgets(buf, BUFSIZ, fsys)) {
 		p = buf;
