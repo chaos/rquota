@@ -42,3 +42,7 @@ Wed Apr  3 16:08:58 PST 2002 garlick
 	of 100G quota triggered 90% exceeded message.
 
 	Minor cleanup and RPMification for Linux.
+
+	Changed quota.conf path to /etc.
+
+	Tag quota-1-2-1chaos.
