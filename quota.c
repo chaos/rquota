@@ -96,12 +96,15 @@ typedef enum { false, true } bool;
 CLIENT *cl;
 static time_t now;
 
+static void usage(void);
+
 /*
  * Abbreviate numerical sizes provided in K (2^10).
  *	kval (IN)      value in K bytes
  * 	ret (RETURN)   abbreviated value in M, G, or T
  */
-char *abbrev(float kval)
+static char *
+abbrev(float kval)
 {
 	static char ret[TMPSTRSZ];
 
@@ -133,7 +136,8 @@ char *abbrev(float kval)
  * 	path (IN)		path on server
  * 	rq (OUT) 		quota information
  */
-int getquota(uid_t uid, char *system, char *path, struct rquota * rq)
+static int 
+getquota(uid_t uid, char *system, char *path, struct rquota * rq)
 {
 	static getquota_args args;
 	getquota_rslt *result;
@@ -170,7 +174,8 @@ int getquota(uid_t uid, char *system, char *path, struct rquota * rq)
  * Display header.
  * 	name (IN) 	name of user
  */
-void hdr(char *name)
+static void 
+hdr(char *name)
 {
 	printf("Disk quotas for %s:\n", name);
 	printf("%s%s%s\n", HDR1, HDR2, HDR3);
@@ -182,7 +187,8 @@ void hdr(char *name)
  * 	rq (IN)		quota information
  * 	thresh (IN)	% usage after which user should be warned
  */
-void report(char *fsname, struct rquota rq, int thresh)
+static void 
+long_report(char *fsname, struct rquota rq, int thresh)
 {
 	char bdays[TMPSTRSZ], fdays[TMPSTRSZ];
 	char *hardblock, *softblock;
@@ -249,7 +255,8 @@ void report(char *fsname, struct rquota rq, int thresh)
  * 	rq (IN)		quota information
  * 	thresh (IN)	% usage after which user should be warned
  */
-void short_report(char *fsname, struct rquota rq, int thresh)
+static void 
+short_report(char *fsname, struct rquota rq, int thresh)
 {
 	if (HASBLOCK(rq) && OVERBLOCK(rq)) {
 		printf("Over disk quota on %s, ", fsname);
@@ -290,7 +297,8 @@ void short_report(char *fsname, struct rquota rq, int thresh)
  *	fsname (IN)	filesystem name
  * 	rv (IN) 	return code from getquota()
  */
-void err(char *fsname, int rv)
+static void 
+display_error(char *fsname, int rv)
 {
 	char    tmp[TMPSTRSZ];
 
@@ -325,7 +333,8 @@ void err(char *fsname, int rv)
  *	sfs (IN)	file system to get quota for
  *	pw (IN)		password entry for user to get quota for
  */
-void doit(int ropt, int vopt, sysfs_t * sfs, struct passwd * pw)
+static void 
+doit(int ropt, int vopt, sysfs_t * sfs, struct passwd * pw)
 {
 	char    tmp[TMPSTRSZ];
 	int     rv;
@@ -350,15 +359,16 @@ void doit(int ropt, int vopt, sysfs_t * sfs, struct passwd * pw)
 #endif
 	if (rv == RV_OK) {
 		if (vopt)
-			report(desc, rq, sfs->thresh);
+			long_report(desc, rq, sfs->thresh);
 		else
 			short_report(desc, rq, sfs->thresh);
 	} else
 		if (vopt && rv != RV_NOQUOTA)
-			err(desc, rv);
+			display_error(desc, rv);
 }
 
-int main(int argc, char *argv[])
+int 
+main(int argc, char *argv[])
 {
 	int    vopt = 0, ropt = 0;
 	char   *user = NULL;
@@ -414,7 +424,8 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-int usage(void)
+static void
+usage(void)
 {
 	fprintf(stderr, "Usage: quota [-v] [-r] [user]\n");
 	exit(1);

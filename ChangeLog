@@ -16,7 +16,7 @@ Release 0.3	Fri Aug 28 14:35:01 PDT 1998
 	quota.  Added for benefit of simplitic quotas on NetApp boxes
 	(just implements hard quota; no soft quota, no grace period)
 
-rel1_0 (unofficial release):
+Internal Livermore Releases
 	quota.fs renamed to quota.conf, getfs.[c,h] renamed to getconf.[c.h].
 
 	Eliminated first field ("code") of quota.conf which was no longer used.
@@ -26,14 +26,19 @@ rel1_0 (unofficial release):
 
 	Added quota.1 and quota.conf.5 man pages.
 
-rel1_1:
+	Release 1.0
+
 	CSUC granted permission to release under GPL and (c) Jim Garlick.
         Added GPL text to all .c files and GPL licence in ./GPL.
 
-<no tag yet>
+	Release 1.1
+
+Wed Apr  3 16:08:58 PST 2002 garlick
 	Changed quota.conf path to /usr/local/etc.
 
 	Minor cleanup.
 
 	Fix overflow problem in OVERTHRESH macro in quota.c where 25G used
 	of 100G quota triggered 90% exceeded message.
+
+	Minor cleanup and rpmification for Linux.

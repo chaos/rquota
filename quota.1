@@ -10,13 +10,13 @@ quota \- display remote filesystem quota information
 .SH DESCRIPTION
 .B quota 
 is a utility for displaying remote filesystem quota information.
-This particular implentation does not report on local filesystem quotas
+This particular implentation does not report local filesystem quotas
 as it is intended to run in a computing center where all user data
-resides on shared NFS servers.  In addition, quota only reports on 
+resides on shared NFS servers.  In addition, quota only reports
 filesystems listed in the
 .I "quota.conf"
-file to avoid lengthly query times in environments where there are many
-NFS mounts, most of which are irrelevant to users logging in.
+file to reduce latency in environments where there are many remote filesystems
+that are not configured with quotas.
 .LP
 Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 
