@@ -1,76 +1,66 @@
-Release 0.1 	Thu Jun 11 15:45:22 PDT 1998
-	Cleanup, port to DEC, Solaris, AIX.
+2002-11-19 garlick
+	* Reformatted ChangeLog.
+	* Added COPYING and DISCLAIMER file, updated headers for (c) Regents.
+	* Check a couple system call return values that were ignored.
+	* Added BUGS section to quota.1 man page to document some of the
+	  oddities of the quota program.
 
-	Added MB / GB / TB abbreviations.
+2002-04-29 garlick
+	* Cleanup including tear-down of rpc client.
+	* Added debug flag (-d).
+	* Tag quota-1-2-4chaos.
 
-	Added DEC_HACK for ignoring some bad data (see comment in quota.c).
+2002-04-23 garlick
+	* Fixed spec file to actually look in /etc for quota.conf.
+	* Tag quota-1-2-3chaos.
 
-Release 0.2	Thu Aug 27 11:37:22 PDT 1998
-	Changed abbrev():quota.c so 1000-1023MB is displayed GB (one less char)
-	
-	Changed HASBLOCK, HASFILE macros so -1 also indicates no quota (NetApp)
+2002-04-11 garlick
+	* Some minor code cleanup.
+	* Use T/G/K abbreviations in 'file' quota report (GNATS#50)
 
-Release 0.3	Fri Aug 28 14:35:01 PDT 1998
-	Added field to quota.fs file for percentage, which, if nonzero,
-	causes quota to report when user has exceeded this percentage of hard
-	quota.  Added for benefit of simplitic quotas on NetApp boxes
-	(just implements hard quota; no soft quota, no grace period)
+2002-04-10 garlick
+	* Add -f option to read config file from user-specified path.
+	* Tru64 users in >16 groups would fail authunix_create_default().
+	* Call authunix_create() instead (Dave Fox, GNATS #48).
+	* Look for quota.conf in /usr/local/etc and override to /etc for
+	  spec file on Linux.
+	* Tag quota-1-2-2chaos.
 
-Internal Livermore Releases
-	quota.fs renamed to quota.conf, getfs.[c,h] renamed to getconf.[c.h].
+2002-04-03 garlick
+	* Minor cleanup.
+	* Fix overflow problem in OVERTHRESH macro in quota.c where 25G used
+	  of 100G quota triggered 90% exceeded message.
+	* Minor cleanup and RPMification for Linux.
+	* Changed quota.conf path to /etc.
+	* Tag quota-1-2-1chaos.
 
-	Eliminated first field ("code") of quota.conf which was no longer used.
+2001-xx-xx garlick
+	* CSUC granted permission to release under GPL and (c) Jim Garlick.
+        * Added GPL text to all .c files and GPL licence in ./GPL.
+	* Release 1.1
 
-	Use getopt() instead of ad-hoc argv processing.  (Now it is possible
-	to specify -v and -r at the same time).
+2001-xx-xx garlick
+	* quota.fs renamed to quota.conf, getfs.[c,h] renamed to getconf.[c.h].
+	* Eliminated first field ("code") of quota.conf which was no longer 
+	  used.
+	* Use getopt() instead of ad-hoc argv processing.  (Now it is possible
+	  to specify -v and -r at the same time).
+	* Added quota.1 and quota.conf.5 man pages.
+	* Release 1.0
 
-	Added quota.1 and quota.conf.5 man pages.
+1998-08-28 garlick
+	* Added field to quota.fs file for percentage, which, if nonzero,
+ 	  causes quota to report when user has exceeded this percentage of hard
+	  quota.  Added for benefit of simplitic quotas on NetApp boxes
+	  (just implements hard quota; no soft quota, no grace period)
 
-	Release 1.0
+1998-08-27 garlick
+	* Changed abbrev():quota.c so 1000-1023MB is displayed GB (1 less char)
+	* Changed HASBLOCK, HASFILE macros so -1 also indicates !quota (NetApp)
+	* Release 0.2
 
-	CSUC granted permission to release under GPL and (c) Jim Garlick.
-        Added GPL text to all .c files and GPL licence in ./GPL.
-
-	Release 1.1
-
-Wed Apr  3 16:08:58 PST 2002 garlick
-	Changed quota.conf path to /usr/local/etc.
-
-	Minor cleanup.
-
-	Fix overflow problem in OVERTHRESH macro in quota.c where 25G used
-	of 100G quota triggered 90% exceeded message.
-
-	Minor cleanup and RPMification for Linux.
-
-	Changed quota.conf path to /etc.
-
-	Tag quota-1-2-1chaos.
-
-Wed Apr 10 12:25:05 PDT 2002 garlick
-	Add -f option to read config file from user-specified path.
-
-	Tru64 users in >16 groups would fail authunix_create_default().
-	Call authunix_create() instead (Dave Fox, GNATS #48).
-
-	Look for quota.conf in /usr/local/etc and override to /etc for
-	spec file on Linux.
-
-	Tag quota-1-2-2chaos.
-
-Thu Apr 11 04:15:36 PDT 2002 garlick
-	Some minor code cleanup.
-
-	Use T/G/K abbreviations in 'file' quota report (GNATS#50)
-
-Tue Apr 23 21:17:14 PDT 2002
-	Fixed spec file to actually look in /etc for quota.conf.
-
-	Tag quota-1-2-3chaos.
-
-Mon Apr 29 09:52:23 PDT 2002
-	Cleanup including tear-down of rpc client.
-
-	Added debug flag (-d).
-
-	Tag quota-1-2-4chaos.
+1998-06-11 garlick
+	* Cleanup, port to DEC, Solaris, AIX.
+	* Added MB / GB / TB abbreviations.
+	* Added DEC_HACK for ignoring some bad data (see comment in quota.c).
+	* Release 0.1 (first Livermore release)

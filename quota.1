@@ -15,8 +15,8 @@ as it is intended to run in a computing center where all user data
 resides on shared NFS servers.  In addition, quota only reports
 filesystems listed in the
 .I "quota.conf"
-file to reduce latency in environments where there are many remote filesystems
-that are not configured with quotas.
+file to reduce latency in environments where there are many remote filesystems,
+not all of which should be queried for the quota report.
 .LP
 Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 
@@ -35,14 +35,38 @@ file.
 loads a configuration file other than the default (see FILES below).
 .LP
 .I "user"
-[superuser only]  View the quota of another user.
+View the quota of another user.
 
 .SH "FILES"
 /etc/quota.conf
 
+.SH "BUGS"
+No special privilege is required to query the quota of another user.  Some 
+users may consider their quota to be private information, but as NFS servers
+typically do not enforce any kind of privacy and do not require quota clients
+to supply privileged credentials (thereby making privacy enforcement in the
+client inappropriate) this information is available to all.
+.LP
+Network Appliance servers return (unsigned long)(-1) to indicate no limit
+instead of zero like many other systems.  They can hardly be blamed as there 
+does not seem to be a public standards document that describes remote 
+quota protocol anywhere (if you know of one I would appreciate a pointer), 
+therefore Quota cheerfully interprets both values as ``no quota''.
+.LP
+The Sun ``quota.x'' file is included in the Quota source code.  Typically this 
+file would be found in /usr/include/rpcsvc on the system where Quota is
+compiled, but as all systems do not distribute it, a copy is included.
+N.B. quota.x is (c)Sun Microsystems and is not covered by Quota's GPL license.
+.LP
+Some NFS servers implement hard but not soft quotas.  The ``percent''
+field in the quota.conf(5) file is a kludge to provide a warning mechanism
+when a user exceeds a fixed percentage of the hard quota.
+
 .SH "ORIGIN"
-Written by Jim Garlick <garlick@llnl.gov> while at California State 
-University, Chico.
+Written by Jim Garlick <garlick@llnl.gov> in 1995 while at California State 
+University, Chico.  Further developed by Jim Garlick at Lawrence Livermore
+National Laboratory.  Both employers enthusiastically support free software
+development.
 
 .SH "SEE ALSO"
 quota.conf(5)

@@ -1,7 +1,8 @@
 /*
  * $Id$
  *
- * Copyright (C) 1995-2000  Jim Garlick
+ * Copyright (C) 2002 Regents of the Univeristy of California
+ * Copyright (C) 1995-2002  Jim Garlick
  */
 typedef struct {
 	char *cf_desc;

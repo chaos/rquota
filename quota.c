@@ -1,7 +1,8 @@
 /*
  * $Id$
  *
- * Copyright (C) 1995-2000  Jim Garlick
+ * Copyright (C) 2002 Regents of the Univeristy of California
+ * Copyright (C) 1995-2002  Jim Garlick
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -431,8 +432,14 @@ main(int argc, char *argv[])
 	 */
 
 	/* stderr -> stdout */
-	close(2);		
-	dup(1);
+	if (close(2) < 0) {
+		perror("close stderr");
+		exit(1);
+	}
+	if (dup(1) < 0) {
+		perror("dup");
+		exit(1);
+	}
 
 	/* display initial header */
 	if (vopt) {
