@@ -29,7 +29,7 @@ Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 %setup -n %{name}-%{version}-%{release}
 
 %build
-make CFLAGS="$RPM_OPT_FLAGS"
+make CFLAGS="$RPM_OPT_FLAGS -D_PATH_QUOTA_CONF=\"/etc/quota.conf\"" 
 
 %install
 rm -rf "$RPM_BUILD_ROOT"

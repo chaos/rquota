@@ -53,4 +53,7 @@ Wed Apr 10 12:25:05 PDT 2002 garlick
 	Tru64 users in >16 groups would fail authunix_create_default().
 	Call authunix_create() instead (Dave Fox, GNATS #48).
 
+	Look for quota.conf in /usr/local/etc and override to /etc for
+	spec file on Linux.
+
 	Tag quota-1-2-2chaos.
