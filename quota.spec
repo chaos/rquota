@@ -26,7 +26,7 @@ where there are many remote filesystems that are not configured with quotas.
 Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 
 %prep
-%setup -n %{name}-%{version}-%{release}.tgz
+%setup -n %{name}-%{version}-%{release}
 
 %build
 make CFLAGS="$RPM_OPT_FLAGS"
