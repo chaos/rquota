@@ -177,11 +177,11 @@ getquota(uid_t uid, char *fsname, char *rem_host, char *loc_host, char *path,
 			break;
 	}
 	if (rq_valid && debug) {
-		printf("blk=%d act=%d bhard=%lu bsoft=%lu bcur=%lu btime=%lu\n",
+		printf("blk=%d act=%d\tbhard=%lu bsoft=%lu bcur=%lu btime=%lu\n",
 				rq->rq_bsize, rq->rq_active, 
 				rq->rq_bhardlimit, rq->rq_bsoftlimit, 
 				rq->rq_curblocks, rq->rq_btimeleft);
-		printf("              fhard=%lu fsoft=%lu fcur=%lu ftime=%lu\n",
+		printf("             \tfhard=%lu fsoft=%lu fcur=%lu ftime=%lu\n",
 				rq->rq_fhardlimit, rq->rq_fsoftlimit, 
 				rq->rq_curfiles, rq->rq_ftimeleft);
 	}
