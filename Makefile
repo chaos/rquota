@@ -1,6 +1,6 @@
 # $Id$
 
-PROG=	quota
+PROJECT=quota
 CFFILE=	quota.fs
 OBJS= 	quota_clnt.o quota_xdr.o quota.o getconf.o
 CLEAN=	quota_xdr.c quota_clnt.c quota.h
@@ -17,12 +17,12 @@ LIBS=	-lrpcsvc
 # Solaris
 #LIBS=	-lrpcsvc -lnsl -lsocket
 
-all:	$(PROG)
+all:	quota
 
-install: $(PROG)
-	install -m 555 -o bin -g bin $(PROG) $(DESTDIR)/usr/bin/
+install: quota
+	install -m 555 -o bin -g bin quota $(DESTDIR)/usr/bin/
 
-$(PROG): $(OBJS) quota.h
+quota: $(OBJS) quota.h
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
 
 quota.h: quota.x
@@ -38,6 +38,6 @@ quota_svc.c:  quota.x quota.h
 	rpcgen -o quota_svc.c -m quota.x
 
 clean:
-	rm -f $(OBJS) $(PROG) $(CLEAN)
+	rm -f $(OBJS) quota $(CLEAN)
 
 include Make-rpm.mk
