@@ -62,3 +62,8 @@ Thu Apr 11 04:15:36 PDT 2002 garlick
 	Some minor code cleanup.
 
 	Use T/G/K abbreviations in 'file' quota report (GNATS#50)
+
+Tue Apr 23 21:17:14 PDT 2002
+	Fixed spec file to actually look in /etc for quota.conf.
+
+	Tag quota-1-2-3chaos.
