@@ -5,12 +5,12 @@
 quota \- display remote filesystem quota information
 .SH SYNOPSIS
 .B quota 
-.I "[-v] [-r] [user]"
+.I "[-v] [-r] [-f configfile] [user]"
 .br
 .SH DESCRIPTION
 .B quota 
 is a utility for displaying remote filesystem quota information.
-This particular implentation does not report local filesystem quotas
+This particular implementation does not report local filesystem quotas
 as it is intended to run in a computing center where all user data
 resides on shared NFS servers.  In addition, quota only reports
 filesystems listed in the
@@ -27,9 +27,12 @@ Run without arguments, quota only reports quota problems.
 Report on all filesystems, regardless of usage.
 .LP
 .I "-r"
-Display the real filesystem paths rather than description from the
+Display the real filesystem paths rather than descriptive versions from the
 .I "quota.conf"
 file.
+.LP
+.I "-f configfile"
+loads a configuration file other than the default (see FILES below).
 .LP
 .I "user"
 [superuser only]  View the quota of another user.

@@ -52,3 +52,5 @@ Wed Apr 10 12:25:05 PDT 2002 garlick
 
 	Tru64 users in >16 groups would fail authunix_create_default().
 	Call authunix_create() instead (Dave Fox, GNATS #48).
+
+	Tag quota-1-2-2chaos.
