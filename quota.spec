@@ -11,10 +11,10 @@ Group:   System Environment/Base
 License: GPL
 Provides: quota
 
-BuildRoot: %{_tmppath}/%{name}-%{version}
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 BuildRequires: /usr/bin/rpcgen
 
-Source0: %{name}-%{version}.tgz
+Source0: %{name}-%{version}-%{release}.tgz
 
 %description
 Quota is a utility for displaying remote filesystem quota information.
@@ -26,7 +26,7 @@ where there are many remote filesystems that are not configured with quotas.
 Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 
 %prep
-%setup
+%setup -n %{name}-%{version}-%{release}.tgz
 
 %build
 make CFLAGS="$RPM_OPT_FLAGS"
