@@ -80,7 +80,7 @@ typedef enum { false, true } bool;
 #define HASFILE(x)      (QVALID(x.rq_fhardlimit) && QVALID(x.rq_fsoftlimit))
 
 #define HASTHRESH(t)	(t > 0)
-#define OVERTHRESH(x,t) (x.rq_curblocks >= (x.rq_bhardlimit * t/100))
+#define OVERTHRESH(x,t) (x.rq_curblocks >= (x.rq_bhardlimit * (t/100.0)))
 
 /*
  * Rpc.rquotad simply subtracts the current time from the timeout value

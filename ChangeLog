@@ -34,3 +34,6 @@ rel1_1:
 	Changed quota.conf path to /usr/local/etc.
 
 	Minor cleanup.
+
+	Fix overflow problem in OVERTHRESH macro in quota.c where 25G used
+	of 100G quota triggered 90% exceeded message.
