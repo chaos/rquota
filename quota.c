@@ -18,9 +18,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
- /*
+/*
  * Mystery: what is rq_active?
  */
+
 #include <ctype.h>
 #include <pwd.h>
 #include <rpc/rpc.h>
@@ -32,8 +33,6 @@
 #include <sys/param.h> /* MAXHOSTNAMELEN */
 #include "getconf.h"
 #include "quota.h"
-
-typedef enum { false, true } bool;
 
 #define TMPSTRSZ        1024
 
@@ -185,7 +184,7 @@ getquota(uid_t uid, char *system, char *path, struct rquota * rq)
  * 	name (IN) 	name of user
  */
 static void 
-hdr(char *name)
+display_header(char *name)
 {
 	printf("Disk quotas for %s:\n", name);
 	printf("%s%s%s\n", HDR1, HDR2, HDR3);
@@ -340,11 +339,11 @@ display_error(char *fsname, int rv)
  * Display data about a filesystem.
  *	ropt (IN)	show real filesystem names rather than descriptive ones
  *	vopt (IN)	verbose mode
- *	sfs (IN)	file system to get quota for
+ *	conf (IN)	file system to get quota for
  *	pw (IN)		password entry for user to get quota for
  */
 static void 
-doit(int ropt, int vopt, sysfs_t * sfs, struct passwd * pw)
+report(int ropt, int vopt, confent_t *conf, struct passwd *pw)
 {
 	char    tmp[TMPSTRSZ];
 	int     rv;
@@ -352,11 +351,11 @@ doit(int ropt, int vopt, sysfs_t * sfs, struct passwd * pw)
 	char   *desc;
 
 	if (ropt) {
-		sprintf(tmp, "%s:%s", sfs->host, sfs->path);
+		sprintf(tmp, "%s:%s", conf->cf_host, conf->cf_path);
 		desc = tmp;
 	} else
-		desc = sfs->desc;
-	rv = getquota(pw->pw_uid, sfs->host, sfs->path, &rq);
+		desc = conf->cf_desc;
+	rv = getquota(pw->pw_uid, conf->cf_host, conf->cf_path, &rq);
 #ifdef DEC_HACK
 	/*
 	 * XXX Hack for DEC NFS servers running OSF/1.  The DEC RPC quota 
@@ -369,9 +368,9 @@ doit(int ropt, int vopt, sysfs_t * sfs, struct passwd * pw)
 #endif
 	if (rv == RV_OK) {
 		if (vopt)
-			long_report(desc, rq, sfs->thresh);
+			long_report(desc, rq, conf->cf_thresh);
 		else
-			short_report(desc, rq, sfs->thresh);
+			short_report(desc, rq, conf->cf_thresh);
 	} else
 		if (vopt && rv != RV_NOQUOTA)
 			display_error(desc, rv);
@@ -383,7 +382,7 @@ main(int argc, char *argv[])
 	int    vopt = 0, ropt = 0;
 	char   *user = NULL;
 	struct passwd *pw;
-	sysfs_t	*sfs;
+	confent_t *conf;
 	int	c;
 	extern char *optarg;
 	extern int optind;
@@ -392,14 +391,14 @@ main(int argc, char *argv[])
 
 	while ((c = getopt(argc, argv, "f:rv")) != EOF) {
 		switch(c) {
-			case 'r':
+			case 'r':	/* display remote mount pt. */
 				ropt = 1;
 				break;
-			case 'v':
+			case 'v':	/* verbose output */
 				vopt = 1;
 				break;
-			case 'f':
-				setconf_ent(optarg);
+			case 'f':	/* alternate config file */
+				setconfent(optarg);
 				break;
 			default:
 				usage();
@@ -426,13 +425,22 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
-	/* Start the report. */
-	close(2);		/* stderr -> stdout */
+	/* 
+	 * Start the report. 
+	 */
+
+	/* stderr -> stdout */
+	close(2);		
 	dup(1);
-	if (vopt)		/* display initial header */
-		hdr(pw->pw_name);
-	while ((sfs = getconf_ent()) != NULL)
-		doit(ropt, vopt, sfs, pw);
+
+	/* display initial header */
+	if (vopt)		
+		display_header(pw->pw_name);
+
+	/* report on each configured filesystem */
+	while ((conf = getconfent()) != NULL) {
+		report(ropt, vopt, conf, pw);
+	}
 
 	return 0;
 }

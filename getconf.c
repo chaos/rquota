@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (C) 1995-2000  Jim Garlick
+ * Copyright (C) 1995-2002  Jim Garlick
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,24 +21,34 @@
 #include <stdlib.h>
 #include "getconf.h"
 
-static char *
-next_field(p, sep)
-	char **p;
-	char sep;
-{
-        char *rv = *p;
-
-        while (**p != '\0' && **p != sep && **p != '\n')
-                (*p)++;
-        *(*p)++ = '\0';
-
-        return(rv);
-}
-
+/* configuration file pointer */
 static FILE *fsys = NULL;
 
+/*
+ * Helper for getconfent().  Parse out a field within a string.
+ * Replace separators with NULL's and return the field or NULL if at end.
+ * 	p (IN/OUT)	string pointer - moved past next separator
+ * 	sep (IN)	separator character
+ *	RETURN		the base string (now \0 terminated at sep position)
+ */
+static char *
+next_field(char **str, char sep)
+{
+        char *rv = *str;
+
+        while (**str != '\0' && **str != sep && **str != '\n')
+                (*str)++;
+        *(*str)++ = '\0';
+
+        return rv;
+}
+
+/*
+ * Open/rewind the config file
+ * 	path (IN)	pathname to open if not open already
+ */
 void
-setconf_ent(char *path)
+setconfent(char *path)
 {
 	if (!fsys) {
 		fsys = fopen(path, "r");
@@ -50,31 +60,45 @@ setconf_ent(char *path)
 		rewind(fsys);
 }
 
+/*
+ * Close the config file if open.
+ */
 void
-endconf_ent()
+endconfent(void)
 {
 	if (fsys)
 		fclose(fsys);
 }
 
-sysfs_t *
-getconf_ent()
+/*
+ * Return the next configuration file entry.  Open the default config file 
+ * path if the config file has not already been opened.
+ * 	RETURN		config file entry
+ */
+confent_t *
+getconfent(void)
 {
 	static char buf[BUFSIZ];
-	static sysfs_t rv;
-	char *p;
+	static confent_t conf;
+	confent_t *result = NULL;
 
 	if (!fsys)
-		setconf_ent(_PATH_QUOTA_CONF);
+		setconfent(_PATH_QUOTA_CONF);
 
-	if (fsys && fgets(buf, BUFSIZ, fsys)) {
-		p = buf;
-		rv.desc = next_field(&p, ':');
-		rv.host = next_field(&p, ':');
-		rv.path = next_field(&p, ':');
-		rv.thresh = atoi(next_field(&p, ':'));
-		return &rv;
+	if (fgets(buf, BUFSIZ, fsys)) {
+		char *threshp;
+		char *p = buf;
+
+		conf.cf_desc = next_field(&p, ':');
+		conf.cf_host = next_field(&p, ':');
+		conf.cf_path = next_field(&p, ':');
+		threshp = next_field(&p, ':');
+		conf.cf_thresh = 0;
+		if (threshp != NULL)
+			conf.cf_thresh = atoi(threshp);
+
+		result = &conf;
 	}
 
-	return NULL;
+	return result;
 }
