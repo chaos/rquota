@@ -1,7 +1,7 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  Copyright (C) 2001-2002 The Regents of the University of California.
+ *  Copyright (C) 2001-2006 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
@@ -163,23 +163,23 @@ getquota(uid_t uid, char *fsname, char *rem_host, char *loc_host,
 
     /* examine results */
     switch (result->gqr_status) {
-    case Q_NOQUOTA:
-        if (verbose)
-            printf("%-14s no quota\n", fsname);
-        break;
-    case Q_EPERM:
-        if (verbose)
-            printf("%-14s permission denied\n", fsname);
-        break;
-    case Q_OK:
-        memcpy(rq, &result->getquota_rslt_u, sizeof(struct rquota));
-        rq_valid = true;
-        break;
-    default:
-        if (verbose)
-            printf("%-14s unknown error: %d\n",
+        case Q_NOQUOTA:
+            if (verbose)
+                printf("%-14s no quota\n", fsname);
+            break;
+        case Q_EPERM:
+            if (verbose)
+                printf("%-14s permission denied\n", fsname);
+            break;
+        case Q_OK:
+            memcpy(rq, &result->getquota_rslt_u, sizeof(struct rquota));
+            rq_valid = true;
+            break;
+        default:
+            if (verbose)
+                printf("%-14s unknown error: %d\n",
                    fsname, result->gqr_status);
-        break;
+            break;
     }
     if (rq_valid && debug) {
         printf("blk=%d act=%d\tbhard=%lu bsoft=%lu bcur=%lu btime=%lu\n",
@@ -190,7 +190,7 @@ getquota(uid_t uid, char *fsname, char *rem_host, char *loc_host,
                rq->rq_fhardlimit, rq->rq_fsoftlimit,
                rq->rq_curfiles, rq->rq_ftimeleft);
     }
-  done:
+done:
     if (cl != NULL)
         clnt_destroy(cl);
     return rq_valid;
@@ -359,7 +359,7 @@ static void usage(void)
 
 int main(int argc, char *argv[])
 {
-    int vopt = 0, ropt = 0;
+    int vopt = 0, ropt = 0, lopt = 0;
     char *user = NULL;
     struct passwd *pw;
     confent_t *conf;
@@ -380,8 +380,11 @@ int main(int argc, char *argv[])
     }
 
     /* handle args */
-    while ((c = getopt(argc, argv, "df:rv")) != EOF) {
+    while ((c = getopt(argc, argv, "df:rvl")) != EOF) {
         switch (c) {
+        case 'l':              /* display home directory quota only */
+            lopt = 1;
+            break;
         case 'r':              /* display remote mount pt. */
             ropt = 1;
             break;
@@ -414,7 +417,8 @@ int main(int argc, char *argv[])
     }
     if (!pw) {
         fprintf(stderr, "quota: no such user%s%s\n",
-                user ? ": " : "", user ? user : "");
+                user ? ": " : "", 
+                user ? user : "");
         exit(1);
     }
 
@@ -439,18 +443,26 @@ int main(int argc, char *argv[])
                "Filesystem     used   quota  limit    timeleft  files  quota  limit    timeleft");
     }
 
-    /* report on each configured filesystem */
-    while ((conf = getconfent()) != NULL) {
-        if (debug)
-            printf("Entry: desc=%s host=%s path=%s thresh=%d\n",
-                   conf->cf_desc, conf->cf_host,
-                   conf->cf_path, conf->cf_thresh);
-        report(ropt, vopt, myhostname, conf, pw->pw_uid);
+    if (lopt) { /* report only on the user's home directory */
+        /* XXX - new assumption: label == mount point */
+        while ((conf = getconfent()) != NULL) {
+            if (!strncmp(pw->pw_dir, conf->cf_desc, strlen(conf->cf_desc))) {
+                report(ropt, vopt, myhostname, conf, pw->pw_uid);
+                break;
+            }
+        }
+    } else {    /* report on each configured filesystem */
+        while ((conf = getconfent()) != NULL) {
+            if (debug)
+                printf("Entry: desc=%s host=%s path=%s thresh=%d\n",
+                       conf->cf_desc, conf->cf_host,
+                       conf->cf_path, conf->cf_thresh);
+            report(ropt, vopt, myhostname, conf, pw->pw_uid);
+        }
     }
 
-    return 0;
+    exit(0);
 }
-
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

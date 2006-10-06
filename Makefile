@@ -1,5 +1,3 @@
-# $Id$
-
 PROJECT=quota
 CFFILE=	quota.fs
 OBJS= 	quota_clnt.o quota_xdr.o quota.o getconf.o
@@ -30,5 +28,3 @@ quota_svc.c:  quota.x quota.h
 
 clean:
 	rm -f $(OBJS) quota $(CLEAN)
-
-include Make-rpm.mk

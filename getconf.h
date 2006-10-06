@@ -32,7 +32,7 @@ typedef struct {
 } confent_t;
 
 #ifndef _PATH_QUOTA_CONF
-#define _PATH_QUOTA_CONF "/usr/local/etc/quota.conf"
+#define _PATH_QUOTA_CONF "/etc/quota.conf"
 #endif
 
 void setconfent(char *path);

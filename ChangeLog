@@ -1,78 +1,135 @@
-2003-01-21 garlick
-	* Finally getting around to release
-	* Tag quota-1-4-1
+2006-10-05 Jim Garlick <garlick@llnl.gov>
 
-2002-12-08 garlick
-	* Updated source file headers and DISCLAIMER file according to release 
-	  instructions.
-	* Ran through "indent --no-tabs -kr *.[ch]" and installed standard
-	  vi footers.
-	* Updated to latest project Make-rpm.mk.
-	* Tag quota-1-3-1chaos.
+	* : Migration from CVS to subversion.
 
-2002-11-19 garlick
-	* Reformatted ChangeLog.
-	* Added COPYING and DISCLAIMER file, updated headers for (c) Regents.
-	* Check a couple system call return values that were ignored.
-	* Added BUGS section to quota.1 man page to document some of the
-	  oddities of the quota program.
+	* quota.c : Added -l (login) option.
 
-2002-04-29 garlick
-	* Cleanup including tear-down of rpc client.
-	* Added debug flag (-d).
-	* Tag quota-1-2-4chaos.
+	* quota.h : Make /etc/quota.conf the default.
+	
+	* ChangeLog : Reformatted.
 
-2002-04-23 garlick
-	* Fixed spec file to actually look in /etc for quota.conf.
-	* Tag quota-1-2-3chaos.
+2003-01-21 Jim Garlick <garlick@llnl.gov>
 
-2002-04-11 garlick
-	* Some minor code cleanup.
-	* Use T/G/K abbreviations in 'file' quota report (GNATS#50)
+	* : tag quota-1-4-1
 
-2002-04-10 garlick
-	* Add -f option to read config file from user-specified path.
-	* Tru64 users in >16 groups would fail authunix_create_default().
-	  Call authunix_create() instead (Dave Fox, GNATS #48).
-	* Look for quota.conf in /usr/local/etc and override to /etc for
-	  spec file on Linux.
-	* Tag quota-1-2-2chaos.
+2002-12-08 Jim Garlick <garlick@llnl.gov>
 
-2002-04-03 garlick
-	* Minor cleanup.
-	* Fix overflow problem in OVERTHRESH macro in quota.c where 25G used
-	  of 100G quota triggered 90% exceeded message.
-	* Minor cleanup and RPMification for Linux.
-	* Changed quota.conf path to /etc.
-	* Tag quota-1-2-1chaos.
+	* : Updated source file headers and DISCLAIMER file according 
+	to release instructions.
 
-2001-xx-xx garlick
-	* CSUC granted permission to release under GPL and (c) Jim Garlick.
-        * Added GPL text to all .c files and GPL licence in ./GPL.
-	* Release 1.1
+	* : Ran through "indent --no-tabs -kr *.[ch]" and installed standard
+	vi footers.
 
-2001-xx-xx garlick
-	* quota.fs renamed to quota.conf, getfs.[c,h] renamed to getconf.[c.h].
-	* Eliminated first field ("code") of quota.conf which was no longer 
-	  used.
-	* Use getopt() instead of ad-hoc argv processing.  (Now it is possible
-	  to specify -v and -r at the same time).
-	* Added quota.1 and quota.conf.5 man pages.
-	* Release 1.0
+	* Make-rpm.mk : Updated to latest.
 
-1998-08-28 garlick
-	* Added field to quota.fs file for percentage, which, if nonzero,
- 	  causes quota to report when user has exceeded this percentage of hard
-	  quota.  Added for benefit of simplitic quotas on NetApp boxes
-	  (just implements hard quota; no soft quota, no grace period)
+	* : tag quota-1-3-1chaos.
 
-1998-08-27 garlick
-	* Changed abbrev():quota.c so 1000-1023MB is displayed GB (1 less char)
-	* Changed HASBLOCK, HASFILE macros so -1 also indicates !quota (NetApp)
-	* Release 0.2
+2002-11-19 Jim Garlick <garlick@llnl.gov>
 
-1998-06-11 garlick
-	* Cleanup, port to DEC, Solaris, AIX.
-	* Added MB / GB / TB abbreviations.
-	* Added DEC_HACK for ignoring some bad data (see comment in quota.c).
-	* Release 0.1 (first Livermore release)
+	* ChangeLog : Reformatted
+
+	* COPYING, DISCLAIMER: New.
+
+	* : Updated headers for (c) Regents.
+
+	* quota.c : Check a couple of ignored system call return values.
+
+	* quota.1 : Added BUGS section.
+
+2002-04-29 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Cleanup including tear-down of rpc client.
+
+	* quota.c : Added debug flag (-d).
+
+	* : tag quota-1-2-4chaos.
+
+2002-04-23 Jim Garlick <garlick@llnl.gov>
+
+	* quota.spec :  Force /etc/quota.conf.
+
+	* : tag quota-1-2-3chaos.
+
+2002-04-11 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Some minor code cleanup.
+
+	* quota.c : Use T/G/K abbreviations in 'file' quota report (GNATS#50)
+
+2002-04-10 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Add -f option to read config file from user-specified path.
+
+	* quota.c : Tru64 users in more than sixteen 
+	groups would fail authunix_create_default().  
+	Call authunix_create() instead [Dave Fox, GNATS #48].
+
+	* quota.h : Look for quota.conf in /usr/local/etc and override 
+	to /etc for spec file on Linux.
+
+	* : tag quota-1-2-2chaos.
+
+2002-04-03 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Minor cleanup.
+
+	* quota.c : Fix overflow problem in OVERTHRESH macro in quota.c 
+	where 25G used of 100G quota triggered 90% exceeded message.
+
+	* : Minor cleanup and RPMification for Linux.
+
+	* quota.h : Changed quota.conf path to /etc.
+
+	* : tag quota-1-2-1chaos.
+
+2001-xx-xx Jim Garlick <garlick@llnl.gov>
+
+	* : CSUC granted permission to release under GPL and (c) Jim Garlick.
+
+	* : Added GPL text to all .c files and GPL licence in ./GPL.
+
+	* : Release 1.1
+
+2001-xx-xx Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : quota.fs renamed to quota.conf
+
+	* getconf.[ch] : Renamed from getfs.[ch].
+
+	* getconf.c : Eliminated first field ("code") of quota.conf which 
+	was no longer used.
+
+	* quota.c : Use getopt() instead of ad-hoc argv processing.  
+	Now it is possible to specify -v and -r at the same time.
+
+	* quota.1, quota.conf.5 : New.
+
+	* : Release 1.0
+
+1998-08-28 Jim Garlick <garlick@llnl.gov>
+
+	* getfs.[ch] : Added field to quota.fs file for percentage, which, 
+	if nonzero, causes quota to report when user has exceeded this 
+	percentage of hard quota.  Added for benefit of simplitic quotas 
+	on NetApp boxes (just implements hard quota; no soft quota, 
+	no grace period).
+
+1998-08-27 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Changed abbrev() so 1000-1023MB is displayed GB.
+
+	* quota.c : Changed HASBLOCK, HASFILE macros so -1 also indicates 
+	!quota (NetApp)
+
+	* : Release 0.2
+
+1998-06-11 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Cleanup, port to DEC, Solaris, AIX.
+
+	* quota.c : Added MB / GB / TB abbreviations.
+
+	* quota.c : Added DEC_HACK for ignoring some bad data (see comment 
+	in quota.c).
+
+	* : Release 0.1 (first Livermore release)
