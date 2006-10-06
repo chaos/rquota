@@ -33,6 +33,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/param.h>          /* MAXHOSTNAMELEN */
+#include <signal.h>
+
 #include "getconf.h"
 #include "quota.h"
 
@@ -78,8 +80,6 @@
 #define MAX_SKEW      (60*60*24)
 #define NSTARTFILE(x) (EXPFILE(x) && abs((int)(x.rq_ftimeleft)+now)<=MAX_SKEW)
 #define NSTARTBLOCK(x)(EXPBLOCK(x) && abs((int)(x.rq_btimeleft)+now)<=MAX_SKEW)
-
-typedef enum { false = 0, true = 1 } boolean_t;
 
 /* the current time, cached on program startup */
 static time_t now;
@@ -128,13 +128,13 @@ static char *abbrev(float kval, char *str, int len)
  * 	rq (OUT) 		quota information
  * 	RETURN			rq is valid only if true
  */
-static boolean_t
+static int
 getquota(uid_t uid, char *fsname, char *rem_host, char *loc_host,
-         char *path, boolean_t verbose, struct rquota *rq)
+         char *path, int verbose, struct rquota *rq)
 {
     getquota_args args;
     getquota_rslt *result;
-    boolean_t rq_valid = false;
+    int rq_valid = 0;
     CLIENT *cl = NULL;
 
     /* set up getquota_args */
@@ -173,7 +173,7 @@ getquota(uid_t uid, char *fsname, char *rem_host, char *loc_host,
             break;
         case Q_OK:
             memcpy(rq, &result->getquota_rslt_u, sizeof(struct rquota));
-            rq_valid = true;
+            rq_valid = 1;
             break;
         default:
             if (verbose)
@@ -193,6 +193,7 @@ getquota(uid_t uid, char *fsname, char *rem_host, char *loc_host,
 done:
     if (cl != NULL)
         clnt_destroy(cl);
+
     return rq_valid;
 }
 
@@ -353,7 +354,14 @@ report(int ropt, int vopt, char *loc_host, confent_t * conf, uid_t uid)
 
 static void usage(void)
 {
-    fprintf(stderr, "Usage: quota [-v] [-l] [-r] [-f config_file] [user]\n");
+    fprintf(stderr, "Usage: quota [-v] [-l] [-t sec] [-r] [-f config_file] [user]\n");
+    exit(1);
+}
+
+static void 
+_alarm_handler(int arg)
+{
+    fprintf(stderr, "quota: timeout, aborting\n");
     exit(1);
 }
 
@@ -380,10 +388,14 @@ int main(int argc, char *argv[])
     }
 
     /* handle args */
-    while ((c = getopt(argc, argv, "df:rvl")) != EOF) {
+    while ((c = getopt(argc, argv, "df:rvlt:")) != EOF) {
         switch (c) {
         case 'l':              /* display home directory quota only */
             lopt = 1;
+            break;
+        case 't':               /* set timeout in seconds */
+            signal(SIGALRM, _alarm_handler);
+            alarm(strtoul(optarg, NULL, 10));
             break;
         case 'r':              /* display remote mount pt. */
             ropt = 1;
@@ -464,6 +476,7 @@ int main(int argc, char *argv[])
             report(ropt, vopt, myhostname, conf, pw->pw_uid);
         }
     }
+    alarm(0);
 
     exit(0);
 }

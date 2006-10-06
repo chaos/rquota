@@ -1,3 +1,9 @@
+2006-10-06 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Change boolean_t to int (conflict on AIX).
+
+	* quota.c : Add -t (timeout) option.
+
 2006-10-05 Jim Garlick <garlick@llnl.gov>
 
 	* : Migration from CVS to subversion.

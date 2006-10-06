@@ -5,7 +5,7 @@
 quota \- display remote filesystem quota information
 .SH SYNOPSIS
 .B quota 
-.I "[-v] [-l] [-r] [-f configfile] [user]"
+.I "[-v] [-l] [-t sec] [-r] [-f configfile] [user]"
 .br
 .SH DESCRIPTION
 .B quota 
@@ -28,6 +28,9 @@ Report on all filesystems, regardless of usage.
 .LP
 .I "-l"
 Only report on the filesystem corresponding to the user's home directory.
+.LP
+.I "-t sec"
+Set a timeout for all quota processing.
 .LP
 .I "-r"
 Display the real filesystem paths rather than descriptive versions from the
