@@ -353,7 +353,7 @@ report(int ropt, int vopt, char *loc_host, confent_t * conf, uid_t uid)
 
 static void usage(void)
 {
-    fprintf(stderr, "Usage: quota [-v] [-r] [-f config_file] [user]\n");
+    fprintf(stderr, "Usage: quota [-v] [-l] [-r] [-f config_file] [user]\n");
     exit(1);
 }
 
@@ -444,9 +444,13 @@ int main(int argc, char *argv[])
     }
 
     if (lopt) { /* report only on the user's home directory */
-        /* XXX - new assumption: label == mount point */
+        /* XXX assumes label == mount point */
         while ((conf = getconfent()) != NULL) {
             if (!strncmp(pw->pw_dir, conf->cf_desc, strlen(conf->cf_desc))) {
+                if (debug)
+                    printf("Entry: desc=%s host=%s path=%s thresh=%d\n",
+                           conf->cf_desc, conf->cf_host,
+                           conf->cf_path, conf->cf_thresh);
                 report(ropt, vopt, myhostname, conf, pw->pw_uid);
                 break;
             }
