@@ -1,6 +1,6 @@
 2006-10-06 Jim Garlick <garlick@llnl.gov>
 
-	* quota.c : Change boolean_t to int (conflict on AIX).
+	* quota.c : Change boolean_t to int (conflict on AIX 5.2).
 
 	* quota.c : Add -t (timeout) option.
 
@@ -8,10 +8,12 @@
 
 	* : Migration from CVS to subversion.
 
+	* Make-rpm.mk : Removed (artifact of old build system).
+
 	* quota.c : Added -l (login) option.
 
 	* quota.h : Make /etc/quota.conf the default.
-	
+
 	* ChangeLog : Reformatted.
 
 2003-01-21 Jim Garlick <garlick@llnl.gov>
@@ -90,7 +92,7 @@
 
 2001-xx-xx Jim Garlick <garlick@llnl.gov>
 
-	* : CSUC granted permission to release under GPL and (c) Jim Garlick.
+	* : California State University, Chico relinquished copyright.
 
 	* : Added GPL text to all .c files and GPL licence in ./GPL.
 
