@@ -4,6 +4,10 @@
 
 	* quota.c : Add -t (timeout) option.
 
+	* quota.spec : Comment out BuildRequires: /usr/bin/rpcgen for AIX.
+
+	* quota.spec : Use _mandir and _bindir macros.
+
 	* : tag 1.5
 
 2006-10-05 Jim Garlick <garlick@llnl.gov>

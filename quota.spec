@@ -10,9 +10,9 @@ Summary: Quota utility for displaying remote NFS quotas
 Group:   System Environment/Base
 License: GPL
 Provides: quota
+#BuildRequires: /usr/bin/rpcgen
 
 BuildRoot: %{_tmppath}/%{name}-%{version}
-BuildRequires: /usr/bin/rpcgen
 
 Source0: %{name}-%{version}-%{release}.tgz
 
@@ -26,20 +26,20 @@ where there are many remote filesystems that are not configured with quotas.
 Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 
 %prep
-%setup -n %{name}-%{version}
+%setup
 
 %build
-make CFLAGS="$RPM_OPT_FLAGS -D_PATH_QUOTA_CONF=\\\"/etc/quota.conf\\\""
+make
 
 %install
-rm -rf "$RPM_BUILD_ROOT"
-mkdir -p "$RPM_BUILD_ROOT/usr/bin"
-mkdir -p "$RPM_BUILD_ROOT/usr/man/man1"
-mkdir -p "$RPM_BUILD_ROOT/usr/man/man5"
-cp quota "$RPM_BUILD_ROOT/usr/bin"
-gzip quota.1 quota.conf.5
-cp quota.1.gz $RPM_BUILD_ROOT/usr/man/man1
-cp quota.conf.5.gz $RPM_BUILD_ROOT/usr/man/man5
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT%{_bindir}
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
+
+cp quota $RPM_BUILD_ROOT%{_bindir}
+cp quota.1 $RPM_BUILD_ROOT%{_mandir}/man1
+cp quota.conf.5 $RPM_BUILD_ROOT%{_mandir}/man5
 
 %clean
 rm -rf "$RPM_BUILD_ROOT"
@@ -48,6 +48,6 @@ rm -rf "$RPM_BUILD_ROOT"
 %defattr(-,root,root,0755)
 %doc ChangeLog README
 %doc README
-/usr/bin/quota
-/usr/man/man1/quota.1.gz
-/usr/man/man5/quota.conf.5.gz
+%{_bindir}/quota
+%{_mandir}/man1/quota.1*
+%{_mandir}/man5/quota.conf.5*
