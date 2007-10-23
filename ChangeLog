@@ -1,3 +1,12 @@
+2007-10-22 Jim Garlick <garlick@llnl.gov>
+
+	* META : Change package name to rquota to distinguish this package
+	from the Red Hat quota package.
+
+	* quota.spec : Conflicts: quota.
+
+	* : tag 1.6
+
 2006-10-06 Jim Garlick <garlick@llnl.gov>
 
 	* quota.c : Change boolean_t to int (conflict on AIX 5.2).

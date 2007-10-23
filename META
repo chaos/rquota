@@ -4,6 +4,6 @@
 # Metadata for RPM/TAR makefile targets
 ##
   Meta:         1
-  Name:         quota
-  Version:      1.5
+  Name:         rquota
+  Version:      1.6
   Release:	1

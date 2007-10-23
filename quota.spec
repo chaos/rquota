@@ -9,7 +9,8 @@ Release:
 Summary: Quota utility for displaying remote NFS quotas
 Group:   System Environment/Base
 License: GPL
-Provides: quota
+# we replace the redhat quota program
+Conflicts: quota
 #BuildRequires: /usr/bin/rpcgen
 
 BuildRoot: %{_tmppath}/%{name}-%{version}
