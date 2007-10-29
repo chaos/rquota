@@ -1,3 +1,9 @@
+2007-10-29 Jim Garlick <garlick@llnl.gov>
+
+	* quota.spec : Change Conflicts: to Obsoletes: [Trent D'Hooge]
+
+	* : tag 1.7
+
 2007-10-22 Jim Garlick <garlick@llnl.gov>
 
 	* META : Change package name to rquota to distinguish this package
