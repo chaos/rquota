@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <sys/param.h>          /* MAXHOSTNAMELEN */
 #include <signal.h>
+#include <assert.h>
 
 #include "getconf.h"
 #include "quota.h"
@@ -365,6 +366,55 @@ _alarm_handler(int arg)
     exit(1);
 }
 
+static char *
+xstrdup(char *str)
+{
+    char *cpy = strdup(str);
+
+    if (!cpy) {
+        fprintf(stderr, "quota: out of memory\n");
+        exit(1);
+    }
+    return cpy;    
+}
+
+/* Match a directory against a mountpoint containing it.
+ * We must match whole path components, see
+ *  https://chaos.llnl.gov/bugzilla/show_bug.cgi?id=301
+ * Warning: scribbles on 'dir'.
+ */
+static int
+match_path(char *dir, const char *mountpoint)
+{
+    char *p; 
+
+    if (!strcmp(mountpoint, "/") || !strcmp(dir, mountpoint))
+        return 1; 
+    if (!(p = strrchr(dir, '/')))
+        return 0;
+    *p = '\0';
+    return match_path(dir, mountpoint);
+}
+
+static void
+test_match_path(void)
+{
+    char s[256];
+
+    assert(!match_path(strcpy(s, "/g/g53/foo"), "/g/g5"));
+    assert(match_path(strcpy(s, "/g/g53/foo"), "/g/g53"));
+    assert(!match_path(strcpy(s, "/g/g5/foo"), "/g/g53"));
+    assert(match_path(strcpy(s, "/g/g5/foo"), "/g/g5"));
+
+    assert(match_path(strcpy(s, "/g/g53/a/b/c/d/e/f/g/h/i/j"), "/g"));
+    assert(match_path(strcpy(s, "/g/g53//a/b/c/d/e/f/g/h/i/j"), "/g/g53"));
+
+    assert(match_path(strcpy(s, "/home/foo"), "/home"));
+
+    assert(match_path(strcpy(s, "/a"), "/"));
+    assert(match_path(strcpy(s, "/home/foo"), "/"));
+}
+
 int main(int argc, char *argv[])
 {
     int vopt = 0, ropt = 0, lopt = 0;
@@ -388,7 +438,7 @@ int main(int argc, char *argv[])
     }
 
     /* handle args */
-    while ((c = getopt(argc, argv, "df:rvlt:")) != EOF) {
+    while ((c = getopt(argc, argv, "df:rvlt:T")) != EOF) {
         switch (c) {
         case 'l':              /* display home directory quota only */
             lopt = 1;
@@ -408,6 +458,10 @@ int main(int argc, char *argv[])
             break;
         case 'd':              /* turn on debugging */
             debug++;
+            break;
+        case 'T':              /* internal unit tests */
+            test_match_path();
+            exit(0);
             break;
         default:
             usage();
@@ -458,7 +512,9 @@ int main(int argc, char *argv[])
     if (lopt) { /* report only on the user's home directory */
         /* XXX assumes label == mount point */
         while ((conf = getconfent()) != NULL) {
-            if (!strncmp(pw->pw_dir, conf->cf_desc, strlen(conf->cf_desc))) {
+            char *dircpy = xstrdup(pw->pw_dir);
+    
+            if (match_path(dircpy, conf->cf_desc)) {
                 if (debug)
                     printf("Entry: desc=%s host=%s path=%s thresh=%d\n",
                            conf->cf_desc, conf->cf_host,
@@ -466,6 +522,7 @@ int main(int argc, char *argv[])
                 report(ropt, vopt, myhostname, conf, pw->pw_uid);
                 break;
             }
+            free(dircpy);
         }
     } else {    /* report on each configured filesystem */
         while ((conf = getconfent()) != NULL) {
