@@ -3,6 +3,8 @@
 	* quota.c : Fix bug with quota -lv, documented in
 	https://chaos.llnl.gov/bugzilla/show_bug.cgi?id=301
 
+	* : tag 1.8
+
 2007-10-29 Jim Garlick <garlick@llnl.gov>
 
 	* quota.spec : Change Conflicts: to Obsoletes: [Trent D'Hooge]

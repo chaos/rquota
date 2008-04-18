@@ -1,5 +1,12 @@
 ========================================================================
-quota-1.7 Release Notes                                       2006-10-29
+quota-1.8 Release Notes                                       2008-04-18
+========================================================================
+
+* Fix bug where home directory of /g/g53/user matched mount point of
+  /g/g5.  https://chaos.llnl.gov/bugzilla/show_bug.cgi?id=301
+
+========================================================================
+quota-1.7 Release Notes                                       2007-10-29
 ========================================================================
 
 * Rename package to 'rquota' and have it obsolete the Red Hat quota 
