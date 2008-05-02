@@ -42,6 +42,7 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 cp quota $RPM_BUILD_ROOT%{_bindir}
 cp repquota $RPM_BUILD_ROOT%{_bindir}
 cp quota.1 $RPM_BUILD_ROOT%{_mandir}/man1
+cp repquota.1 $RPM_BUILD_ROOT%{_mandir}/man1
 cp quota.conf.5 $RPM_BUILD_ROOT%{_mandir}/man5
 
 %clean
@@ -54,4 +55,5 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_bindir}/quota
 %{_bindir}/repquota
 %{_mandir}/man1/quota.1*
+%{_mandir}/man1/repquota.1*
 %{_mandir}/man5/quota.conf.5*

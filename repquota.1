@@ -1,0 +1,52 @@
+\." $Id: repquota.1 7326 2008-05-02 16:04:05Z garlick $
+.\"
+.TH QUOTA 1 "Release 1.0" "" "QUOTA"
+.SH NAME
+repquota \- report file system quota information
+.SH SYNOPSIS
+.B quota 
+.I "[--options] file-system"
+.br
+.SH DESCRIPTION
+.B repquota
+generates a report of quota limits and usage information for all users
+of the specified file system.
+.SH OPTIONS
+.TP 
+.I "-d,--dirscan"
+Report on users who own top-level directories in the target file system.
+Without this option, report on users in the password file.
+.TP
+.I "-b,--blocksize N"
+Report disk usage in N-size units.  The suffixes `K', `M', or `G'
+may be used for kilobytes, megabytes, or gigabytes, respectively.
+Default: 1M.
+.TP
+.I "-m,--min-uid N"
+Do not report on users whose UID is less than N.
+.TP
+.I "-M,--max-uid N"
+Do not report on users whose UID is greater than N.
+.TP
+.I "-r,--reverse-sort"
+Sort output in descending order.
+.TP
+.I "-s,--space-sort"
+Sort output by space used (default is to sort on uid).
+.TP
+.I "-F,--files-sort"
+Sort output by number of files used (default is to sort on uid).
+.TP
+.I "-H,--suppress-heading"
+Suppress printing of the initial heading in the report.
+.TP
+.I "-f configfile"
+loads a configuration file other than the default (see FILES below).
+.SH "FILES"
+/etc/quota.conf
+.SH "BUGS"
+No special privilege is required to run the quota report on NFS users.
+This is not the fault of the quota client; rather it the way the NFS
+quota RPC service is designed.
+.SH "SEE ALSO"
+quota.conf(5), quota(1)

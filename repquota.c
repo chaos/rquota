@@ -64,7 +64,7 @@ static void quota_print_heading(void);
 
 static char *prog;
 
-#define OPTIONS "m:M:b:dhHrsf"
+#define OPTIONS "m:M:b:dhHrsFf:"
 static struct option longopts[] = {
     {"dirscan",          no_argument,        0, 'd'},
     {"blocksize",        required_argument,  0, 'b'},
@@ -72,8 +72,9 @@ static struct option longopts[] = {
     {"max-uid",          required_argument,  0, 'M'},
     {"reverse",          no_argument,        0, 'r'},
     {"space-sort",       no_argument,        0, 's'},
-    {"files-sort",       no_argument,        0, 'f'},
+    {"files-sort",       no_argument,        0, 'F'},
     {"suppress-heading", no_argument,        0, 'H'},
+    {"config",           required_argument,  0, 'f'},
     {0, 0, 0, 0},
 };
 
@@ -88,7 +89,7 @@ main(int argc, char *argv[])
     uid_t maxuid = -1;
     char *fsname;
     List qlist;
-    int fopt = 0;
+    int Fopt = 0;
     int ropt = 0;
     int sopt = 0;
     int Hopt = 0;
@@ -114,8 +115,8 @@ main(int argc, char *argv[])
             case 'r':   /* --reverse */
                 ropt++;
                 break;
-            case 'f':   /* --files-sort */
-                fopt++;
+            case 'F':   /* --files-sort */
+                Fopt++;
                 break;
             case 's':   /* --space-sort */
                 sopt++;
@@ -123,12 +124,15 @@ main(int argc, char *argv[])
             case 'H':   /* --suppress-heading */
                 Hopt++;
                 break;
+            case 'f':   /* --config */
+                setconfent(optarg);
+                break;
             case 'h':
             default:
                 usage();
         }
     }
-    if (fopt && sopt) {
+    if (Fopt && sopt) {
         fprintf(stderr, "%s: -f and -s are mutually exclusive\n", prog);
         exit(1);
     }
@@ -161,14 +165,14 @@ main(int argc, char *argv[])
     if (ropt) {
         if (sopt)
             list_sort(qlist, (ListCmpF)quota_cmp_bytes_reverse);
-        else if (fopt)
+        else if (Fopt)
             list_sort(qlist, (ListCmpF)quota_cmp_files_reverse);
         else
             list_sort(qlist, (ListCmpF)quota_cmp_uid_reverse);
     } else {
         if (sopt)
             list_sort(qlist, (ListCmpF)quota_cmp_bytes);
-        else if (fopt)
+        else if (Fopt)
             list_sort(qlist, (ListCmpF)quota_cmp_files);
         else
             list_sort(qlist, (ListCmpF)quota_cmp_uid);
@@ -199,9 +203,10 @@ usage(void)
   "  -M,--max-uid           set maximum uid to include in report\n"
   "  -r,--reverse-sort      sort in reverse order\n"
   "  -s,--space-sort        sort on space used (default sort on uid)\n"
-  "  -f,--files-sort        sort on files used (default sort on uid)\n"
+  "  -F,--files-sort        sort on files used (default sort on uid)\n"
   "  -H,--suppress-heading  do not include heading in report\n"
-                , prog);
+  "  -f,--config            use a config file other than %s\n"
+                , prog, _PATH_QUOTA_CONF);
     exit(1);
 }
 
