@@ -39,6 +39,18 @@ xstrdup(char *str)
     return cpy;
 }
 
+void *
+xmalloc(size_t size)
+{
+    void *ptr = malloc(size);
+    
+    if (!ptr) {
+        fprintf(stderr, "out of memory\n");
+        exit(1);
+    }
+    return ptr;
+}
+
 /* Match a directory against a mountpoint containing it.
  * We must match whole path components, see
  *  https://chaos.llnl.gov/bugzilla/show_bug.cgi?id=301
@@ -77,3 +89,40 @@ test_match_path(void)
     assert(match_path(strcpy(s, "/a"), "/"));
     assert(match_path(strcpy(s, "/home/foo"), "/"));
 }
+
+unsigned long
+parse_blocksize(char *s, unsigned long *b)
+{
+    int err = 0;
+    char *end;
+
+    *b = strtoul(s, &end, 10);
+    switch (end[0]) {
+        case '\0':
+        case 'b':
+        case 'B':
+            break;
+        case 'k':
+        case 'K':
+            *b *= 1024;
+            break;
+        case 'm':
+        case 'M':
+            *b *= (1024*1024);
+            break;
+        case 'g':
+        case 'G':
+            *b *= (1024*1024*1024);
+            break;
+        default:
+            err++;
+            break;
+    }
+    if (end[0] && end[1])
+        err++;
+    return err;
+}
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */

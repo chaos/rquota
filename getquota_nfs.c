@@ -11,6 +11,7 @@
 #include <errno.h>
 
 #include "rquota.h"
+#include "getconf.h"
 #include "getquota.h"
 #include "util.h"
 
@@ -114,6 +115,8 @@ getquota_nfs(char *fsname, uid_t uid, char *rhost, char *rpath, quota_t *q)
         struct rquota *rq = &result->getquota_rslt_u.gqr_rquota;
 
         workaround_quirks(rq);
+
+        q->q_uid = uid;
 
         q->q_bytes_used = (unsigned long long)rq->rq_curblocks*rq->rq_bsize;
         q->q_bytes_softlim = (unsigned long long)rq->rq_bsoftlimit*rq->rq_bsize;

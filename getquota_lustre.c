@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <lustre/liblustreapi.h>
 
+#include "getconf.h"
 #include "getquota.h"
 
 static qstate_t 
@@ -48,6 +49,8 @@ getquota_lustre(char *fsname, uid_t uid, char *mnt, quota_t *q)
     }
     if (q) {
         struct obd_dqblk *dqb = &qctl.qc_dqblk;
+
+        q->q_uid            = uid;
 
         q->q_bytes_used     = dqb->dqb_curspace;
         q->q_bytes_softlim  = dqb->dqb_bsoftlimit * QUOTABLOCK_SIZE;

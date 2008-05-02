@@ -1,7 +1,7 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  Copyright (C) 2001-2006 The Regents of the University of California.
+ *  Copyright (C) 2001-2008 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
@@ -43,12 +43,117 @@
 #include "getquota.h"
 #include "util.h"
 
-#define TMPSTRSZ        64
-
+static void usage(void);
+static void alarm_handler(int arg);
+static void daystr(qstate_t state, unsigned long long secs, char *str, int len);
+static int  over_thresh(unsigned long long used, unsigned long long hard, 
+                        int thresh);
+static int  report_warning(char *prefix, char *fsname, quota_t *q, int thresh);
+static void report_usage(char *label, quota_t *q, int thresh);
+static void report_one(char *label, int vopt, confent_t *conf, uid_t uid);
 
 static char *prog;
 
-static void usage(void);
+int 
+main(int argc, char *argv[])
+{
+    int vopt = 0, ropt = 0, lopt = 0;
+    char *user = NULL;
+    struct passwd *pw;
+    confent_t *conf;
+    int c;
+    extern char *optarg;
+    extern int optind;
+
+    /* handle args */
+    prog = basename(argv[0]);
+    while ((c = getopt(argc, argv, "f:rvlt:T")) != EOF) {
+        switch (c) {
+        case 'l':              /* -l display home directory quota only */
+            lopt = 1;
+            break;
+        case 't':               /* -t set timeout in seconds */
+            signal(SIGALRM, alarm_handler);
+            alarm(strtoul(optarg, NULL, 10));
+            break;
+        case 'r':              /* -r display rmt mntpt, not descriptive name */
+            ropt = 1;
+            break;
+        case 'v':              /* -v show all quota info for selected fs's */
+            vopt = 1;
+            break;
+        case 'f':              /* -f use alternate config file */
+            setconfent(optarg); /* perror/exit on error */
+            break;
+        case 'T':              /* -T (undocumented) internal unit tests */
+            test_match_path();
+            exit(0);
+        default:
+            usage();
+        }
+    }
+    if (optind < argc)
+        user = argv[optind++];
+    if (optind < argc)
+        usage();
+
+    /* getlogin() not appropriate here */
+    if (!user)
+        pw = getpwuid(getuid());
+    else {
+        if (isdigit(*user))
+            pw = getpwuid(atoi(user));
+        else
+            pw = getpwnam(user);
+    }
+    if (!pw) {
+        fprintf(stderr, "%s: no such user%s%s\n", prog, user ? ": " : "", 
+                user ? user : "");
+        exit(1);
+    }
+
+    /* 2>&1 so any errors interrupt the report in a predictable way */
+    if (close(2) < 0) {
+        fprintf(stderr, "%s: close stderr: %s\n", prog, strerror(errno));
+        exit(1);
+    }
+    if (dup(1) < 0) {
+        fprintf(stderr, "%s: dup stdout: %s\n", prog, strerror(errno));
+        exit(1);
+    }
+
+    if (vopt) {
+        printf("Disk quotas for %s:\n", pw->pw_name);
+        printf("%s%s\n", "Filesystem     used   quota  limit    timeleft  ",
+                                        "files  quota  limit    timeleft");
+    }
+    if (lopt) {
+        if ((conf = getconfdescsub(pw->pw_dir)) != NULL) {
+            char *fsname, s[16];
+
+            if (ropt) {
+                snprintf(s, sizeof(s), "%s:%s", conf->cf_host, conf->cf_path);
+                fsname = s;
+            } else
+                fsname = conf->cf_desc;
+            report_one(fsname, vopt, conf, pw->pw_uid);
+        }
+    } else {
+        while ((conf = getconfent()) != NULL) {
+            char *fsname, s[16];
+
+            if (ropt) {
+                snprintf(s, sizeof(s), "%s:%s", conf->cf_host, conf->cf_path);
+                fsname = s;
+            } else
+                fsname = conf->cf_desc;
+            report_one(fsname, vopt, conf, pw->pw_uid);
+        }
+    }
+    alarm(0);
+
+    exit(0);
+}
 
 static void 
 daystr(qstate_t state, unsigned long long secs, char *str, int len)
@@ -146,7 +251,7 @@ report_warning(char *prefix, char *fsname, quota_t *q, int thresh)
 static void 
 report_usage(char *label, quota_t *q, int thresh)
 {
-    char used[TMPSTRSZ], soft[TMPSTRSZ], hard[TMPSTRSZ], days[TMPSTRSZ];
+    char used[16], soft[16], hard[16], days[16];
 
     printf("%-15s", label);
     if (strlen(label) > 14)
@@ -183,11 +288,7 @@ report_one(char *label, int vopt, confent_t *conf, uid_t uid)
     quota_t q;
     int rc;
 
-    if (!strcmp(conf->cf_host, "lustre"))
-        rc = getquota_lustre(label, uid, conf->cf_path, &q);
-    else
-        rc = getquota_nfs(label, uid, conf->cf_host, conf->cf_path, &q);
-
+    rc = getquota(conf, label, uid, &q);
     if (rc == 0) {
         if (vopt) {
             report_usage(label, &q, conf->cf_thresh);
@@ -209,107 +310,6 @@ alarm_handler(int arg)
 {
     fprintf(stderr, "%s: timeout, aborting\n", prog);
     exit(1);
-}
-
-int 
-main(int argc, char *argv[])
-{
-    int vopt = 0, ropt = 0, lopt = 0;
-    char *user = NULL;
-    struct passwd *pw;
-    confent_t *conf;
-    int c;
-    extern char *optarg;
-    extern int optind;
-    prog = basename(argv[0]);
-
-    /* handle args */
-    while ((c = getopt(argc, argv, "f:rvlt:T")) != EOF) {
-        switch (c) {
-        case 'l':              /* -l display home directory quota only */
-            lopt = 1;
-            break;
-        case 't':               /* -t set timeout in seconds */
-            signal(SIGALRM, alarm_handler);
-            alarm(strtoul(optarg, NULL, 10));
-            break;
-        case 'r':              /* -r display rmt mntpt, not descriptive name */
-            ropt = 1;
-            break;
-        case 'v':              /* -v show all quota info for selected fs's */
-            vopt = 1;
-            break;
-        case 'f':              /* -f use alternate config file */
-            setconfent(optarg); /* perror/exit on error */
-            break;
-        case 'T':              /* -T (undocumented) internal unit tests */
-            test_match_path();
-            exit(0);
-        default:
-            usage();
-        }
-    }
-    if (optind < argc)
-        user = argv[optind++];
-    if (optind < argc)
-        usage();
-
-    /* getlogin() not appropriate here */
-    if (!user)
-        pw = getpwuid(getuid());
-    else {
-        if (isdigit(*user))
-            pw = getpwuid(atoi(user));
-        else
-            pw = getpwnam(user);
-    }
-    if (!pw) {
-        fprintf(stderr, "%s: no such user%s%s\n", prog, user ? ": " : "", 
-                user ? user : "");
-        exit(1);
-    }
-
-    /* 2>&1 so any errors interrupt the report in a predictable way */
-    if (close(2) < 0) {
-        fprintf(stderr, "%s: close stderr: %s\n", prog, strerror(errno));
-        exit(1);
-    }
-    if (dup(1) < 0) {
-        fprintf(stderr, "%s: dup stdout: %s\n", prog, strerror(errno));
-        exit(1);
-    }
-
-    if (vopt) {
-        printf("Disk quotas for %s:\n", pw->pw_name);
-        printf("%s%s\n", "Filesystem     used   quota  limit    timeleft  ",
-                                        "files  quota  limit    timeleft");
-    }
-    if (lopt) {
-        if ((conf = getconfdescsub(pw->pw_dir)) != NULL) {
-            char *fsname, s[16];
-
-            if (ropt) {
-                snprintf(s, sizeof(s), "%s:%s", conf->cf_host, conf->cf_path);
-                fsname = s;
-            } else
-                fsname = conf->cf_desc;
-            report_one(fsname, vopt, conf, pw->pw_uid);
-        }
-    } else {
-        while ((conf = getconfent()) != NULL) {
-            char *fsname, s[16];
-
-            if (ropt) {
-                snprintf(s, sizeof(s), "%s:%s", conf->cf_host, conf->cf_path);
-                fsname = s;
-            } else
-                fsname = conf->cf_desc;
-            report_one(fsname, vopt, conf, pw->pw_uid);
-        }
-    }
-    alarm(0);
-
-    exit(0);
 }
 
 /*
