@@ -2,7 +2,7 @@ PROJECT=quota
 CFFILE=	quota.fs
 RSRC=	rquota_xdr.c rquota_clnt.c rquota.h
 ROBJS=	rquota_xdr.o rquota_clnt.o
-OBJS= 	$(ROBJS) getconf.o util.o quota_nfs.o quota_lustre.o
+OBJS= 	$(ROBJS) getconf.o util.o getquota_nfs.o getquota_lustre.o
 
 # uncomment for Solaris
 #LIBADD=	-lnsl -lsocket
@@ -27,11 +27,11 @@ rquota_xdr.o: rquota_xdr.c
 rquota_clnt.o: rquota_clnt.c
 	$(CC) $(CFLAGS) -Wno-unused -o $@ -c $<
 
-lquota: quota_lustre.c quota.h util.o
-	$(CC) $(CFLAGS) -DSTAND -o $@ quota_lustre.c util.o $(LIBS)
+lquota: getquota_lustre.c getquota.h util.o
+	$(CC) $(CFLAGS) -DSTAND -o $@ getquota_lustre.c util.o $(LIBS)
 
-nquota: quota_nfs.c quota.h util.o $(ROBJS)
-	$(CC) $(CFLAGS) -DSTAND -o $@ quota_nfs.c $(ROBJS) util.o $(LIBS)
+nquota: getquota_nfs.c getquota.h util.o $(ROBJS)
+	$(CC) $(CFLAGS) -DSTAND -o $@ getquota_nfs.c $(ROBJS) util.o $(LIBS)
 
 clean:
 	rm -f quota lquota nquota 

@@ -40,7 +40,7 @@
 #include <sys/stat.h>
 
 #include "getconf.h"
-#include "quota.h"
+#include "getquota.h"
 #include "util.h"
 
 #define TMPSTRSZ        64
@@ -83,8 +83,8 @@ over_thresh(unsigned long long used, unsigned long long hard, int thresh)
     return 0;
 }
 
-static void 
-report_warning(char *fsname, quota_t *q, int thresh, int vopt)
+static int
+report_warning(char *prefix, char *fsname, quota_t *q, int thresh)
 {
     char over[64];
     int msg = 0;
@@ -95,26 +95,26 @@ report_warning(char *fsname, quota_t *q, int thresh, int vopt)
         case UNDER:
             if (over_thresh(q->q_bytes_used, q->q_bytes_hardlim, thresh)) {
                 printf("%sBlock usage on %s has exceeded %d%% of quota.\n",
-                    vopt ? "*** " : "", fsname, thresh);
+                    prefix, fsname, thresh);
                 msg++;
             }
             break;
         case NOTSTARTED:
             size2str(q->q_bytes_used - q->q_bytes_softlim, over, sizeof(over));
             printf("%sOver block quota on %s, remove %s within [7 days].\n", 
-                    vopt ? "*** " : "", fsname, over);
+                    prefix, fsname, over);
             msg++;
             break;
         case STARTED:
             size2str(q->q_bytes_used - q->q_bytes_softlim, over, sizeof(over));
             printf("%sOver block quota on %s, remove %s within %.1f days.\n", 
-                    vopt ? "*** " : "", fsname, over, 
+                    prefix, fsname, over, 
                     (float)q->q_bytes_secleft / (24*60*60));
             msg++;
             break;
         case EXPIRED:
             printf("%sOver block quota on %s, time limit expired.\n", 
-                    vopt ? "*** " : "", fsname);
+                    prefix, fsname);
             msg++;
             break;
     }
@@ -125,33 +125,32 @@ report_warning(char *fsname, quota_t *q, int thresh, int vopt)
         case NOTSTARTED:
             size2str(q->q_files_used - q->q_files_softlim, over, sizeof(over));
             printf("%sOver file quota on %s, remove %s files within [7 days].\n", 
-                    vopt ? "*** " : "", fsname, over);
+                    prefix, fsname, over);
             msg++;
             break;
         case STARTED:
             size2str(q->q_files_used - q->q_files_softlim, over, sizeof(over));
             printf("%sOver file quota on %s, remove %s files within %.1f days.\n",
-                    vopt ? "*** " : "", fsname, over, 
+                    prefix, fsname, over, 
                     (float)q->q_files_secleft / (24*60*60));
             msg++;
             break;
         case EXPIRED:
             printf("%sOver file quota on %s, time limit expired\n", 
-                    vopt ? "*** " : "", fsname);
+                    prefix, fsname);
             msg++;
             break;
     }
-    if (msg && !vopt)
-        printf("Run quota -v for more detailed information.\n");
+    return msg;
 }
 
 static void 
-report_usage(char *fsname, quota_t *q, int thresh)
+report_usage(char *label, quota_t *q, int thresh)
 {
     char used[TMPSTRSZ], soft[TMPSTRSZ], hard[TMPSTRSZ], days[TMPSTRSZ];
 
-    printf("%-15s", fsname);
-    if (strlen(fsname) > 14)
+    printf("%-15s", label);
+    if (strlen(label) > 14)
         printf("\n%-15s", "");  /* make future columns line up */
 
     size2str(q->q_bytes_used, used, sizeof(used));
@@ -186,14 +185,17 @@ report_one(char *label, int vopt, confent_t *conf, uid_t uid)
     int rc;
 
     if (!strcmp(conf->cf_host, "lustre"))
-        rc = lustre_getquota(label, uid, conf->cf_path, &q);
+        rc = getquota_lustre(label, uid, conf->cf_path, &q);
     else
-        rc = nfs_getquota(label, uid, conf->cf_host, conf->cf_path, &q);
+        rc = getquota_nfs(label, uid, conf->cf_host, conf->cf_path, &q);
 
     if (rc == 0) {
-        if (vopt)
+        if (vopt) {
             report_usage(label, &q, conf->cf_thresh);
-        report_warning(label, &q, conf->cf_thresh, vopt);
+            report_warning("*** ", label, &q, conf->cf_thresh);
+        } else if (report_warning("", label, &q, conf->cf_thresh) > 0) {
+            printf("Run quota -v for more detailed information.\n");
+        }
     }
 }
 

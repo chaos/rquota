@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <lustre/liblustreapi.h>
 
-#include "quota.h"
+#include "getquota.h"
 
 static qstate_t 
 set_state(unsigned long long used, unsigned long long soft,
@@ -27,7 +27,7 @@ set_state(unsigned long long used, unsigned long long soft,
 }
 
 int
-lustre_getquota(char *fsname, uid_t uid, char *mnt, quota_t *q)
+getquota_lustre(char *fsname, uid_t uid, char *mnt, quota_t *q)
 {
     static time_t now = 0;
     struct if_quotactl qctl;
@@ -81,7 +81,7 @@ main(int argc, char *argv[])
         fprintf(stderr, "Usage: lquota mntpt\n");
         exit(1);
     }
-    rc = lustre_getquota(argv[1], getuid(), argv[1], &q);
+    rc = getquota_lustre(argv[1], getuid(), argv[1], &q);
     if (rc == 0) {
         printf("q_bytes_used     %llu (%s)\n", q.q_bytes_used,
                                     size2str(q.q_bytes_used, tmp, 16));

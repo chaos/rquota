@@ -4,14 +4,12 @@
 	Rewrite crufty reporting functions.
 	Add repquota functionality.
 
-	* quota.h : New generic quota structure so results from
-	nfs_getquota() and lustre_getquota() can look identical.
+	* getquota.h : New generic quota structure so results from
+	getquota_nfs() and getquota_lustre() can look identical.
 
-	* quota_nfs.c : Factor out nfs-specific quota code.
-	Can compile as standalone test program 'nquota'.
+	* getquota_nfs.c : Factor out nfs-specific quota code.
 
-	* quota_lustre.c : New.
-	Can compile as standalone test program 'lquota'.
+	* getquota_lustre.c : New lustre-specific quota code.
 
 	* util.c : Factor out common code.
 

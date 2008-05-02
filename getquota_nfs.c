@@ -11,7 +11,7 @@
 #include <errno.h>
 
 #include "rquota.h"
-#include "quota.h"
+#include "getquota.h"
 #include "util.h"
 
 #define QUIRK_NETAPP  1 /* (uint32_t)(-1) for any limit == no quota */
@@ -58,7 +58,7 @@ set_state(unsigned long long used, unsigned long long soft,
 }
 
 int
-nfs_getquota(char *fsname, uid_t uid, char *rhost, char *rpath, quota_t *q)
+getquota_nfs(char *fsname, uid_t uid, char *rhost, char *rpath, quota_t *q)
 {
     static char lhost[MAXHOSTNAMELEN+1] = "";
     getquota_args args;
@@ -154,7 +154,7 @@ main(int argc, char *argv[])
         exit(1);
     }
     snprintf(tmp, sizeof(tmp), "%s:%s", argv[1], argv[2]);
-    rc = nfs_getquota(tmp, getuid(), argv[1], argv[2], &q);
+    rc = getquota_nfs(tmp, getuid(), argv[1], argv[2], &q);
     if (rc == 0) {
         printf("q_bytes_used     %llu (%s)\n", q.q_bytes_used,
                                     size2str(q.q_bytes_used, tmp, 16));
