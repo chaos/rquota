@@ -144,47 +144,6 @@ done:
     return rc;
 }
 
-#ifdef STAND
-int
-main(int argc, char *argv[])
-{
-    quota_t q;
-    int rc;
-    char tmp[16];
-
-    if (argc != 3) {
-        fprintf(stderr, "Usage: nquota rhost rpath\n");
-        exit(1);
-    }
-    snprintf(tmp, sizeof(tmp), "%s:%s", argv[1], argv[2]);
-    rc = getquota_nfs(tmp, getuid(), argv[1], argv[2], &q);
-    if (rc == 0) {
-        printf("q_bytes_used     %llu (%s)\n", q.q_bytes_used,
-                                    size2str(q.q_bytes_used, tmp, 16));
-        printf("q_bytes_softlim  %llu (%s)\n", q.q_bytes_softlim,
-                                    size2str(q.q_bytes_softlim, tmp, 16));
-        printf("q_bytes_hardlim  %llu (%s)\n", q.q_bytes_hardlim,
-                                    size2str(q.q_bytes_hardlim, tmp, 16));
-        printf("q_bytes_state    %s\n", q.q_bytes_state == UNDER ? "under"
-                          : q.q_bytes_state == NOTSTARTED ? "not started"
-                          : q.q_bytes_state == STARTED ? "started" : "expired");
-        if (q.q_bytes_state == STARTED) 
-            printf("q_bytes_secleft  %llu\n", q.q_bytes_secleft);
-
-        printf("q_files_used     %llu\n", q.q_files_used);
-        printf("q_files_softlim  %llu\n", q.q_files_softlim);
-        printf("q_files_hardlim  %llu\n", q.q_files_hardlim);
-        printf("q_files_state    %s\n", q.q_files_state == UNDER ? "under"
-                          : q.q_files_state == NOTSTARTED ? "not started"
-                          : q.q_files_state == STARTED ? "started" : "expired");
-        if (q.q_files_state == STARTED)
-            printf("q_files_secleft  %llu\n", q.q_files_secleft);
-
-    }
-    exit(rc);
-}
-#endif
-
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */

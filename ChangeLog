@@ -1,5 +1,13 @@
 2008-05-01 Jim Garlick <garlick@llnl.gov>
 
+	* getquota.c : Implement fs-neutral getquota() interface.
+
+	* repquota.c : Quota reporting program.
+
+	* list.[ch]: New from lsd-tools.
+
+2008-05-01 Jim Garlick <garlick@llnl.gov>
+
 	* quota.c : Add initial support for Lustre quotas.
 	Rewrite crufty reporting functions.
 	Add repquota functionality.

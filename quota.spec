@@ -12,6 +12,7 @@ License: GPL
 # we replace the redhat quota program
 Conflicts: quota
 #BuildRequires: /usr/bin/rpcgen
+BuildRequires: lustre
 
 BuildRoot: %{_tmppath}/%{name}-%{version}
 
@@ -39,6 +40,7 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 
 cp quota $RPM_BUILD_ROOT%{_bindir}
+cp repquota $RPM_BUILD_ROOT%{_bindir}
 cp quota.1 $RPM_BUILD_ROOT%{_mandir}/man1
 cp quota.conf.5 $RPM_BUILD_ROOT%{_mandir}/man5
 
@@ -50,5 +52,6 @@ rm -rf "$RPM_BUILD_ROOT"
 %doc ChangeLog README
 %doc README
 %{_bindir}/quota
+%{_bindir}/repquota
 %{_mandir}/man1/quota.1*
 %{_mandir}/man5/quota.conf.5*
