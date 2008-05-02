@@ -212,8 +212,8 @@ alarm_handler(int arg)
     exit(1);
 }
 
-static int 
-quota_main(int argc, char *argv[])
+int 
+main(int argc, char *argv[])
 {
     int vopt = 0, ropt = 0, lopt = 0;
     char *user = NULL;
@@ -222,6 +222,7 @@ quota_main(int argc, char *argv[])
     int c;
     extern char *optarg;
     extern int optind;
+    prog = basename(argv[0]);
 
     /* handle args */
     while ((c = getopt(argc, argv, "df:rvlt:T")) != EOF) {
@@ -315,93 +316,7 @@ quota_main(int argc, char *argv[])
     }
     alarm(0);
 
-    return 0;
-}
-
-static void
-repquota_usage(void)
-{
-    fprintf(stderr, "Usage: %s [-s] filesystem\n", prog);
-    exit(1);
-}
-
-static int 
-repquota_main(int argc, char *argv[])
-{
-    struct passwd *pw;
-    confent_t *conf;
-    int c;
-    int sopt = 0;
-
-    while ((c = getopt(argc, argv, "s")) != EOF) {
-        switch (c) {
-            case 's':              /* generate uid's from top level fs dirs */
-                sopt++;
-                break;
-            default:
-                repquota_usage();
-                break;
-        }
-    }
-
-    if (argc - optind != 1)
-        repquota_usage();
-
-    if (!(conf = getconfdesc(argv[optind]))) {
-        fprintf(stderr, "%s: %s: not found in quota.conf\n", prog, argv[1]);
-        exit(1);
-    }
-
-    printf("%s\n",
-        "User           used   quota  limit    timeleft  files  quota  limit    timeleft");
-
-    if (sopt) {
-        struct dirent *dp;
-        DIR *dir;
-        char fqp[MAXPATHLEN];
-        struct stat sb;
-        char tmp[64];
-
-        if (!(dir = opendir(conf->cf_path))) {
-            fprintf(stderr, "%s: could not open %s\n", prog, conf->cf_path);
-            exit(1);
-        }
-        while ((dp = readdir(dir))) {
-            if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, ".."))
-                continue;
-            snprintf(fqp, sizeof(fqp), "%s/%s", conf->cf_path, dp->d_name);
-            if (stat(fqp, &sb) == 0) {
-                if ((pw = getpwuid(sb.st_uid)))
-                    snprintf(tmp, sizeof(tmp), "%s", pw->pw_name);
-                else
-                    snprintf(tmp, sizeof(tmp), "%s-%u", 
-                        basename(fqp), sb.st_uid);
-                report_one(tmp, 1, conf, sb.st_uid);
-            }
-        }
-        if (closedir(dir) < 0)
-            fprintf(stderr, "%s: closedir %s: %m\n", prog, conf->cf_path);
-    } else {
-        while ((pw = getpwent()) != NULL) {
-            if (pw->pw_uid < 500)
-                continue;
-            report_one(pw->pw_name, 1, conf, pw->pw_uid);
-        }
-    }
-    return 0;
-}
-
-int
-main(int argc, char *argv[])
-{
-    int rc;
-
-    prog = basename(argv[0]);
-    if (!strcmp(prog, "repquota"))
-        rc = repquota_main(argc, argv);
-    else
-        rc = quota_main(argc, argv);
-    exit(rc);
+    exit(0);
 }
 
 /*

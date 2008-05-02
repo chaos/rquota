@@ -1,4 +1,4 @@
-RPC rquota client (c) 1995-2000 Jim Garlick <garlick@llnl.gov>
+Remote rquota client (c) 1995-2008 Jim Garlick <garlick@llnl.gov>
 
 quota.x is copyright (c) Sun Microsystems.  The rest is released under GPL.
 
