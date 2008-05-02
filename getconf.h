@@ -38,6 +38,8 @@ typedef struct {
 void setconfent(char *path);
 void endconfent(void);
 confent_t *getconfent(void);
+confent_t *getconfdescsub(char *dir);
+confent_t *getconfdesc(char *desc);
 
 
 /*

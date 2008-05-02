@@ -1,3 +1,25 @@
+2008-05-01 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Add initial support for Lustre quotas.
+	Rewrite crufty reporting functions.
+	Add repquota functionality.
+
+	* quota.h : New generic quota structure so results from
+	nfs_getquota() and lustre_getquota() can look identical.
+
+	* quota_nfs.c : Factor out nfs-specific quota code.
+	Can compile as standalone test program 'nquota'.
+
+	* quota_lustre.c : New.
+	Can compile as standalone test program 'lquota'.
+
+	* util.c : Factor out common code.
+
+	* getconf.c : Add getconfdesc() and getconfdescsub().
+	Allow hash-comments in quota.conf file.
+
+	* rquota.x : Rename from quota.x to avoid confusion.
+
 2008-04-18 Jim Garlick <garlick@llnl.gov>
 
 	* quota.c : Fix bug with quota -lv, documented in

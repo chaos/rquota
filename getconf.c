@@ -29,8 +29,11 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
+
 #include "getconf.h"
+#include "util.h"
 
 /* configuration file pointer */
 static FILE *fsys = NULL;
@@ -42,7 +45,8 @@ static FILE *fsys = NULL;
  * 	sep (IN)	separator character
  *	RETURN		the base string (now \0 terminated at sep position)
  */
-static char *next_field(char **str, char sep)
+static char *
+next_field(char **str, char sep)
 {
     char *rv = *str;
 
@@ -58,7 +62,8 @@ static char *next_field(char **str, char sep)
  * Open/rewind the config file
  * 	path (IN)	pathname to open if not open already
  */
-void setconfent(char *path)
+void 
+setconfent(char *path)
 {
     if (!fsys) {
         fsys = fopen(path, "r");
@@ -73,7 +78,8 @@ void setconfent(char *path)
 /*
  * Close the config file if open.
  */
-void endconfent(void)
+void 
+endconfent(void)
 {
     if (fsys)
         fclose(fsys);
@@ -84,7 +90,8 @@ void endconfent(void)
  * path if the config file has not already been opened.
  * 	RETURN		config file entry
  */
-confent_t *getconfent(void)
+confent_t *
+getconfent(void)
 {
     static char buf[BUFSIZ];
     static confent_t conf;
@@ -93,22 +100,53 @@ confent_t *getconfent(void)
     if (!fsys)
         setconfent(_PATH_QUOTA_CONF);
 
-    if (fgets(buf, BUFSIZ, fsys)) {
-        char *threshp;
-        char *p = buf;
+    while (fgets(buf, BUFSIZ, fsys)) {
+        char *threshp, *p;
 
-        conf.cf_desc = next_field(&p, ':');
-        conf.cf_host = next_field(&p, ':');
-        conf.cf_path = next_field(&p, ':');
-        threshp = next_field(&p, ':');
-        conf.cf_thresh = 0;
-        if (threshp != NULL)
-            conf.cf_thresh = atoi(threshp);
+        if ((p = strchr(buf, '#'))) /* zap comment */
+            *p = '\0';
+        if (strlen(buf) > 0) {
+            p = buf;
+            conf.cf_desc = next_field(&p, ':');
+            conf.cf_host = next_field(&p, ':');
+            conf.cf_path = next_field(&p, ':');
+            threshp = next_field(&p, ':');
+            conf.cf_thresh = 0;
+            if (threshp != NULL)
+                conf.cf_thresh = atoi(threshp);
 
-        result = &conf;
+            result = &conf;
+            break;
+        }
     }
 
     return result;
+}
+
+confent_t *
+getconfdescsub(char *dir)
+{
+    confent_t *e;
+ 
+    setconfent(_PATH_QUOTA_CONF);   
+    while ((e = getconfent()) != NULL) {
+        if (match_path(dir, e->cf_desc))
+            break;
+    }
+    return e;
+}
+
+confent_t *
+getconfdesc(char *desc)
+{
+    confent_t *e;
+ 
+    setconfent(_PATH_QUOTA_CONF);   
+    while ((e = getconfent()) != NULL) {
+        if (!strcmp(e->cf_desc, desc))
+            break;
+    }
+    return e;
 }
 
 /*

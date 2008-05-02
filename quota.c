@@ -6,7 +6,7 @@
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
  *  
- *  This file is part of Quota, a remote NFS quota program.
+ *  This file is part of Quota, a remote quota program.
  *  For details, see <http://www.llnl.gov/linux/quota/>.
  *  
  *  Quota is free software; you can redistribute it and/or modify it under
@@ -35,387 +35,183 @@
 #include <sys/param.h>          /* MAXHOSTNAMELEN */
 #include <signal.h>
 #include <assert.h>
+#include <dirent.h>
+#include <libgen.h>
+#include <sys/stat.h>
 
 #include "getconf.h"
 #include "quota.h"
+#include "util.h"
 
-#define TMPSTRSZ        1024
+#define TMPSTRSZ        64
 
-/* timeleft > 1 year days means "not started" (0 - now) */
-#define MAX_TIMELEFT    (60*60*24*365)
-
-/*
- * Macros for manipulating struct rquota.
- */
-#define SCALE(x)        (x.rq_bsize / 1024.0)
-#define DAYSBLOCK(x)    ((float)x.rq_btimeleft / (60*60*24))
-#define DAYSFILE(x)     ((float)x.rq_ftimeleft / (60*60*24))
-#define OVERBLOCK(x)    (x.rq_curblocks >= x.rq_bsoftlimit)
-#define OVERFILE(x)     (x.rq_curfiles >= x.rq_fsoftlimit)
-#define REMOVEBLOCKS(x) (x.rq_curblocks - x.rq_bsoftlimit + 1)
-#define REMOVEFILES(x)  (x.rq_curfiles - x.rq_fsoftlimit + 1)
-#define EXPFILE(x)      ((int)(x.rq_ftimeleft) < 0)
-#define EXPBLOCK(x)     ((int)(x.rq_btimeleft) < 0)
-
-/* 
- * Normally 0 indicates no quota, but Network Appliance servers return -1
- * (in a 32-bit unsigned long!  BAD NetApp!).  Since Cray's don't have a 
- * 32-bit integer type, we can't express this value as (u_long)(-1), hence
- * the test for 0xffffffff.
- */
-#define QVALID(x)	((x) != 0 && (x) != 0xffffffff)
-#define HASBLOCK(x)     (QVALID(x.rq_bhardlimit) && QVALID(x.rq_bsoftlimit))
-#define HASFILE(x)      (QVALID(x.rq_fhardlimit) && QVALID(x.rq_fsoftlimit))
-
-#define HASTHRESH(t)	(t > 0)
-#define OVERTHRESH(x,t) (x.rq_curblocks >= (x.rq_bhardlimit * (t/100.0)))
-
-/*
- * Rpc.rquotad simply subtracts the current time from the timeout value
- * and returns it to us in the timeleft elements.  Therefore, EXPIRED is
- * a negative value of timeleft, but NOT STARTED is also a negative value
- * approaching (0 - now), e.g. a timeout around Jan 1, 1970.  Because the
- * rpc call has latency and the clocks may not be synchronized, we throw
- * MAX_SKEW into the equation.
- */
-#define MAX_SKEW      (60*60*24)
-#define NSTARTFILE(x) (EXPFILE(x) && abs((int)(x.rq_ftimeleft)+now)<=MAX_SKEW)
-#define NSTARTBLOCK(x)(EXPBLOCK(x) && abs((int)(x.rq_btimeleft)+now)<=MAX_SKEW)
-
-/* the current time, cached on program startup */
-static time_t now;
 
 static int debug = 0;
+static char *prog;
 
-static void usage(void);
+static void quota_usage(void);
 
-/*
- * Abbreviate numerical sizes provided in K (2^10).
- *	kval (IN)      value in K bytes
- * 	ret (RETURN)   abbreviated value in M, G, or T
- */
-static char *abbrev(float kval, char *str, int len)
+static void 
+daystr(qstate_t state, unsigned long long secs, char *str, int len)
 {
-    /* 
-     * Note: try to display values above 1000 as the next unit,
-     * i.e. 1000-1023MB should be displayed as GB.  Values should never
-     * take up more chars than "999.9G".
-     */
-    if (kval >= 1000 * 1024 * 1024) {
-        snprintf(str, len, "%.1fT", kval / (1024 * 1024 * 1024));
-    } else if (kval >= 1000 * 1024) {
-        snprintf(str, len, "%.1fG", kval / (1024 * 1024));
-    } else if (kval >= 1000) {
-        snprintf(str, len, "%.1fM", kval / 1024);
-    } else if (kval > 0) {
-        snprintf(str, len, "%.1fK", kval);
-    } else {                    /* if (kval == 0) */
+    float days;
 
-        snprintf(str, len, "-0-");
+    assert(len >= 1);
+    switch (state) {
+        case UNDER:
+        case NONE:
+            str[0] = '\0';
+            break;
+        case NOTSTARTED:
+            snprintf(str, len, "[7 days]");
+            break;
+        case STARTED:
+            days = (float)secs / (24*60*60);
+            snprintf(str, len, "%.1f day%s", days, days > 1.0 ? "s" : "");
+            break;
+        case EXPIRED:
+            sprintf(str, "expired");
+            break;
     }
-    str[len - 1] = '\0';        /* truncation is not fatal, ensure termination */
-
-    return str;
 }
 
-/*
- * Look up quotas on remote system and return them in rq structure.
- * 	uid (IN)		uid to query
- * 	fsname (IN)		filesystem name (for use in error strings)
- * 	rem_host (IN)		hostname of NFS server
- * 	loc_host (IN)		hostname of this host
- * 	path (IN)		filesystem path on rem_host
- * 	verbose (IN)		report errors only if true
- * 	rq (OUT) 		quota information
- * 	RETURN			rq is valid only if true
- */
 static int
-getquota(uid_t uid, char *fsname, char *rem_host, char *loc_host,
-         char *path, int verbose, struct rquota *rq)
+over_thresh(unsigned long long used, unsigned long long hard, int thresh)
 {
-    getquota_args args;
-    getquota_rslt *result;
-    int rq_valid = 0;
-    CLIENT *cl = NULL;
-
-    /* set up getquota_args */
-    args.gqa_pathp = path;
-    args.gqa_uid = uid;
-
-    /* create client handle, adding AUTH_UNIX */
-    cl = clnt_create(rem_host, RQUOTAPROG, RQUOTAVERS, "udp");
-    if (cl == NULL) {
-        if (verbose)
-            clnt_pcreateerror(fsname);
-        goto done;
-    }
-
-    /* GNATS #48: authunix_create_default fails if in >16 groups (Tru64) */
-    cl->cl_auth = authunix_create(loc_host, uid, getgid(), 0, NULL);
-    /* XXX presumably rpc call will fail if cl_auth create failed */
-
-    /* call remote procedure */
-    result = rquotaproc_getquota_1(&args, cl);
-    if (result == NULL) {
-        if (verbose)
-            clnt_perror(cl, fsname);
-        goto done;
-    }
-
-    /* examine results */
-    switch (result->gqr_status) {
-        case Q_NOQUOTA:
-            if (verbose)
-                printf("%-14s no quota\n", fsname);
-            break;
-        case Q_EPERM:
-            if (verbose)
-                printf("%-14s permission denied\n", fsname);
-            break;
-        case Q_OK:
-            memcpy(rq, &result->getquota_rslt_u, sizeof(struct rquota));
-            rq_valid = 1;
-            break;
-        default:
-            if (verbose)
-                printf("%-14s unknown error: %d\n",
-                   fsname, result->gqr_status);
-            break;
-    }
-    if (rq_valid && debug) {
-        printf("blk=%d act=%d\tbhard=%lu bsoft=%lu bcur=%lu btime=%lu\n",
-               rq->rq_bsize, rq->rq_active,
-               rq->rq_bhardlimit, rq->rq_bsoftlimit,
-               rq->rq_curblocks, rq->rq_btimeleft);
-        printf("             \tfhard=%lu fsoft=%lu fcur=%lu ftime=%lu\n",
-               rq->rq_fhardlimit, rq->rq_fsoftlimit,
-               rq->rq_curfiles, rq->rq_ftimeleft);
-    }
-done:
-    if (cl != NULL)
-        clnt_destroy(cl);
-
-    return rq_valid;
+    if (thresh && used >= hard * (thresh/100.0))
+        return 1;
+    return 0;
 }
 
-/*
- * Long report.
- * 	fsname (IN)	filesystem name
- * 	rq (IN)		quota information
- * 	thresh (IN)	% usage after which user should be warned
- */
-static void long_report(char *fsname, struct rquota rq, int thresh)
+static void 
+report_warning(char *fsname, quota_t *q, int thresh, int vopt)
 {
-    char bdays[TMPSTRSZ], fdays[TMPSTRSZ], tmpstr[TMPSTRSZ];
+    char over[64];
+    int msg = 0;
 
-    /* build bdays[] */
-    if (HASBLOCK(rq) && OVERBLOCK(rq)) {
-        if (NSTARTBLOCK(rq))
-            sprintf(bdays, "[7 days]");
-        else if (EXPBLOCK(rq))
-            sprintf(bdays, "expired");
-        else
-            sprintf(bdays, "%.1f day%s",
-                    DAYSBLOCK(rq), DAYSBLOCK(rq) > 1.0 ? "s" : "");
-    } else {
-        bdays[0] = '\0';
+    switch (q->q_bytes_state) {
+        case NONE:
+            break;
+        case UNDER:
+            if (over_thresh(q->q_bytes_used, q->q_bytes_hardlim, thresh)) {
+                printf("%sBlock usage on %s has exceeded %d%% of quota.\n",
+                    vopt ? "*** " : "", fsname, thresh);
+                msg++;
+            }
+            break;
+        case NOTSTARTED:
+            size2str(q->q_bytes_used - q->q_bytes_softlim, over, sizeof(over));
+            printf("%sOver block quota on %s, remove %s within [7 days].\n", 
+                    vopt ? "*** " : "", fsname, over);
+            msg++;
+            break;
+        case STARTED:
+            size2str(q->q_bytes_used - q->q_bytes_softlim, over, sizeof(over));
+            printf("%sOver block quota on %s, remove %s within %.1f days.\n", 
+                    vopt ? "*** " : "", fsname, over, 
+                    (float)q->q_bytes_secleft / (24*60*60));
+            msg++;
+            break;
+        case EXPIRED:
+            printf("%sOver block quota on %s, time limit expired.\n", 
+                    vopt ? "*** " : "", fsname);
+            msg++;
+            break;
     }
-
-    /* build fdays[] */
-    if (HASFILE(rq) && OVERFILE(rq)) {
-        if (NSTARTFILE(rq)) {
-            sprintf(fdays, "[7 days]");
-        } else {
-            if (EXPFILE(rq))
-                sprintf(fdays, "expired");
-            else                /* if (rq.rq_ftimeleft > 0) */
-                sprintf(fdays, "%.1f day%s",
-                        DAYSFILE(rq), DAYSFILE(rq) > 1.0 ? "s" : "");
-        }
-    } else {
-        fdays[0] = '\0';
+    switch (q->q_files_state) {
+        case NONE:
+        case UNDER:
+            break;
+        case NOTSTARTED:
+            size2str(q->q_files_used - q->q_files_softlim, over, sizeof(over));
+            printf("%sOver file quota on %s, remove %s files within [7 days].\n", 
+                    vopt ? "*** " : "", fsname, over);
+            msg++;
+            break;
+        case STARTED:
+            size2str(q->q_files_used - q->q_files_softlim, over, sizeof(over));
+            printf("%sOver file quota on %s, remove %s files within %.1f days.\n",
+                    vopt ? "*** " : "", fsname, over, 
+                    (float)q->q_files_secleft / (24*60*60));
+            msg++;
+            break;
+        case EXPIRED:
+            printf("%sOver file quota on %s, time limit expired\n", 
+                    vopt ? "*** " : "", fsname);
+            msg++;
+            break;
     }
+    if (msg && !vopt)
+        printf("Run quota -v for more detailed information.\n");
+}
 
-    /* filesystem name */
+static void 
+report_usage(char *fsname, quota_t *q, int thresh)
+{
+    char used[TMPSTRSZ], soft[TMPSTRSZ], hard[TMPSTRSZ], days[TMPSTRSZ];
+
     printf("%-15s", fsname);
     if (strlen(fsname) > 14)
         printf("\n%-15s", "");  /* make future columns line up */
 
-    /* block used/quota/limit values */
-    printf("%-7s", abbrev(rq.rq_curblocks * SCALE(rq), tmpstr, TMPSTRSZ));
-    if (HASBLOCK(rq)) {
-        char softblock[TMPSTRSZ], hardblock[TMPSTRSZ];
-
-        abbrev(rq.rq_bsoftlimit * SCALE(rq), softblock, TMPSTRSZ);
-        abbrev(rq.rq_bhardlimit * SCALE(rq), hardblock, TMPSTRSZ);
-
-        printf("%-7s%-9s%-10s", softblock, hardblock, bdays);
+    size2str(q->q_bytes_used, used, sizeof(used));
+    if (q->q_bytes_state == NONE) {
+        strcpy(soft, "n/a");
+        strcpy(hard, "n/a");
+        strcpy(days, "");
     } else {
-        printf("%-7s%-9s%-10s", "n/a", "n/a", "");
+        size2str(q->q_bytes_softlim, soft, sizeof(soft));
+        size2str(q->q_bytes_hardlim, hard, sizeof(hard));
+        daystr(q->q_bytes_state, q->q_bytes_secleft, days, sizeof(days));
     }
+    printf("%-7s%-7s%-9s%-10s", used, soft, hard, days);
 
-    /* file used/quota/limit values */
-    printf("%-7s", abbrev(rq.rq_curfiles / 1024.0, tmpstr, TMPSTRSZ));
-    if (HASFILE(rq)) {
-        char softfile[TMPSTRSZ], hardfile[TMPSTRSZ];
-
-        abbrev(rq.rq_fsoftlimit / 1024.0, softfile, TMPSTRSZ);
-        abbrev(rq.rq_fhardlimit / 1024.0, hardfile, TMPSTRSZ);
-
-        printf("%-7s%-9s%s\n", softfile, hardfile, fdays);
+    size2str(q->q_files_used, used, sizeof(used));
+    if (q->q_files_state == NONE) {
+        strcpy(soft, "n/a");
+        strcpy(hard, "n/a");
+        strcpy(days, "");
     } else {
-        printf("%-7s%-9s\n", "n/a", "n/a");
+        size2str(q->q_files_softlim, soft, sizeof(soft));
+        size2str(q->q_files_hardlim, hard, sizeof(hard));
+        daystr(q->q_files_state, q->q_files_secleft, days, sizeof(days));
     }
-
-    /* tack on a line if over percentage specified in quota.fs */
-    if (HASBLOCK(rq) && HASTHRESH(thresh) && OVERTHRESH(rq, thresh))
-        printf("***  usage on %s has exceeded %d%% of quota!\n",
-               fsname, thresh);
+    printf("%-7s%-7s%-9s%s\n", used, soft, hard, days);
 }
 
-/*
- * Short report.
- * 	fsname (IN)	filesystem name
- * 	rq (IN)		quota information
- * 	thresh (IN)	% usage after which user should be warned
- */
-static void short_report(char *fsname, struct rquota rq, int thresh)
-{
-    char tmpstr[TMPSTRSZ];
-
-    if (HASBLOCK(rq) && OVERBLOCK(rq)) {
-        printf("Over disk quota on %s, ", fsname);
-        if (NSTARTBLOCK(rq))
-            printf("remove %s within [7 days]\n",
-                   abbrev(REMOVEBLOCKS(rq) * SCALE(rq), tmpstr, TMPSTRSZ));
-        else if (EXPBLOCK(rq))
-            printf("time limit expired (run quota -v)\n");
-        else
-            printf("remove %s within %.1f days\n",
-                   abbrev(REMOVEBLOCKS(rq) * SCALE(rq),
-                          tmpstr, TMPSTRSZ), DAYSBLOCK(rq));
-    } else if (HASBLOCK(rq)
-               && HASTHRESH(thresh) && OVERTHRESH(rq, thresh)) {
-        printf("Warning: usage on %s has exceeded %d%% of quota.\n",
-               fsname, thresh);
-        printf("Run quota -v for more detailed information.\n");
-    }
-
-    if (HASFILE(rq) && OVERFILE(rq)) {
-        printf("Over file quota on %s, ", fsname);
-        if (NSTARTFILE(rq))
-            printf("remove %d files within [7 days]\n",
-                   (int) REMOVEFILES(rq));
-        else if (EXPFILE(rq))
-            printf("time limit expired (run quota -v)\n");
-        else
-            printf("remove %d files within %.1f days\n",
-                   (int) REMOVEFILES(rq), DAYSFILE(rq));
-    }
-}
-
-/*
- * Display data about a filesystem.
- *	ropt (IN)	show real filesystem names rather than descriptive ones
- *	vopt (IN)	verbose mode
- *	loc_host (IN)	local hostname
- *	conf (IN)	file system to get quota for
- *	uid (IN)	uid of user to get quota for
- */
 static void
-report(int ropt, int vopt, char *loc_host, confent_t * conf, uid_t uid)
+report_one(char *label, int vopt, confent_t *conf, uid_t uid)
 {
-    char tmp[TMPSTRSZ];
-    struct rquota rq;
-    char *fsname;
+    quota_t q;
+    int rc;
 
-    if (ropt) {
-        sprintf(tmp, "%s:%s", conf->cf_host, conf->cf_path);
-        fsname = tmp;
-    } else
-        fsname = conf->cf_desc;
+    if (!strcmp(conf->cf_host, "lustre"))
+        rc = lustre_getquota(label, uid, conf->cf_path, &q);
+    else
+        rc = nfs_getquota(label, uid, conf->cf_host, conf->cf_path, &q);
 
-    if (getquota(uid, fsname, conf->cf_host, loc_host, conf->cf_path,
-                 vopt, &rq)) {
-#ifdef DEC_HACK
-        /*
-         * XXX Hack for DEC NFS servers running OSF/1.  The DEC RPC 
-         * quota service returns 2-block limits on filesystems in some 
-         * cases where the user has a zero limit in the quota file.  
-         */
-        if (rq.rq_bhardlimit == 2 && rq.rq_bsoftlimit == 2)
-            return;
-#endif
+    if (rc == 0) {
         if (vopt)
-            long_report(fsname, rq, conf->cf_thresh);
-        else
-            short_report(fsname, rq, conf->cf_thresh);
+            report_usage(label, &q, conf->cf_thresh);
+        report_warning(label, &q, conf->cf_thresh, vopt);
     }
 }
 
-static void usage(void)
+static void quota_usage(void)
 {
     fprintf(stderr, "Usage: quota [-v] [-l] [-t sec] [-r] [-f config_file] [user]\n");
     exit(1);
 }
 
 static void 
-_alarm_handler(int arg)
+alarm_handler(int arg)
 {
     fprintf(stderr, "quota: timeout, aborting\n");
     exit(1);
 }
 
-static char *
-xstrdup(char *str)
-{
-    char *cpy = strdup(str);
-
-    if (!cpy) {
-        fprintf(stderr, "quota: out of memory\n");
-        exit(1);
-    }
-    return cpy;    
-}
-
-/* Match a directory against a mountpoint containing it.
- * We must match whole path components, see
- *  https://chaos.llnl.gov/bugzilla/show_bug.cgi?id=301
- * Warning: scribbles on 'dir'.
- */
-static int
-match_path(char *dir, const char *mountpoint)
-{
-    char *p; 
-
-    if (!strcmp(mountpoint, "/") || !strcmp(dir, mountpoint))
-        return 1; 
-    if (!(p = strrchr(dir, '/')))
-        return 0;
-    *p = '\0';
-    return match_path(dir, mountpoint);
-}
-
-static void
-test_match_path(void)
-{
-    char s[256];
-
-    assert(!match_path(strcpy(s, "/g/g53/foo"), "/g/g5"));
-    assert(match_path(strcpy(s, "/g/g53/foo"), "/g/g53"));
-    assert(!match_path(strcpy(s, "/g/g5/foo"), "/g/g53"));
-    assert(match_path(strcpy(s, "/g/g5/foo"), "/g/g5"));
-
-    assert(match_path(strcpy(s, "/g/g53/a/b/c/d/e/f/g/h/i/j"), "/g"));
-    assert(match_path(strcpy(s, "/g/g53//a/b/c/d/e/f/g/h/i/j"), "/g/g53"));
-
-    assert(match_path(strcpy(s, "/home/foo"), "/home"));
-
-    assert(match_path(strcpy(s, "/a"), "/"));
-    assert(match_path(strcpy(s, "/home/foo"), "/"));
-}
-
-int main(int argc, char *argv[])
+static int 
+quota_main(int argc, char *argv[])
 {
     int vopt = 0, ropt = 0, lopt = 0;
     char *user = NULL;
@@ -424,18 +220,6 @@ int main(int argc, char *argv[])
     int c;
     extern char *optarg;
     extern int optind;
-    char myhostname[MAXHOSTNAMELEN];
-
-    /* cache the current time */
-    if ((now = time(0)) == (time_t) (-1)) {
-        perror("time");
-        exit(1);
-    }
-
-    if (gethostname(myhostname, sizeof(myhostname)) < 0) {
-        perror("gethostname");
-        exit(1);
-    }
 
     /* handle args */
     while ((c = getopt(argc, argv, "df:rvlt:T")) != EOF) {
@@ -444,7 +228,7 @@ int main(int argc, char *argv[])
             lopt = 1;
             break;
         case 't':               /* set timeout in seconds */
-            signal(SIGALRM, _alarm_handler);
+            signal(SIGALRM, alarm_handler);
             alarm(strtoul(optarg, NULL, 10));
             break;
         case 'r':              /* display remote mount pt. */
@@ -459,18 +243,18 @@ int main(int argc, char *argv[])
         case 'd':              /* turn on debugging */
             debug++;
             break;
-        case 'T':              /* internal unit tests */
+        case 'T':              /* (undocumented) internal unit tests */
             test_match_path();
             exit(0);
             break;
         default:
-            usage();
+            quota_usage();
         }
     }
     if (optind < argc)
         user = argv[optind++];
     if (optind < argc)
-        usage();
+        quota_usage();
 
     /* getlogin() not appropriate here */
     if (!user)
@@ -488,10 +272,6 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    /* 
-     * Start the report. 
-     */
-
     /* stderr -> stdout */
     if (close(2) < 0) {
         perror("close stderr");
@@ -502,40 +282,124 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    /* display initial header */
     if (vopt) {
         printf("Disk quotas for %s:\n", pw->pw_name);
         printf("%s\n",
                "Filesystem     used   quota  limit    timeleft  files  quota  limit    timeleft");
     }
 
-    if (lopt) { /* report only on the user's home directory */
-        /* XXX assumes label == mount point */
-        while ((conf = getconfent()) != NULL) {
-            char *dircpy = xstrdup(pw->pw_dir);
-    
-            if (match_path(dircpy, conf->cf_desc)) {
-                if (debug)
-                    printf("Entry: desc=%s host=%s path=%s thresh=%d\n",
-                           conf->cf_desc, conf->cf_host,
-                           conf->cf_path, conf->cf_thresh);
-                report(ropt, vopt, myhostname, conf, pw->pw_uid);
-                break;
-            }
-            free(dircpy);
+    if (lopt) {
+        if ((conf = getconfdescsub(pw->pw_dir)) != NULL) {
+            char label[16];
+
+            if (ropt)
+                snprintf(label, sizeof(label), "%s:%s", 
+                    conf->cf_host, conf->cf_path);
+            else
+                snprintf(label, sizeof(label), "%s", conf->cf_desc);
+            report_one(label, vopt, conf, pw->pw_uid);
         }
-    } else {    /* report on each configured filesystem */
+    } else {
         while ((conf = getconfent()) != NULL) {
-            if (debug)
-                printf("Entry: desc=%s host=%s path=%s thresh=%d\n",
-                       conf->cf_desc, conf->cf_host,
-                       conf->cf_path, conf->cf_thresh);
-            report(ropt, vopt, myhostname, conf, pw->pw_uid);
+            char label[16];
+
+            if (ropt)
+                snprintf(label, sizeof(label), "%s:%s", 
+                    conf->cf_host, conf->cf_path);
+            else
+                snprintf(label, sizeof(label), "%s", conf->cf_desc);
+            report_one(label, vopt, conf, pw->pw_uid);
         }
     }
     alarm(0);
 
-    exit(0);
+    return 0;
+}
+
+static void
+repquota_usage(void)
+{
+    fprintf(stderr, "Usage: %s [-s] filesystem\n", prog);
+    exit(1);
+}
+
+static int 
+repquota_main(int argc, char *argv[])
+{
+    struct passwd *pw;
+    confent_t *conf;
+    int c;
+    int sopt = 0;
+
+    while ((c = getopt(argc, argv, "s")) != EOF) {
+        switch (c) {
+            case 's':              /* generate uid's from top level fs dirs */
+                sopt++;
+                break;
+            default:
+                repquota_usage();
+                break;
+        }
+    }
+
+    if (argc - optind != 1)
+        repquota_usage();
+
+    if (!(conf = getconfdesc(argv[optind]))) {
+        fprintf(stderr, "%s: %s: not found in quota.conf\n", prog, argv[1]);
+        exit(1);
+    }
+
+    printf("%s\n",
+        "User           used   quota  limit    timeleft  files  quota  limit    timeleft");
+
+    if (sopt) {
+        struct dirent *dp;
+        DIR *dir;
+        char fqp[MAXPATHLEN];
+        struct stat sb;
+        char tmp[64];
+
+        if (!(dir = opendir(conf->cf_path))) {
+            fprintf(stderr, "%s: could not open %s\n", prog, conf->cf_path);
+            exit(1);
+        }
+        while ((dp = readdir(dir))) {
+            if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, ".."))
+                continue;
+            snprintf(fqp, sizeof(fqp), "%s/%s", conf->cf_path, dp->d_name);
+            if (stat(fqp, &sb) == 0) {
+                if ((pw = getpwuid(sb.st_uid)))
+                    snprintf(tmp, sizeof(tmp), "%s", pw->pw_name);
+                else
+                    snprintf(tmp, sizeof(tmp), "%s-%u", 
+                        basename(fqp), sb.st_uid);
+                report_one(tmp, 1, conf, sb.st_uid);
+            }
+        }
+        if (closedir(dir) < 0)
+            fprintf(stderr, "%s: closedir %s: %m\n", prog, conf->cf_path);
+    } else {
+        while ((pw = getpwent()) != NULL) {
+            if (pw->pw_uid < 500)
+                continue;
+            report_one(pw->pw_name, 1, conf, pw->pw_uid);
+        }
+    }
+    return 0;
+}
+
+int
+main(int argc, char *argv[])
+{
+    int rc;
+
+    prog = basename(argv[0]);
+    if (!strcmp(prog, "repquota"))
+        rc = repquota_main(argc, argv);
+    else
+        rc = quota_main(argc, argv);
+    exit(rc);
 }
 
 /*

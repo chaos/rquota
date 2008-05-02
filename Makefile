@@ -1,30 +1,39 @@
 PROJECT=quota
 CFFILE=	quota.fs
-OBJS= 	quota_clnt.o quota_xdr.o quota.o getconf.o
-CLEAN=	quota_xdr.c quota_clnt.c quota.h
+RSRC=	rquota_xdr.c rquota_clnt.c rquota.h
+ROBJS=	rquota_xdr.o rquota_clnt.o
+OBJS= 	$(ROBJS) getconf.o util.o quota_nfs.o quota_lustre.o
 
-CC=	gcc
-CFLAGS=	-Wall
-LIBS=	-lrpcsvc $(LIBADD)
 # uncomment for Solaris
 #LIBADD=	-lnsl -lsocket
+CC=	gcc
+CFLAGS=	-Wall
+LIBS=	-lrpcsvc -llustreapi $(LIBADD)
 
-all:	quota
+all:	quota lquota nquota 
 
-quota: $(OBJS) quota.h
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
+quota: quota.c $(OBJS) rquota.h
+	$(CC) $(CFLAGS) -o $@ quota.c $(OBJS) $(LIBS)
 
-quota.h: quota.x
-	rpcgen -o quota.h -h quota.x
+rquota.h: rquota.x
+	rpcgen -o $@ -h rquota.x
+rquota_xdr.c: rquota.x rquota.h
+	rpcgen -o $@ -c rquota.x
+rquota_clnt.c: rquota.x rquota.h
+	rpcgen -o $@ -l rquota.x
 
-quota_xdr.c: quota.x quota.h
-	rpcgen -o quota_xdr.c -c quota.x
+rquota_xdr.o: rquota_xdr.c
+	$(CC) $(CFLAGS) -Wno-unused -o $@ -c $<
+rquota_clnt.o: rquota_clnt.c
+	$(CC) $(CFLAGS) -Wno-unused -o $@ -c $<
 
-quota_clnt.c: quota.x quota.h
-	rpcgen -o quota_clnt.c -l quota.x
+lquota: quota_lustre.c quota.h util.o
+	$(CC) $(CFLAGS) -DSTAND -o $@ quota_lustre.c util.o $(LIBS)
 
-quota_svc.c:  quota.x quota.h
-	rpcgen -o quota_svc.c -m quota.x
+nquota: quota_nfs.c quota.h util.o $(ROBJS)
+	$(CC) $(CFLAGS) -DSTAND -o $@ quota_nfs.c $(ROBJS) util.o $(LIBS)
 
 clean:
-	rm -f $(OBJS) quota $(CLEAN)
+	rm -f quota lquota nquota 
+	rm -f *.o
+	rm -f $(RSRC) 

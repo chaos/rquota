@@ -18,3 +18,5 @@
 /g/g91:bert.llnl.gov:/vol/bertv4/g91:90
 /g/g92:bert.llnl.gov:/vol/bertv5/g92:90
 /g/g99:bert.llnl.gov:/vol/bertv4/g99:90
+/mnt/liane:lustre:/mnt/liane:0
+/home:lustre:/home:0
