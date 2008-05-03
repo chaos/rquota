@@ -26,7 +26,7 @@ is the NFS server-side path of file system, or
 the local mount point if the file system type is Lustre.
 .LP
 \fIpercent\fR, if nonzero, is the percentage of hard quota which, when 
-exceeded, causes quota to warn the user.  
-This is for the benefit of some NFS servers which do not implement soft quotas.
+exceeded, causes quota to warn the user.  This can be used in place of 
+soft quotas if a simpler mechanism is desired.
 .SH "SEE ALSO"
 quota(1)

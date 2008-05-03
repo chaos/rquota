@@ -12,7 +12,9 @@ License: GPL
 # we replace the redhat quota program
 Conflicts: quota
 #BuildRequires: /usr/bin/rpcgen
+%if 0%{?ch4}
 BuildRequires: lustre
+%endif
 
 BuildRoot: %{_tmppath}/%{name}-%{version}
 
@@ -31,7 +33,11 @@ Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 %setup
 
 %build
+%if 0%{?ch4}
 make
+%else
+make -f Makefile.nolustre
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -50,8 +56,7 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %files
 %defattr(-,root,root,0755)
-%doc ChangeLog README
-%doc README
+%doc ChangeLog NEWS
 %{_bindir}/quota
 %{_bindir}/repquota
 %{_mandir}/man1/quota.1*

@@ -17,14 +17,14 @@ getquota(confent_t *c, char *fsname, uid_t uid, quota_t *q)
 #if WITH_LUSTRE
         rc = getquota_lustre(fsname, uid, c->cf_path, q);
 #else   
-        fprintf(stderr, "%s: lustre not configured at build time\n", fsname);
+        fprintf(stderr, "%s: this quota program was not built with lustre support\n", fsname);
         rc = 1;
 #endif
     } else {
 #if WITH_NFS
         rc = getquota_nfs(fsname, uid, c->cf_host, c->cf_path, q);
 #else
-        fprintf(stderr, "%s: NFS not configured at build time\n", fsname);
+        fprintf(stderr, "%s: this quota program was not built with NFS support\n", fsname);
         rc = 1;
 #endif
     }

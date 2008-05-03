@@ -86,7 +86,7 @@ main(int argc, char *argv[])
     int dopt = 0;
     unsigned long bsize = 1024*1024;
     uid_t minuid = 0;
-    uid_t maxuid = -1;
+    uid_t maxuid = 0;
     char *fsname;
     List qlist;
     int Fopt = 0;
@@ -108,9 +108,17 @@ main(int argc, char *argv[])
                 break;
             case 'm':   /* --min-uid */
                 minuid = strtoul(optarg, NULL, 10);
+                if (minuid == 0) {
+                    fprintf(stderr, "%s: --min-uid must be >0\n", prog);
+                    exit(1);
+                }
                 break;
             case 'M':   /* --max-uid */
                 maxuid = strtoul(optarg, NULL, 10);
+                if (maxuid == 0) {
+                    fprintf(stderr, "%s: --max-uid must be >0\n", prog);
+                    exit(1);
+                }
                 break;
             case 'r':   /* --reverse */
                 ropt++;
@@ -204,7 +212,7 @@ usage(void)
   "  -r,--reverse-sort      sort in reverse order\n"
   "  -s,--space-sort        sort on space used (default sort on uid)\n"
   "  -F,--files-sort        sort on files used (default sort on uid)\n"
-  "  -H,--suppress-heading  do not include heading in report\n"
+  "  -H,--suppress-heading  suppress report heading\n"
   "  -f,--config            use a config file other than %s\n"
                 , prog, _PATH_QUOTA_CONF);
     exit(1);
@@ -334,7 +342,7 @@ quota_print(quota_t *x, unsigned long long *bsize)
         name = tmp;
     }
     printf("%-10s%-11llu%-11llu%-11llu %-12llu%-12llu%-12llu\n", name, 
-        x->q_bytes_used / *bsize,
+        x->q_bytes_used    / *bsize,
         x->q_bytes_softlim / *bsize,
         x->q_bytes_hardlim / *bsize,
         x->q_files_used,
@@ -364,7 +372,7 @@ dirscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid, char *fsname)
             continue;
         if (minuid != 0 && sb.st_uid < minuid)
             continue;
-        if (maxuid != -1 && sb.st_uid > maxuid)
+        if (maxuid != 0 && sb.st_uid > maxuid)
             continue;
         if (list_find_first(qlist, (ListFindF)quota_match_uid, &sb.st_uid))
             continue;
@@ -388,7 +396,7 @@ pwscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid, char *fsname)
     while ((pw = getpwent()) != NULL) {
         if (minuid && pw->pw_uid < minuid)
             continue;
-        if (maxuid != -1 && pw->pw_uid > maxuid)
+        if (maxuid != 0 && pw->pw_uid > maxuid)
             continue;
         if (list_find_first(qlist, (ListFindF)quota_match_uid, &pw->pw_uid))
             continue;

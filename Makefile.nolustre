@@ -1,6 +1,6 @@
 CC=	gcc
-CFLAGS=	-Wall -DWITH_LUSTRE=1 -DWITH_NFS=1
-OBJS=	getquota_nfs.o rquota_xdr.o rquota_clnt.o getquota_lustre.o \
+CFLAGS=	-Wall -DWITH_LUSTRE=0 -DWITH_NFS=1
+OBJS=	getquota_nfs.o rquota_xdr.o rquota_clnt.o \
 	getconf.o util.o list.o getquota.o
 # uncomment for Solaris
 #LIBADD= -lnsl -lsocket
@@ -8,9 +8,9 @@ OBJS=	getquota_nfs.o rquota_xdr.o rquota_clnt.o getquota_lustre.o \
 all: repquota quota
 
 quota: quota.o $(OBJS)
-	$(CC) $(CFLAGS) -o $@ quota.o $(OBJS) -lrpcsvc -llustreapi $(LDADD)
+	$(CC) $(CFLAGS) -o $@ quota.o $(OBJS) -lrpcsvc $(LDADD)
 repquota: repquota.o $(OBJS)
-	$(CC) $(CFLAGS) -o $@ repquota.o $(OBJS) -lrpcsvc -llustreapi $(LDADD)
+	$(CC) $(CFLAGS) -o $@ repquota.o $(OBJS) -lrpcsvc $(LDADD)
 
 getquota_lustre.o quota.o: getquota.h
 getquota_nfs.o: rquota.h
