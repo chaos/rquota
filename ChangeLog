@@ -1,3 +1,7 @@
+2008-05-02 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 1.9
+
 2008-05-01 Jim Garlick <garlick@llnl.gov>
 
 	* getquota.c : Implement fs-neutral getquota() interface.
