@@ -1,5 +1,9 @@
 2008-05-02 Jim Garlick <garlick@llnl.gov>
 
+	* repquota.c : Add -u option to report only usage information.
+
+2008-05-02 Jim Garlick <garlick@llnl.gov>
+
 	* : tag 1.9
 
 2008-05-01 Jim Garlick <garlick@llnl.gov>

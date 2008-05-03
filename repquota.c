@@ -56,15 +56,16 @@ static int quota_cmp_bytes_reverse(quota_t *x, quota_t *y);
 static int quota_cmp_files(quota_t *x, quota_t *y);
 static int quota_cmp_files_reverse(quota_t *x, quota_t *y);
 static int quota_print(quota_t *x, unsigned long long *bsize);
+static int quota_print_usageonly(quota_t *x, unsigned long long *bsize);
 static void dirscan(confent_t *conf, List qlist, uid_t minuid, 
                     uid_t maxuid, char *fsname);
 static void pwscan(confent_t *conf, List qlist, uid_t minuid, 
                     uid_t maxuid, char *fsname);
-static void quota_print_heading(void);
+static void quota_print_heading(int uopt);
 
 static char *prog;
 
-#define OPTIONS "m:M:b:dhHrsFf:"
+#define OPTIONS "m:M:b:dhHrsFf:u"
 static struct option longopts[] = {
     {"dirscan",          no_argument,        0, 'd'},
     {"blocksize",        required_argument,  0, 'b'},
@@ -73,6 +74,7 @@ static struct option longopts[] = {
     {"reverse",          no_argument,        0, 'r'},
     {"space-sort",       no_argument,        0, 's'},
     {"files-sort",       no_argument,        0, 'F'},
+    {"usage-only",       no_argument,        0, 'u'},
     {"suppress-heading", no_argument,        0, 'H'},
     {"config",           required_argument,  0, 'f'},
     {0, 0, 0, 0},
@@ -93,6 +95,7 @@ main(int argc, char *argv[])
     int ropt = 0;
     int sopt = 0;
     int Hopt = 0;
+    int uopt = 0;
 
     prog = basename(argv[0]);
     while ((c = getopt_long(argc, argv, OPTIONS, longopts, NULL)) != EOF) {
@@ -128,6 +131,9 @@ main(int argc, char *argv[])
                 break;
             case 's':   /* --space-sort */
                 sopt++;
+                break;
+            case 'u':   /* --usage-only */
+                uopt++;
                 break;
             case 'H':   /* --suppress-heading */
                 Hopt++;
@@ -191,9 +197,12 @@ main(int argc, char *argv[])
     if (!Hopt) {
         printf("Quota report for %s (blocksize %lu bytes)\n",
                 fsname, bsize);
-        quota_print_heading();
+        quota_print_heading(uopt);
     }
-    list_for_each(qlist, (ListForF)quota_print, &bsize);
+    if (uopt)
+        list_for_each(qlist, (ListForF)quota_print_usageonly, &bsize);
+    else
+        list_for_each(qlist, (ListForF)quota_print, &bsize);
 
     list_destroy(qlist);
 
@@ -212,6 +221,7 @@ usage(void)
   "  -r,--reverse-sort      sort in reverse order\n"
   "  -s,--space-sort        sort on space used (default sort on uid)\n"
   "  -F,--files-sort        sort on files used (default sort on uid)\n"
+  "  -u,--usage-only        only report usage, not quota limits\n"
   "  -H,--suppress-heading  suppress report heading\n"
   "  -f,--config            use a config file other than %s\n"
                 , prog, _PATH_QUOTA_CONF);
@@ -321,11 +331,14 @@ quota_cmp_files_reverse(quota_t *x, quota_t *y)
 }
 
 static void
-quota_print_heading(void)
+quota_print_heading(int uopt)
 {
-    printf("%-10s%-11s%-11s%-11s %-12s%-12s%-12s\n", "User", 
-        "Space-used", "Space-soft", "Space-hard",
-        "Files-used", "Files-soft", "Files-hard");
+    if (uopt)
+        printf("%-10s%-11s %-12s\n", "User", "Space-used", "Files-used");
+    else
+        printf("%-10s%-11s%-11s%-11s %-12s%-12s%-12s\n", "User", 
+            "Space-used", "Space-soft", "Space-hard",
+            "Files-used", "Files-soft", "Files-hard");
 }
 
 static int
@@ -348,6 +361,24 @@ quota_print(quota_t *x, unsigned long long *bsize)
         x->q_files_used,
         x->q_files_softlim,
         x->q_files_hardlim);
+    return 0;
+}
+
+static int
+quota_print_usageonly(quota_t *x, unsigned long long *bsize)
+{
+    struct passwd *pw;
+    char *name, tmp[16];
+
+    assert(x->q_magic == QUOTA_MAGIC);
+    if ((pw = getpwuid(x->q_uid)))
+        name = pw->pw_name;
+    else {
+        snprintf(tmp, sizeof(tmp), "%u", x->q_uid);
+        name = tmp;
+    }
+    printf("%-10s%-11llu %-12llu\n", name, 
+        x->q_bytes_used / *bsize, x->q_files_used);
     return 0;
 }
 
