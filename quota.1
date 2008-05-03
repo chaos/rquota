@@ -10,55 +10,49 @@ quota \- display file system quota information
 .SH DESCRIPTION
 .B quota 
 displays file system usage and quota limits for ``user''.  
-Quota thresholds can be established for number of files and/or for
-amount of data stored.  
-Hard and soft quotas may be configured separately for both files and data.  
 .LP
-Hard limits are absolute, but if the soft limit is less than the hard limit, 
-it is possible to temporarily exceed the soft limit.  
-When the soft limit is exceeded, a configurable grace period timer starts 
-(default 7 days).  
-When the timer expires, if usage still exceeds the soft limit, 
-the hard limit is set equal to the soft limit until usage is brought 
-under the soft limit.
+Quotas can be independently established for disk storage space
+and number of files.
+If a quota is not imposed, it will appear as ``n/a'' in \fIquota -v\fR output.
 .LP
-Some sites do not enable quotas.  Others set the hard and soft limits
-equal to the same value.  Still others enable quotas for its reporting
-capability but do not set limits.  Run \fBquota -v\fR to list the
-file systems for which your site has enabled quotas.
+Hard quotas are enforced by the file system; for example, 
+a \fIwrite(2)\fR which would exceed the hard disk usage quota will 
+fail with ENOSPC.
+.LP
+Soft quotas are advisory for a configurable grace period, then are
+enforced as hard quotas.  
 .SH OPTIONS
-Run without arguments, quota only reports quota problems.
+Run without arguments, \fIquota\fR only reports quota violations.
+It is intended to run in a login script to notify users when they
+need to take action.  The following arguments are available:
 .TP 
 .I "-v"
-Report on all configured file systems, regardless of usage.
+Report on file systems even if quota limits are not exceeded.
 .TP
 .I "-l"
-Only report on the file system corresponding to the user's home directory.
+Report only the file system corresponding to the user's home directory.
 .TP
 .I "-t sec"
 Set a timeout for all quota processing.
 .TP
 .I "-r"
-Display the real file system paths rather than descriptive versions from the
-.I "/etc/quota.conf"
-file.
+Display real file system paths rather than descriptive versions from the
+config file.
 .TP
 .I "-f configfile"
 loads a configuration file other than the default (see FILES below).
 .TP
 .I "user"
 View the quota of another user.
-
 .SH "FILES"
 /etc/quota.conf
-
-.SH "BUGS"
-No special privilege is required to query the NFS quota of another user.  
-This is not the fault of the quota client; rather it the way the NFS
-quota RPC service is designed.
+.SH "CAVEATS"
+Any user can query the NFS quota of another user.  
 .LP
-Some NFS servers implement hard but not soft quotas.  The ``percent''
-field in the quota.conf(5) file is a kludge to provide a warning mechanism
-when a user exceeds a fixed percentage of the hard quota.
+The ``percent'' field in the quota.conf(5) file is a kludge to provide a 
+warning mechanism when a user exceeds a fixed percentage of the hard quota
+for systems which may not implement soft quotas.
+.LP
+Group quotas are not supported.
 .SH "SEE ALSO"
 quota.conf(5), repquota(1)
