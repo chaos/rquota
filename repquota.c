@@ -197,8 +197,8 @@ usage(void)
 {
     fprintf(stderr, 
   "Usage: %s [--options] fs\n"
-  "  -d,--dirscan          report on users who own top level dirs of fs\n"
-  "  -b,--blocksize         report usage in blocksize units (default 1m)\n"
+  "  -d,--dirscan           report on users who own top level dirs of fs\n"
+  "  -b,--blocksize         report usage in blocksize units (default 1M)\n"
   "  -m,--min-uid           set minimum uid to include in report\n"
   "  -M,--max-uid           set maximum uid to include in report\n"
   "  -r,--reverse-sort      sort in reverse order\n"
