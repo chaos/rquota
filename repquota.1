@@ -4,7 +4,7 @@
 .SH NAME
 repquota \- report file system quota information
 .SH SYNOPSIS
-.B quota 
+.B repquota
 .I "[--options] file-system"
 .br
 .SH DESCRIPTION
@@ -45,8 +45,9 @@ loads a configuration file other than the default (see FILES below).
 .SH "FILES"
 /etc/quota.conf
 .SH "BUGS"
-No special privilege is required to run the quota report on NFS users.
-This is not the fault of the quota client; rather it is the way the NFS
-quota RPC service is designed.
+Any user can generate the quota report for NFS file systems.
+Only root can generate the quota report for Lustre file systems.
+.LP
+Group quotas are not supported.
 .SH "SEE ALSO"
 quota.conf(5), quota(1)

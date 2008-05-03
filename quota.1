@@ -47,11 +47,8 @@ View the quota of another user.
 .SH "FILES"
 /etc/quota.conf
 .SH "CAVEATS"
-Any user can query the NFS quota of another user.  
-.LP
-The ``percent'' field in the quota.conf(5) file is a kludge to provide a 
-warning mechanism when a user exceeds a fixed percentage of the hard quota
-for systems which may not implement soft quotas.
+Any user can query the NFS quota of another user, but only root
+can query the Lustre quota of another user.
 .LP
 Group quotas are not supported.
 .SH "SEE ALSO"
