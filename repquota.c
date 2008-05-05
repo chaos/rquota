@@ -61,7 +61,8 @@ static void dirscan(confent_t *conf, List qlist, uid_t minuid,
                     uid_t maxuid, char *fsname);
 static void pwscan(confent_t *conf, List qlist, uid_t minuid, 
                     uid_t maxuid, char *fsname);
-static void quota_print_heading(int uopt);
+static void quota_print_heading(void);
+static void quota_print_heading_usageonly(void);
 
 static char *prog;
 
@@ -197,12 +198,16 @@ main(int argc, char *argv[])
     if (!Hopt) {
         printf("Quota report for %s (blocksize %lu bytes)\n",
                 fsname, bsize);
-        quota_print_heading(uopt);
     }
-    if (uopt)
+    if (uopt) {
+        if (!Hopt)
+            quota_print_heading_usageonly();
         list_for_each(qlist, (ListForF)quota_print_usageonly, &bsize);
-    else
+    } else {
+        if (!Hopt)
+            quota_print_heading();
         list_for_each(qlist, (ListForF)quota_print, &bsize);
+    }
 
     list_destroy(qlist);
 
@@ -331,14 +336,17 @@ quota_cmp_files_reverse(quota_t *x, quota_t *y)
 }
 
 static void
-quota_print_heading(int uopt)
+quota_print_heading(void)
 {
-    if (uopt)
-        printf("%-10s%-11s %-12s\n", "User", "Space-used", "Files-used");
-    else
-        printf("%-10s%-11s%-11s%-11s %-12s%-12s%-12s\n", "User", 
+    printf("%-10s%-11s%-11s%-11s %-12s%-12s%-12s\n", "User", 
             "Space-used", "Space-soft", "Space-hard",
             "Files-used", "Files-soft", "Files-hard");
+}
+
+static void
+quota_print_heading_usageonly(void)
+{
+    printf("%-10s%-11s %-12s\n", "User", "Space-used", "Files-used");
 }
 
 static int
