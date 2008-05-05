@@ -1,3 +1,7 @@
+2008-05-05 Jim Garlick <garlick@llnl.gov>
+
+	* repquota.c : Add HAS_GETOPT_LONG.  Add root check.
+
 2008-05-02 Jim Garlick <garlick@llnl.gov>
 
 	* repquota.c : Add -u option to report only usage information.

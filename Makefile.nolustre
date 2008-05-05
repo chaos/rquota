@@ -5,10 +5,12 @@ OBJS=	getquota_nfs.o rquota_xdr.o rquota_clnt.o \
 # uncomment for Solaris
 #LIBADD= -lnsl -lsocket
 
-all: quota
+all: repquota quota
 
 quota: quota.o $(OBJS)
 	$(CC) $(CFLAGS) -o $@ quota.o $(OBJS) -lrpcsvc $(LDADD)
+repquota: repquota.o $(OBJS)
+	$(CC) $(CFLAGS) -o $@ repquota.o $(OBJS) -lrpcsvc $(LDADD)
 
 getquota_nfs.o: rquota.h
 rquota.h: rquota.x
@@ -23,7 +25,7 @@ rquota_clnt.o: rquota_clnt.c
 	$(CC) $(CFLAGS) -Wno-unused -o $@ -c $<
 
 clean:
-	rm -f quota
+	rm -f quota repquota
 	rm -f rquota_xdr.c rquota_clnt.c rquota.h
 	rm -f *.bz2 *.rpm
 	rm -f *.o

@@ -1,5 +1,5 @@
 CC=	gcc
-CFLAGS=	-Wall -DWITH_LUSTRE=1 -DWITH_NFS=1
+CFLAGS=	-Wall -DWITH_LUSTRE=1 -DWITH_NFS=1 -DHAVE_GETOPT_LONG=1
 OBJS=	getquota_nfs.o rquota_xdr.o rquota_clnt.o getquota_lustre.o \
 	getconf.o util.o list.o getquota.o
 # uncomment for Solaris

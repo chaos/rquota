@@ -26,7 +26,9 @@
 
 #include <ctype.h>
 #include <pwd.h>
+#if HAVE_GETOPT_LONG
 #include <getopt.h>
+#endif
 #include <rpc/rpc.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,6 +69,8 @@ static void quota_print_heading_usageonly(void);
 static char *prog;
 
 #define OPTIONS "m:M:b:dhHrsFf:u"
+#if HAVE_GETOPT_LONG
+#define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
 static struct option longopts[] = {
     {"dirscan",          no_argument,        0, 'd'},
     {"blocksize",        required_argument,  0, 'b'},
@@ -80,6 +84,9 @@ static struct option longopts[] = {
     {"config",           required_argument,  0, 'f'},
     {0, 0, 0, 0},
 };
+#else
+#define GETOPT(ac,av,opt,lopt) getopt(ac,av,opt)
+#endif
 
 int 
 main(int argc, char *argv[])
@@ -99,7 +106,7 @@ main(int argc, char *argv[])
     int uopt = 0;
 
     prog = basename(argv[0]);
-    while ((c = getopt_long(argc, argv, OPTIONS, longopts, NULL)) != EOF) {
+    while ((c = GETOPT(argc, argv, OPTIONS, longopts)) != EOF) {
         switch(c) {
             case 'd':   /* --dirscan */
                 dopt++;
@@ -159,6 +166,10 @@ main(int argc, char *argv[])
         usage();
     if (!(conf = getconfdesc(fsname))) {
         fprintf(stderr, "%s: %s: not found in quota.conf\n", prog, fsname);
+        exit(1);
+    }
+    if (geteuid() != 0) {
+        fprintf(stderr, "%s: must run with root privileges\n", prog);
         exit(1);
     }
 
