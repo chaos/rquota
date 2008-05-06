@@ -176,10 +176,6 @@ main(int argc, char *argv[])
     /* Scan.
      */
     qlist = list_create((ListDelF)quota_destroy);
-    if (!qlist) {
-        fprintf(stderr, "%s: out of memory\n", prog);
-        exit(1);
-    }
     if (dopt) 
         dirscan(conf, qlist, minuid, maxuid, fsname);
     else

@@ -97,19 +97,27 @@ main(int argc, char *argv[])
     if (optind < argc)
         usage();
 
-    /* getlogin() not appropriate here */
-    if (!user)
-        pw = getpwuid(getuid());
-    else {
+    /* look up target user in password file  */
+    if (user) {
         if (isdigit(*user))
             pw = getpwuid(atoi(user));
         else
             pw = getpwnam(user);
-    }
-    if (!pw) {
-        fprintf(stderr, "%s: no such user%s%s\n", prog, user ? ": " : "", 
-                user ? user : "");
-        exit(1);
+        if (!pw) {
+            fprintf(stderr, "%s: no such user: %s\n", prog, user);
+            exit(1);
+        }
+        if (geteuid() != 0 && pw->pw_uid != geteuid()) {
+            fprintf(stderr, "%s: only root can query another's quota\n", prog);
+            exit(1);
+        }
+    } else {
+        pw = getpwuid(geteuid());
+        if (!pw) {
+            fprintf(stderr, "%s: cannot look up your effective uid (%u)\n",
+                    prog, geteuid());
+            exit(1);    
+        }
     }
 
     /* 2>&1 so any errors interrupt the report in a predictable way */

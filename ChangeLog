@@ -1,3 +1,11 @@
+2008-05-06 Jim Garlick <garlick@llnl.gov>
+
+	* util.c : Add lsd_* error handling functions.
+
+	* Makefile : Add LSD_* to CFLAGS.
+
+	* quota.c : Only allow root to query another's quota.
+
 2008-05-05 Jim Garlick <garlick@llnl.gov>
 
 	* repquota.c : Add HAS_GETOPT_LONG.  Add root check.

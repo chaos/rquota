@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 /* Convert integer size to string.
  */
@@ -147,6 +148,25 @@ parse_blocksize(char *s, unsigned long *b)
     if (end[0] && end[1])
         err++;
     return err;
+}
+
+/*
+ * lsd_* functions are needed by list.[ch].
+ */
+
+void
+lsd_fatal_error(char *file, int line, char *mesg)
+{
+    fprintf(stderr, "fatal error: %s: %s::%d: %s",
+                    mesg, file, line, strerror(errno));
+    exit(1);
+}
+
+void *
+lsd_nomem_error(char *file, int line, char *mesg)
+{
+    fprintf(stderr, "out of memory: %s: %s::%d", mesg, file, line);
+    exit(1);
 }
 
 /*

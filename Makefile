@@ -1,5 +1,6 @@
 CC=	gcc
-CFLAGS=	-Wall -DWITH_LUSTRE=1 -DWITH_NFS=1 -DHAVE_GETOPT_LONG=1
+CFLAGS=	-Wall -DWITH_LUSTRE=1 -DWITH_NFS=1 -DHAVE_GETOPT_LONG=1 \
+	-DWITH_LSD_FATAL_ERROR_FUNC -DWITH_LSD_NOMEM_ERROR_FUNC
 OBJS=	getquota_nfs.o rquota_xdr.o rquota_clnt.o getquota_lustre.o \
 	getconf.o util.o list.o getquota.o
 # uncomment for Solaris
