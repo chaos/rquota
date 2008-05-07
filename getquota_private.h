@@ -27,11 +27,10 @@ typedef enum { NONE, UNDER, NOTSTARTED, STARTED, EXPIRED } qstate_t;
 struct quota_struct {
     int                q_magic;
     uid_t              q_uid;
-    char              *q_label;
-    char              *q_rhost;        /* set to "lustre" if lustre */
-    char              *q_rpath;        /* set to local mount pt if lustre */
-    int                q_thresh;       /* warn if over this pct of hard quota */
-                                       /*   (set to 0 if unused) */
+    char              *q_label;        /* assumed to be local mount point */
+    char              *q_rhost;        /* lustre: set to "lustre" */
+    char              *q_rpath;        /* lustre: set to local mount pt */
+    int                q_thresh;       /* 0 = unused */
     unsigned long long q_bytes_used;
     unsigned long long q_bytes_softlim;/* 0 = no limit */
     unsigned long long q_bytes_hardlim;/* 0 = no limit */
