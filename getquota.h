@@ -1,6 +1,4 @@
 /*****************************************************************************\
- *  $Id: quota.c 7324 2008-05-02 14:44:44Z garlick $
- *****************************************************************************
  *  Copyright (C) 2001-2008 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.

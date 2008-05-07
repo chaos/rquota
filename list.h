@@ -1,7 +1,5 @@
 /*****************************************************************************
- *  $Id: list.h 700 2005-03-09 11:11:46Z garlick $
- *****************************************************************************
- *  Copyright (C) 2001-2002 The Regents of the University of California.
+ *  Copyright (C) 2001-2008 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Chris Dunlap <cdunlap@llnl.gov>.
  *  
