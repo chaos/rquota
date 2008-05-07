@@ -31,9 +31,13 @@
 #include <time.h>
 #include <errno.h>
 #include <lustre/liblustreapi.h>
+#include <assert.h>
 
-#include "getconf.h"
+#include "util.h"
 #include "getquota.h"
+#include "getquota_private.h"
+
+extern char *prog;
 
 static qstate_t 
 set_state(unsigned long long used, unsigned long long soft,
@@ -54,23 +58,25 @@ set_state(unsigned long long used, unsigned long long soft,
 }
 
 int
-getquota_lustre(char *fsname, uid_t uid, char *mnt, quota_t *q)
+quota_get_lustre(uid_t uid, quota_t q)
 {
-    static time_t now = 0;
+    time_t now = 0;
     struct if_quotactl qctl;
     int rc;
 
+    assert(q->q_magic == QUOTA_MAGIC);
+   
     if (time(&now) < 0) {
-        fprintf(stderr, "%s: time: %s\n", fsname, strerror(errno));
+        fprintf(stderr, "%s: time: %s\n", prog, strerror(errno));
         return -1;
     }
-
     memset(&qctl, 0, sizeof(qctl));
     qctl.qc_cmd = LUSTRE_Q_GETQUOTA;
     qctl.qc_id = uid;
-    rc = llapi_quotactl(mnt, &qctl);
+    rc = llapi_quotactl(q->q_rpath, &qctl);
     if (rc) {
-        fprintf(stderr, "%s: llapi_quotactl: %s\n", fsname, strerror(errno));
+        fprintf(stderr, "%s: llapi_quotactl %s: %s\n", 
+                        prog, q->q_rpath, strerror(errno));
         return rc;
     }
     if (q) {

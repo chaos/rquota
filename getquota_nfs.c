@@ -37,12 +37,14 @@
 #include <errno.h>
 
 #include "rquota.h"
-#include "getconf.h"
-#include "getquota.h"
 #include "util.h"
+#include "getquota.h"
+#include "getquota_private.h"
 
 #define QUIRK_NETAPP  1 /* (uint32_t)(-1) for any limit == no quota */
 #define QUIRK_DEC     0 /* 2 block block limits == no quota */
+
+extern char *prog;
 
 /* Normalize reply from quirky servers.
  */
@@ -85,7 +87,7 @@ set_state(unsigned long long used, unsigned long long soft,
 }
 
 int
-getquota_nfs(char *fsname, uid_t uid, char *rhost, char *rpath, quota_t *q)
+quota_get_nfs(uid_t uid, quota_t q)
 {
     static char lhost[MAXHOSTNAMELEN+1] = "";
     getquota_args args;
@@ -93,16 +95,19 @@ getquota_nfs(char *fsname, uid_t uid, char *rhost, char *rpath, quota_t *q)
     CLIENT *cl;
     int rc = -1; /* fail */
 
+    assert(q->q_magic == QUOTA_MAGIC);
+
+    /* just do this once and cache the result */
     if (lhost[0] == '\0') {
         if (gethostname(lhost, sizeof(lhost)) < 0) {
-            fprintf(stderr, "%s: gethostbyname %s\n", fsname, strerror(errno));
+            fprintf(stderr, "%s: gethostbyname %s\n", prog, strerror(errno));
             goto done;
         }
     }
 
-    cl = clnt_create(rhost, RQUOTAPROG, RQUOTAVERS, "udp");
+    cl = clnt_create(q->q_rhost, RQUOTAPROG, RQUOTAVERS, "udp");
     if (cl == NULL) {
-        clnt_pcreateerror(fsname);
+        fprintf(stderr, "%s: %s\n", prog, clnt_spcreateerror(q->q_rhost));
         goto done;
     }
 
@@ -111,28 +116,31 @@ getquota_nfs(char *fsname, uid_t uid, char *rhost, char *rpath, quota_t *q)
      */
     cl->cl_auth = authunix_create(lhost, uid, getgid(), 0, NULL);
     if (cl->cl_auth == NULL) {
-        fprintf(stderr, "%s: authunix_create failed\n", fsname);
+        fprintf(stderr, "%s: %s\n", prog, clnt_sperror(cl, "authunix"));
         goto done;
     }
 
-    args.gqa_pathp  = rpath;
+    args.gqa_pathp  = q->q_rpath;
     args.gqa_uid    = uid;
     result = rquotaproc_getquota_1(&args, cl);
 
     if (result == NULL) {
-        clnt_perror(cl, fsname);
+        fprintf(stderr, "%s: %s\n", prog, clnt_sperror(cl, q->q_rhost));
         goto done;
     }
     if (result->gqr_status == Q_NOQUOTA) {
-        fprintf(stderr, "%s: no quota\n", fsname);
+        fprintf(stderr, "%s: rquota %s:%s: no quota\n", prog, 
+                q->q_rhost, q->q_rpath);
         goto done;
     }
     if (result->gqr_status == Q_EPERM) {
-        fprintf(stderr, "%s: permission denied\n", fsname);
+        fprintf(stderr, "%s: rquota %s:%s: permission denied\n", 
+                prog, q->q_rhost, q->q_rpath);
         goto done;
     }
     if (result->gqr_status != Q_OK) {
-        fprintf(stderr, "%s: unknown error: %d\n", fsname, result->gqr_status);
+        fprintf(stderr, "%s: rquota %s:%s: unknown error: %d\n", 
+                prog, q->q_rhost, q->q_rpath, result->gqr_status);
         goto done;
     }
     rc = 0;

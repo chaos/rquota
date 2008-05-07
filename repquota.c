@@ -48,25 +48,10 @@
 #include "list.h"
 
 static void usage(void);
-static quota_t *quota_create(void);
-static void quota_destroy(quota_t *qp);
-static int quota_match_uid(quota_t *x, uid_t *key);
-static int quota_cmp_uid(quota_t *x, quota_t *y);
-static int quota_cmp_uid_reverse(quota_t *x, quota_t *y);
-static int quota_cmp_bytes(quota_t *x, quota_t *y);
-static int quota_cmp_bytes_reverse(quota_t *x, quota_t *y);
-static int quota_cmp_files(quota_t *x, quota_t *y);
-static int quota_cmp_files_reverse(quota_t *x, quota_t *y);
-static int quota_print(quota_t *x, unsigned long long *bsize);
-static int quota_print_usageonly(quota_t *x, unsigned long long *bsize);
-static void dirscan(confent_t *conf, List qlist, uid_t minuid, 
-                    uid_t maxuid, char *fsname);
-static void pwscan(confent_t *conf, List qlist, uid_t minuid, 
-                    uid_t maxuid, char *fsname);
-static void quota_print_heading(void);
-static void quota_print_heading_usageonly(void);
+static void dirscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid);
+static void pwscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid);
 
-static char *prog;
+char *prog;
 
 #define OPTIONS "m:M:b:dhHrsFf:u"
 #if HAVE_GETOPT_LONG
@@ -164,7 +149,7 @@ main(int argc, char *argv[])
         usage();
     if (optind < argc)
         usage();
-    if (!(conf = getconfdesc(fsname))) {
+    if (!(conf = getconflabel(fsname))) {
         fprintf(stderr, "%s: %s: not found in quota.conf\n", prog, fsname);
         exit(1);
     }
@@ -172,14 +157,14 @@ main(int argc, char *argv[])
         fprintf(stderr, "%s: must run with root privileges\n", prog);
         exit(1);
     }
-
+        
     /* Scan.
      */
     qlist = list_create((ListDelF)quota_destroy);
     if (dopt) 
-        dirscan(conf, qlist, minuid, maxuid, fsname);
+        dirscan(conf, qlist, minuid, maxuid);
     else
-        pwscan(conf, qlist, minuid, maxuid, fsname);
+        pwscan(conf, qlist, minuid, maxuid);
 
 
     /* Sort.
@@ -208,12 +193,12 @@ main(int argc, char *argv[])
     }
     if (uopt) {
         if (!Hopt)
-            quota_print_heading_usageonly();
-        list_for_each(qlist, (ListForF)quota_print_usageonly, &bsize);
+            quota_report_heading_usageonly();
+        list_for_each(qlist, (ListForF)quota_report_usageonly, &bsize);
     } else {
         if (!Hopt)
-            quota_print_heading();
-        list_for_each(qlist, (ListForF)quota_print, &bsize);
+            quota_report_heading();
+        list_for_each(qlist, (ListForF)quota_report, &bsize);
     }
 
     list_destroy(qlist);
@@ -240,180 +225,23 @@ usage(void)
     exit(1);
 }
 
-static quota_t *
-quota_create(void)
-{
-    quota_t *qp = xmalloc(sizeof(quota_t));
-    qp->q_magic = QUOTA_MAGIC;
-    return qp;
-}
-
 static void
-quota_destroy(quota_t *qp)
-{
-    assert(qp->q_magic == QUOTA_MAGIC);
-    qp->q_magic = 0;
-    free(qp);
-}
-
-static int
-quota_match_uid(quota_t *x, uid_t *key)
-{
-    assert(x->q_magic == QUOTA_MAGIC);
-
-    return (x->q_uid == *key);
-}
-
-static int
-quota_cmp_uid(quota_t *x, quota_t *y)
-{
-    assert(x->q_magic == QUOTA_MAGIC);
-    assert(y->q_magic == QUOTA_MAGIC);
-
-    if (x->q_uid < y->q_uid)
-        return -1;
-    if (x->q_uid == y->q_uid)
-        return 0;
-    return 1;
-}
-
-static int
-quota_cmp_uid_reverse(quota_t *x, quota_t *y)
-{
-    assert(x->q_magic == QUOTA_MAGIC);
-    assert(y->q_magic == QUOTA_MAGIC);
-
-    if (x->q_uid < y->q_uid)
-        return 1;
-    if (x->q_uid == y->q_uid)
-        return 0;
-    return -1;
-}
-
-static int
-quota_cmp_bytes(quota_t *x, quota_t *y)
-{
-    assert(x->q_magic == QUOTA_MAGIC);
-    assert(y->q_magic == QUOTA_MAGIC);
-
-    if (x->q_bytes_used < y->q_bytes_used)
-        return -1;
-    if (x->q_bytes_used == y->q_bytes_used)
-        return 0;
-    return 1;
-}
-
-static int
-quota_cmp_bytes_reverse(quota_t *x, quota_t *y)
-{
-    assert(x->q_magic == QUOTA_MAGIC);
-    assert(y->q_magic == QUOTA_MAGIC);
-
-    if (x->q_bytes_used < y->q_bytes_used)
-        return 1;
-    if (x->q_bytes_used == y->q_bytes_used)
-        return 0;
-    return -1;
-}
-
-static int
-quota_cmp_files(quota_t *x, quota_t *y)
-{
-    assert(x->q_magic == QUOTA_MAGIC);
-    assert(y->q_magic == QUOTA_MAGIC);
-
-    if (x->q_files_used < y->q_files_used)
-        return -1;
-    if (x->q_files_used == y->q_files_used)
-        return 0;
-    return 1;
-}
-
-static int
-quota_cmp_files_reverse(quota_t *x, quota_t *y)
-{
-    assert(x->q_magic == QUOTA_MAGIC);
-    assert(y->q_magic == QUOTA_MAGIC);
-
-    if (x->q_files_used < y->q_files_used)
-        return 1;
-    if (x->q_files_used == y->q_files_used)
-        return 0;
-    return -1;
-}
-
-static void
-quota_print_heading(void)
-{
-    printf("%-10s%-11s%-11s%-11s %-12s%-12s%-12s\n", "User", 
-            "Space-used", "Space-soft", "Space-hard",
-            "Files-used", "Files-soft", "Files-hard");
-}
-
-static void
-quota_print_heading_usageonly(void)
-{
-    printf("%-10s%-11s %-12s\n", "User", "Space-used", "Files-used");
-}
-
-static int
-quota_print(quota_t *x, unsigned long long *bsize)
-{
-    struct passwd *pw;
-    char *name, tmp[16];
-
-    assert(x->q_magic == QUOTA_MAGIC);
-    if ((pw = getpwuid(x->q_uid)))
-        name = pw->pw_name;
-    else {
-        snprintf(tmp, sizeof(tmp), "%u", x->q_uid);
-        name = tmp;
-    }
-    printf("%-10s%-11llu%-11llu%-11llu %-12llu%-12llu%-12llu\n", name, 
-        x->q_bytes_used    / *bsize,
-        x->q_bytes_softlim / *bsize,
-        x->q_bytes_hardlim / *bsize,
-        x->q_files_used,
-        x->q_files_softlim,
-        x->q_files_hardlim);
-    return 0;
-}
-
-static int
-quota_print_usageonly(quota_t *x, unsigned long long *bsize)
-{
-    struct passwd *pw;
-    char *name, tmp[16];
-
-    assert(x->q_magic == QUOTA_MAGIC);
-    if ((pw = getpwuid(x->q_uid)))
-        name = pw->pw_name;
-    else {
-        snprintf(tmp, sizeof(tmp), "%u", x->q_uid);
-        name = tmp;
-    }
-    printf("%-10s%-11llu %-12llu\n", name, 
-        x->q_bytes_used / *bsize, x->q_files_used);
-    return 0;
-}
-
-static void
-dirscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid, char *fsname)
+dirscan(confent_t *cp, List qlist, uid_t minuid, uid_t maxuid)
 {
     struct dirent *dp;
     DIR *dir;
     char fqp[MAXPATHLEN];
     struct stat sb;
-    quota_t *q;
+    quota_t q;
 
-    if (!(dir = opendir(conf->cf_path))) {
-        fprintf(stderr, "%s: could not open %s\n", prog, conf->cf_path);
+    if (!(dir = opendir(cp->cf_rpath))) {
+        fprintf(stderr, "%s: could not open %s\n", prog, cp->cf_rpath);
         exit(1);
     }
     while ((dp = readdir(dir))) {
         if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, ".."))
             continue;
-        snprintf(fqp, sizeof(fqp), "%s/%s", conf->cf_path, dp->d_name);
+        snprintf(fqp, sizeof(fqp), "%s/%s", cp->cf_rpath, dp->d_name);
         if (stat(fqp, &sb) < 0)
             continue;
         if (minuid != 0 && sb.st_uid < minuid)
@@ -422,22 +250,23 @@ dirscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid, char *fsname)
             continue;
         if (list_find_first(qlist, (ListFindF)quota_match_uid, &sb.st_uid))
             continue;
-        q = quota_create();
-        if (getquota(conf, fsname, sb.st_uid, q) != 0) {
+        q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, 
+                          cp->cf_thresh);
+        if (quota_get(sb.st_uid, q)) {
             quota_destroy(q);
             continue; 
         }
         list_append(qlist, q);
     }
     if (closedir(dir) < 0)
-        fprintf(stderr, "%s: closedir %s: %m\n", prog, conf->cf_path);
+        fprintf(stderr, "%s: closedir %s: %m\n", prog, cp->cf_rpath);
 }
 
 static void
-pwscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid, char *fsname)
+pwscan(confent_t *cp, List qlist, uid_t minuid, uid_t maxuid)
 {
     struct passwd *pw;
-    quota_t *q;
+    quota_t q;
 
     while ((pw = getpwent()) != NULL) {
         if (minuid && pw->pw_uid < minuid)
@@ -446,8 +275,9 @@ pwscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid, char *fsname)
             continue;
         if (list_find_first(qlist, (ListFindF)quota_match_uid, &pw->pw_uid))
             continue;
-        q = quota_create();
-        if (getquota(conf, fsname, pw->pw_uid, q) != 0) {
+        q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, 
+                          cp->cf_thresh);
+        if (quota_get(pw->pw_uid, q)) {
             quota_destroy(q);
             continue;
         }

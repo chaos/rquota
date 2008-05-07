@@ -107,9 +107,9 @@ getconfent(void)
             *p = '\0';
         if (strlen(buf) > 0) {
             p = buf;
-            conf.cf_desc = next_field(&p, ':');
-            conf.cf_host = next_field(&p, ':');
-            conf.cf_path = next_field(&p, ':');
+            conf.cf_label = next_field(&p, ':');
+            conf.cf_rhost = next_field(&p, ':');
+            conf.cf_rpath = next_field(&p, ':');
             threshp = next_field(&p, ':');
             conf.cf_thresh = 0;
             if (threshp != NULL)
@@ -124,26 +124,26 @@ getconfent(void)
 }
 
 confent_t *
-getconfdescsub(char *dir)
+getconflabelsub(char *dir)
 {
     confent_t *e;
  
     setconfent(_PATH_QUOTA_CONF);   
     while ((e = getconfent()) != NULL) {
-        if (match_path(dir, e->cf_desc))
+        if (match_path(dir, e->cf_label))
             break;
     }
     return e;
 }
 
 confent_t *
-getconfdesc(char *desc)
+getconflabel(char *label)
 {
     confent_t *e;
  
     setconfent(_PATH_QUOTA_CONF);   
     while ((e = getconfent()) != NULL) {
-        if (!strcmp(e->cf_desc, desc))
+        if (!strcmp(e->cf_label, label))
             break;
     }
     return e;

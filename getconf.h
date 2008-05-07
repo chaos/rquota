@@ -25,10 +25,10 @@
 \*****************************************************************************/
 
 typedef struct {
-    char *cf_desc;
-    char *cf_host;
-    char *cf_path;
-    int cf_thresh;
+    char *cf_label;
+    char *cf_rhost;
+    char *cf_rpath;
+    int   cf_thresh;
 } confent_t;
 
 #ifndef _PATH_QUOTA_CONF
@@ -38,8 +38,8 @@ typedef struct {
 void setconfent(char *path);
 void endconfent(void);
 confent_t *getconfent(void);
-confent_t *getconfdescsub(char *dir);
-confent_t *getconfdesc(char *desc);
+confent_t *getconflabelsub(char *dir);
+confent_t *getconflabel(char *label);
 
 
 /*

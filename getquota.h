@@ -24,27 +24,33 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
-typedef enum { NONE, UNDER, NOTSTARTED, STARTED, EXPIRED } qstate_t;
+typedef struct quota_struct *quota_t;
 
-#define QUOTA_MAGIC 0x3434aaaf
-typedef struct {
-    int                q_magic;
+quota_t quota_create(char *label, char *rhost, char *rpath, int thresh);
+void quota_destroy(quota_t q);
 
-    uid_t              q_uid;
+int quota_get(uid_t uid, quota_t q);
 
-    unsigned long long q_bytes_used;
-    unsigned long long q_bytes_softlim;  /* 0 = no limit */
-    unsigned long long q_bytes_hardlim;  /* 0 = no limit */
-    unsigned long long q_bytes_secleft;	 /* valid if state == STARTED */
-    qstate_t           q_bytes_state;
+int quota_match_uid(quota_t x, uid_t *key);
+int quota_cmp_uid(quota_t x, quota_t y);
+int quota_cmp_uid_reverse(quota_t x, quota_t y);
+int quota_cmp_bytes(quota_t x, quota_t y);
+int quota_cmp_bytes_reverse(quota_t x, quota_t y);
+int quota_cmp_files(quota_t x, quota_t y);
+int quota_cmp_files_reverse(quota_t x, quota_t y);
 
-    unsigned long long q_files_used;
-    unsigned long long q_files_softlim;  /* 0 = no limit */
-    unsigned long long q_files_hardlim;  /* 0 = no limit */
-    unsigned long long q_files_secleft;	 /* valid if state == STARTED */
-    qstate_t           q_files_state;
-} quota_t;
+void quota_report_heading(void);
+void quota_report_heading_usageonly(void);
+int quota_report(quota_t x, unsigned long long *bsize);
+int quota_report_usageonly(quota_t x, unsigned long long *bsize);
 
-int getquota_lustre(char *fsname, uid_t uid, char *mnt, quota_t *q);
-int getquota_nfs(char *fsname, uid_t uid, char *rhost, char *rpath, quota_t *q);
-int getquota(confent_t *c, char *fsname, uid_t uid, quota_t *q);
+void quota_print_heading(char *name);
+int quota_print(quota_t x, void *arg);
+int quota_print_justwarn(quota_t x, void *arg);
+int quota_print_realpath(quota_t x, void *arg);
+int quota_print_justwarn_realpath(quota_t x, void *arg);
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */
+
