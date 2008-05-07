@@ -46,7 +46,7 @@
 
 static void usage(void);
 static void alarm_handler(int arg);
-static int get_login_quota(char *homedir, uid_t uid, List qlist);
+static void get_login_quota(char *homedir, uid_t uid, List qlist);
 static void get_all_quota(uid_t uid, List qlist);
 
 char *prog;
@@ -130,8 +130,7 @@ main(int argc, char *argv[])
     /* build list of quotas */
     qlist = list_create((ListDelF)quota_destroy);
     if (lopt) {
-        if (!get_login_quota(pw->pw_dir, pw->pw_uid, qlist))
-            exit(1);
+        get_login_quota(pw->pw_dir, pw->pw_uid, qlist);
     } else {
         get_all_quota(pw->pw_uid, qlist);
     }
@@ -171,7 +170,7 @@ alarm_handler(int arg)
     exit(1);
 }
 
-static int
+static void
 get_login_quota(char *homedir, uid_t uid, List qlist)
 {
     confent_t *cp;
@@ -180,15 +179,14 @@ get_login_quota(char *homedir, uid_t uid, List qlist)
     if ((cp = getconflabelsub(homedir)) == NULL) {
         fprintf(stderr, "%s: could not find quota.conf entry for %s\n",
                 prog, homedir);
-        return 0;
+        exit(1);
     }
     q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, cp->cf_thresh);
     if (quota_get(uid, q)) {
         quota_destroy(q);
-        return 0;
+        exit(1);
     }
     list_append(qlist, q);
-    return 1;
 }
 
 static void
