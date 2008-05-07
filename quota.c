@@ -150,9 +150,7 @@ main(int argc, char *argv[])
     }
 
     list_destroy(qlist);
- 
     alarm(0);
-
     exit(0);
 }
 
