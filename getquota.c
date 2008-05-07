@@ -38,6 +38,8 @@
 #include "getquota.h"
 #include "getquota_private.h"
 
+extern char *prog;
+
 quota_t
 quota_create(char *label, char *rhost, char *rpath, int thresh)
 {
