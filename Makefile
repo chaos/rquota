@@ -26,6 +26,9 @@ rquota_xdr.o: rquota_xdr.c
 rquota_clnt.o: rquota_clnt.c
 	$(CC) $(CFLAGS) -Wno-unused -o $@ -c $<
 
+check:
+	make -C test $@
+
 clean:
 	rm -f quota repquota
 	rm -f rquota_xdr.c rquota_clnt.c rquota.h
