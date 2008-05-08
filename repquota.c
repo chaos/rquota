@@ -186,8 +186,10 @@ main(int argc, char *argv[])
     /* Report.
      */
     if (!Hopt) {
-        printf("Quota report for %s (blocksize %lu bytes)\n",
-                fsname, bsize);
+        char tmpstr[16];
+
+        size2str(bsize, tmpstr, sizeof(tmpstr));
+        printf("Quota report for %s (blocksize %s)\n", fsname, tmpstr);
     }
     if (uopt) {
         if (!Hopt)
