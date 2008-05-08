@@ -67,24 +67,70 @@ quota_destroy(quota_t q)
     free(q);
 }
 
+#ifndef NDEBUG
+static int
+quota_get_test(uid_t uid, quota_t q)
+{
+    int rc = 0;
+
+    switch (uid) {
+        case 100:
+            q->q_bytes_used = 1024*1024;
+            q->q_bytes_softlim = 0;
+            q->q_bytes_hardlim = 0;
+            q->q_bytes_secleft = 0;
+            q->q_bytes_state = NONE;
+            q->q_files_used = 455555;
+            q->q_files_softlim = 0;
+            q->q_files_hardlim = 0;
+            q->q_files_secleft = 0;
+            q->q_files_state = NONE;
+            break;
+        case 101:
+            q->q_bytes_used = 1024*1024*1024;
+            q->q_bytes_softlim = 1024*1024;
+            q->q_bytes_hardlim = 1024*1024;
+            q->q_bytes_secleft = 0;
+            q->q_bytes_state = EXPIRED;
+            q->q_files_used = 455555;
+            q->q_files_softlim = 1024*1024;
+            q->q_files_hardlim = 1024*1024;
+            q->q_files_secleft = 0;
+            q->q_files_state = NONE;
+            break;
+        default:
+            rc = 1;
+            break;
+    }
+    return rc;
+}
+#endif
+
 int 
 quota_get(uid_t uid, quota_t q)
 {
     int rc;
 
     assert(q->q_magic == QUOTA_MAGIC);
-    if (!strcmp(q->q_rhost, "lustre")) {
+    if (!strcmp(q->q_rhost, "test")) {
+#ifndef NDEBUG
+        rc = quota_get_test(uid, q);
+#else
+        fprintf(stderr, "%s: compiled with -DNDEBUG\n", prog);
+        rc = 1;
+#endif
+    } else if (!strcmp(q->q_rhost, "lustre")) {
 #if WITH_LUSTRE
         rc = quota_get_lustre(uid, q);        
 #else
-        fprintf(stderr, "%s: not configured with lustre support\n", prog);
+        fprintf(stderr, "%s: not compiled with -DWITH_LUSTRE=1\n", prog);
         rc = 1;
 #endif
     } else {
 #if WITH_NFS
         rc = quota_get_nfs(uid, q);        
 #else
-        fprintf(stderr, "%s: not configured with NFS support\n", prog);
+        fprintf(stderr, "%s: not compiled with -DWITH_NFS=1\n", prog);
         rc = 1;
 #endif
     }

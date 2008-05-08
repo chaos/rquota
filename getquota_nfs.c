@@ -88,12 +88,17 @@ int
 quota_get_nfs(uid_t uid, quota_t q)
 {
     static char lhost[MAXHOSTNAMELEN+1] = "";
+    uid_t myuid = geteuid();
     getquota_args args;
     getquota_rslt *result;
-    CLIENT *cl;
+    CLIENT *cl = NULL;
     int rc = -1; /* fail */
 
     assert(q->q_magic == QUOTA_MAGIC);
+    if (myuid != 0 && myuid != uid) {
+        fprintf(stderr, "%s: only root can query someone else's quota\n", prog);
+        goto done;
+    }
 
     /* just do this once and cache the result */
     if (lhost[0] == '\0') {

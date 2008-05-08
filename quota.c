@@ -46,6 +46,7 @@
 
 static void usage(void);
 static void alarm_handler(int arg);
+static void lookup_user(char **user, uid_t *uid, char **dir);
 static void get_login_quota(char *homedir, uid_t uid, List qlist);
 static void get_all_quota(uid_t uid, List qlist);
 
@@ -56,7 +57,8 @@ main(int argc, char *argv[])
 {
     int vopt = 0, ropt = 0, lopt = 0;
     char *user = NULL;
-    struct passwd *pw;
+    char *dir = NULL;
+    uid_t uid;
     int c;
     extern char *optarg;
     extern int optind;
@@ -83,38 +85,26 @@ main(int argc, char *argv[])
             setconfent(optarg); /* perror/exit on error */
             break;
         case 'T':              /* -T (undocumented) internal unit tests */
+#ifndef NDEBUG
             test_match_path();
             exit(0);
+#else
+            fprintf(stderr, "%s: compiled with -DNDEBUG\n", prog);
+            exit(1);
+#endif
         default:
             usage();
         }
     }
     if (optind < argc)
-        user = argv[optind++];
+        user = xstrdup(argv[optind++]);
     if (optind < argc)
         usage();
 
-    /* look up target user in password file  */
-    if (user) {
-        if (isdigit(*user))
-            pw = getpwuid(atoi(user));
-        else
-            pw = getpwnam(user);
-        if (!pw) {
-            fprintf(stderr, "%s: no such user: %s\n", prog, user);
-            exit(1);
-        }
-        if (geteuid() != 0 && pw->pw_uid != geteuid()) {
-            fprintf(stderr, "%s: only root can query another's quota\n", prog);
-            exit(1);
-        }
-    } else {
-        pw = getpwuid(geteuid());
-        if (!pw) {
-            fprintf(stderr, "%s: cannot look up your effective uid (%u)\n",
-                    prog, geteuid());
-            exit(1);    
-        }
+    lookup_user(&user, &uid, &dir);
+    if (lopt && !dir) {
+        fprintf(stderr, "%s: no such user %s\n", prog, user);
+        exit(1);
     }
 
     /* 2>&1 so any errors interrupt the report in a predictable way */
@@ -129,15 +119,14 @@ main(int argc, char *argv[])
 
     /* build list of quotas */
     qlist = list_create((ListDelF)quota_destroy);
-    if (lopt) {
-        get_login_quota(pw->pw_dir, pw->pw_uid, qlist);
-    } else {
-        get_all_quota(pw->pw_uid, qlist);
-    }
+    if (lopt)
+        get_login_quota(dir, uid, qlist);
+    else
+        get_all_quota(uid, qlist);
 
     /* print output */   
     if (vopt) {
-        quota_print_heading(pw->pw_name);
+        quota_print_heading(user);
         if (ropt)
             list_for_each(qlist, (ListForF)quota_print_realpath, NULL);
         else
@@ -150,6 +139,10 @@ main(int argc, char *argv[])
     }
 
     list_destroy(qlist);
+    if (user)
+        free(user);
+    if (dir)
+        free(dir);
     alarm(0);
     exit(0);
 }
@@ -166,6 +159,42 @@ alarm_handler(int arg)
 {
     fprintf(stderr, "%s: timeout, aborting\n", prog);
     exit(1);
+}
+
+static void
+lookup_user(char **user, uid_t *uid, char **dir)
+{
+    struct passwd *pw;
+
+    assert(uid != NULL);
+    assert(dir != NULL);
+    assert(*dir == NULL);
+
+    if (!*user) {
+        *uid = geteuid();
+        pw = getpwuid(*uid);
+        if (!pw) {
+            fprintf(stderr, "%s: getpwuid on geteuid failed!\n", prog);
+            exit(1);
+        }
+        *dir = xstrdup(pw->pw_dir);
+        *user = xstrdup(pw->pw_name);
+    } else {
+        if (isdigit(**user)) {
+            *uid = strtoul(*user, NULL, 0);
+            pw = getpwuid(*uid);
+            if (pw)
+                *dir = xstrdup(pw->pw_dir);
+        } else {
+            pw = getpwnam(*user);
+            if (!pw) {
+                fprintf(stderr, "%s: no such user: %s\n", prog, *user);
+                exit(1);
+            }
+            *uid = pw->pw_uid;
+            *dir = xstrdup(pw->pw_dir);
+        } 
+    }
 }
 
 static void

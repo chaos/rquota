@@ -1,10 +1,18 @@
+2008-05-07 Jim Garlick <garlick@llnl.gov>
+
+	* getquota.c : Factor common code from repquota.c and quota.c.
+	Add test hooks.
+
+	* quota.c : Use a List to manage quota results like repquota.
+	Allow unqualified uid's to be passed in for testing.
+	
 2008-05-06 Jim Garlick <garlick@llnl.gov>
 
 	* util.c : Add lsd_* error handling functions.
 
 	* Makefile : Add LSD_* to CFLAGS.
 
-	* quota.c : Only allow root to query another's quota.
+	* getquota_nfs.c : Only allow root to query another's quota.
 
 2008-05-05 Jim Garlick <garlick@llnl.gov>
 

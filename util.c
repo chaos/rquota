@@ -95,6 +95,7 @@ match_path(char *dir, const char *mountpoint)
     return 0;
 }
 
+#ifndef NDEBUG
 void
 test_match_path(void)
 {
@@ -114,6 +115,7 @@ test_match_path(void)
     assert(match_path(strcpy(s, "/a"), "/"));
     assert(match_path(strcpy(s, "/home/foo"), "/"));
 }
+#endif
 
 unsigned long
 parse_blocksize(char *s, unsigned long *b)
