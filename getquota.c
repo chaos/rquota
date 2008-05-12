@@ -22,6 +22,9 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -120,19 +123,14 @@ quota_get(uid_t uid, quota_t q)
         rc = 1;
 #endif
     } else if (!strcmp(q->q_rhost, "lustre")) {
-#if WITH_LUSTRE
+#if HAVE_LIBLUSTREAPI
         rc = quota_get_lustre(uid, q);        
 #else
-        fprintf(stderr, "%s: not compiled with -DWITH_LUSTRE=1\n", prog);
+        fprintf(stderr, "%s: not configured with lustre support\n", prog);
         rc = 1;
 #endif
     } else {
-#if WITH_NFS
         rc = quota_get_nfs(uid, q);        
-#else
-        fprintf(stderr, "%s: not compiled with -DWITH_NFS=1\n", prog);
-        rc = 1;
-#endif
     }
     return rc;
 }

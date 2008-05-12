@@ -22,6 +22,10 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+#if HAVE_LIBLUSTREAPI
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -100,6 +104,7 @@ quota_get_lustre(uid_t uid, quota_t q)
     }
     return 0;
 }
+#endif /* HAVE_LIBLUSTREAPI */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

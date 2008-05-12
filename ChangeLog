@@ -1,3 +1,7 @@
+2008-05-12 Jim Garlick <garlick@llnl.gov>
+
+	* : Integrated with automake/autoconf.
+
 2008-05-07 Jim Garlick <garlick@llnl.gov>
 
 	* getquota.c : Factor common code from repquota.c and quota.c.
