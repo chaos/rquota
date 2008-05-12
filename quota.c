@@ -46,7 +46,9 @@
 
 static void usage(void);
 static void alarm_handler(int arg);
-static void lookup_user(char **userp, uid_t *uidp, char **dirp);
+static void lookup_user_byname(char *user, uid_t *uidp, char **dirp);
+static void lookup_user_byuid(char *user, uid_t *uidp, char **dirp);
+static void lookup_self(char **userp, uid_t *uidp, char **dirp);
 static void get_login_quota(char *homedir, uid_t uid, List qlist);
 static void get_all_quota(uid_t uid, List qlist);
 
@@ -101,11 +103,12 @@ main(int argc, char *argv[])
     if (optind < argc)
         usage();
 
-    lookup_user(&user, &uid, &dir);
-    if (lopt && !dir) {
-        fprintf(stderr, "%s: no such user %s\n", prog, user);
-        exit(1);
-    }
+    if (!user)
+        lookup_self(&user, &uid, &dir);
+    else if (isdigit(*user))
+        lookup_user_byuid(user, &uid, &dir);
+    else
+        lookup_user_byname(user, &uid, &dir);
 
     /* 2>&1 so any errors interrupt the report in a predictable way */
     if (close(2) < 0) {
@@ -162,44 +165,52 @@ alarm_handler(int arg)
 }
 
 static void
-lookup_user(char **userp, uid_t *uidp, char **dirp)
+lookup_self(char **userp, uid_t *uidp, char **dirp)
+{
+    struct passwd *pw = getpwuid(geteuid());
+
+    if (!pw) {
+        fprintf(stderr, "%s: getpwuid on geteuid failed!\n", prog);
+        exit(1);
+    }
+    *uidp = pw->pw_uid;
+    *dirp = xstrdup(pw->pw_dir);
+    *userp = xstrdup(pw->pw_name);
+}
+
+/* user contains uid string */
+static void
+lookup_user_byuid(char *user, uid_t *uidp, char **dirp)
 {
     struct passwd *pw;
-    uid_t uid;
-    char *dir = NULL;
-    char *user = *userp;
-
-    if (!user) {
-        uid = geteuid();
-        pw = getpwuid(uid);
-        if (!pw) {
-            fprintf(stderr, "%s: getpwuid on geteuid failed!\n", prog);
-            exit(1);
-        }
-        dir = xstrdup(pw->pw_dir);
-        user = xstrdup(pw->pw_name);
-    } else {
-        if (isdigit(*user)) {
-            uid = strtoul(user, NULL, 0);
-            pw = getpwuid(uid);
-            if (pw)
-                dir = xstrdup(pw->pw_dir);
-        } else {
-            pw = getpwnam(user);
-            if (!pw) {
-                fprintf(stderr, "%s: no such user: %s\n", prog, user);
-                exit(1);
-            }
-            uid = pw->pw_uid;
-            dir = xstrdup(pw->pw_dir);
-        } 
+    char *endptr;
+    uid_t uid = strtoul(user, &endptr, 10);
+    
+    if (*endptr != '\0') {
+        fprintf(stderr, "%s: error parsing uid\n", prog);
+        exit(1);
     }
     if (uidp)
         *uidp = uid;
-    if (dirp)
-        *dirp = dir;
-    if (userp)
-        *userp = user;
+    pw = getpwuid(uid);
+    if (pw) {
+        *dirp = xstrdup(pw->pw_dir);
+    } else { /* getpwuid failure is not fatal to support testing */
+        *dirp = xstrdup("/");
+    }
+}
+
+static void
+lookup_user_byname(char *user, uid_t *uidp, char **dirp)
+{
+    struct passwd *pw = getpwnam(user);
+
+    if (!pw) {
+        fprintf(stderr, "%s: no such user: %s\n", prog, user);
+        exit(1);
+    }
+    *uidp = pw->pw_uid;
+    *dirp = xstrdup(pw->pw_dir);
 }
 
 static void
