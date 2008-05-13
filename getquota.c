@@ -415,6 +415,28 @@ report_usage(quota_t q, char *label)
     printf("%-7s%-7s%-9s%s\n", used, soft, hard, days);
 }
 
+int
+quota_print_raw(quota_t q, void *arg)
+{
+    assert(q->q_magic == QUOTA_MAGIC);
+    printf("uid:           %u\n", q->q_uid);
+    printf("label:         %s\n", q->q_label);
+    printf("rhost:         %s\n", q->q_rhost);
+    printf("rpath:         %s\n", q->q_rpath);
+    printf("thresh(pct):   %d\n", q->q_thresh);
+    printf("bytes_used:    %llu\n", q->q_bytes_used);
+    printf("bytes_softlim: %llu\n", q->q_bytes_softlim);
+    printf("bytes_hardlim: %llu\n", q->q_bytes_hardlim);
+    printf("bytes_secleft: %llu\n", q->q_bytes_secleft);
+    printf("bytes_state:   %d\n", q->q_bytes_state);
+    printf("files_used:    %llu\n", q->q_files_used);
+    printf("files_softlim: %llu\n", q->q_files_softlim);
+    printf("files_hardlim: %llu\n", q->q_files_hardlim);
+    printf("files_secleft: %llu\n", q->q_files_secleft);
+    printf("files_state:   %d\n", q->q_files_state);
+    return 0;
+}
+
 /* helper for quota_print_realpath() */
 static char *
 make_realpath(quota_t q)

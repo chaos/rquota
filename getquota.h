@@ -48,6 +48,8 @@ int quota_print_justwarn(quota_t x, void *arg);
 int quota_print_realpath(quota_t x, void *arg);
 int quota_print_justwarn_realpath(quota_t x, void *arg);
 
+int quota_print_raw(quota_t q, void *arg);
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
