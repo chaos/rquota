@@ -7,7 +7,6 @@ Group:   System Environment/Base
 License: GPL
 # we replace the redhat quota program
 Conflicts: quota
-BuildRequires: /usr/bin/rpcgen
 %if 0%{?ch4}
 BuildRequires: lustre
 %endif
