@@ -1,3 +1,8 @@
+2008-05-13 Jim Garlick <garlick@llnl.gov>
+
+	* config/*, Makefile.in, configure, INSTALL : 
+	Checked in bootstrap products.
+
 2008-05-12 Jim Garlick <garlick@llnl.gov>
 
 	* : Integrated with automake/autoconf.

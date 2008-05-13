@@ -7,8 +7,8 @@ Quota is tested on:
   sparc-sun-solaris2.10       (Solaris 10 with gcc installed in /opt/sfw)
   sparc-sun-solaris2.11       (Solaris 11 with Sun C compiler)
   powerpc-ibm-aix5.2.0.0      (AIX 5.2 with gcc installed in /opt/freeware)
+  powerpc-apple-darwin8.11.0
 
 Todo:
-  darwin
   fedora 9 i386
   freebsd
