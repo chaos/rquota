@@ -193,12 +193,17 @@ lookup_user_byuid(char *user, uid_t *uidp, char **dirp)
         fprintf(stderr, "%s: error parsing uid\n", prog);
         exit(1);
     }
-    if (uidp)
-        *uidp = uid;
     pw = getpwuid(uid);
     if (pw) {
+    	*uidp = pw->pw_uid;
         *dirp = xstrdup(pw->pw_dir);
-    } else { /* getpwuid failure is not fatal to support testing */
+    /* N.B. Passwd lookup failure of numerical user arg is not fatal.
+     * In testing, we pass in arbitrary uid's to trigger hardwired response
+     * from getquota_test(), and we don't want test results to be dependent 
+     * on password file conteint.
+     */
+    } else { 
+        *uidp = uid;
         *dirp = xstrdup("/");
     }
 }
