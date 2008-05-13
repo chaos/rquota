@@ -1,12 +1,13 @@
 AM_CFLAGS = -Wall -Wno-unused
 
 bin_PROGRAMS = quota repquota
-quota_SOURCES = quota.c \
-	getquota_nfs.c rquota_xdr.c rquota_clnt.c getquota_lustre.c \
-	getconf.c util.c list.c getquota.c
-repquota_SOURCES = repquota.c \
-	getquota_nfs.c rquota_xdr.c rquota_clnt.c getquota_lustre.c \
-	getconf.c util.c list.c getquota.c
+
+quota_SOURCES = quota.c $(common_sources)
+repquota_SOURCES = repquota.c $(common_sources)
+
+common_sources = \
+	getquota.c getquota_nfs.c getquota_lustre.c \
+	util.c list.c getconf.c rquota_xdr.c rquota_clnt.c
 
 getquota_nfs.c: rquota.h
 rquota.h: rquota.x

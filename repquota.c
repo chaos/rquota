@@ -83,7 +83,7 @@ main(int argc, char *argv[])
     unsigned long bsize = 1024*1024;
     uid_t minuid = 0;
     uid_t maxuid = 0;
-    char *fsname;
+    char *fsname = NULL;
     List qlist;
     int Fopt = 0;
     int ropt = 0;
