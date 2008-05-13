@@ -13,7 +13,7 @@ AC_DEFUN([AC_LUSTRE],
          AC_DEFINE([HAVE_LIBLUSTREAPI], [1],
                    [Define if you have liblustreapi])
         ],
-        [if test "x$with_liblustre" != xcheck; then
+        [if test "x$with_lustre" != xcheck; then
            AC_MSG_FAILURE(
              [--with-lustre was given, but test for liblustreapi failed])
          fi
