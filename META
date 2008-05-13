@@ -7,3 +7,4 @@
   Name:         rquota
   Version:      1.9
   Release:	1
+  Pre_exec:     ./bootstrap
