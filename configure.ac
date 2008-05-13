@@ -18,10 +18,10 @@ AM_MAINTAINER_MODE
 # Checks for programs
 ##
 AC_PROG_CC
-AC_PROG_LN_S
-AC_PROG_LIBTOOL
-AM_CONDITIONAL(WITH_GNU_LD, test "$with_gnu_ld" = "yes")
-AC_LIB_LTDL
+if test "$GCC" = yes; then
+  GCCWARN="-Wall -Wno-unused"
+  AC_SUBST([GCCWARN])
+fi
 
 ##
 # Checks for header files.
@@ -43,6 +43,7 @@ AC_C_CONST
 AC_CHECK_FUNCS( \
   getopt_long \
 )
+AC_SEARCH_LIBS([clnt_create],[nsl])
 AC_LUSTRE
 
 ##

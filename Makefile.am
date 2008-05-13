@@ -1,4 +1,4 @@
-AM_CFLAGS = -Wall -Wno-unused
+AM_CFLAGS = @GCCWARN@
 
 bin_PROGRAMS = quota repquota
 

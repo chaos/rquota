@@ -33,7 +33,8 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <sys/param.h>          /* MAXHOSTNAMELEN */
+#include <sys/param.h>
+#include <netdb.h>
 #include <assert.h>
 #include <errno.h>
 
