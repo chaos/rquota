@@ -284,6 +284,7 @@ pwscan(confent_t *cp, List qlist, uid_t minuid, uid_t maxuid)
             quota_destroy(q);
             continue;
         }
+        quota_print_raw(q, NULL); /* XXX */
         list_append(qlist, q);
     }
 }

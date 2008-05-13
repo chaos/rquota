@@ -236,7 +236,7 @@ quota_report_heading_usageonly(void)
 }
 
 int
-quota_report(quota_t x, unsigned long long *bsize)
+quota_report(quota_t x, unsigned long *bsize)
 {
     struct passwd *pw;
     char *name, tmp[16];
@@ -259,7 +259,7 @@ quota_report(quota_t x, unsigned long long *bsize)
 }
 
 int
-quota_report_usageonly(quota_t x, unsigned long long *bsize)
+quota_report_usageonly(quota_t x, unsigned long *bsize)
 {
     struct passwd *pw;
     char *name, tmp[16];

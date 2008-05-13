@@ -39,8 +39,8 @@ int quota_cmp_files_reverse(quota_t x, quota_t y);
 
 void quota_report_heading(void);
 void quota_report_heading_usageonly(void);
-int quota_report(quota_t x, unsigned long long *bsize);
-int quota_report_usageonly(quota_t x, unsigned long long *bsize);
+int quota_report(quota_t x, unsigned long *bsize);
+int quota_report_usageonly(quota_t x, unsigned long *bsize);
 
 void quota_print_heading(char *name);
 int quota_print(quota_t x, void *arg);
