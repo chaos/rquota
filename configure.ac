@@ -43,7 +43,7 @@ AC_C_CONST
 AC_CHECK_FUNCS( \
   getopt_long \
 )
-AC_CHECK_LIB([lustreapi], [llapi_quotactl])
+AC_LUSTRE
 
 ##
 # For list.c

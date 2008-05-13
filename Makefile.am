@@ -6,8 +6,9 @@ quota_SOURCES = quota.c $(common_sources)
 repquota_SOURCES = repquota.c $(common_sources)
 
 common_sources = \
-	getquota.c getquota_nfs.c getquota_lustre.c \
-	util.c list.c getconf.c rquota_xdr.c rquota_clnt.c
+  getquota.c getquota.h getquota_private.h getquota_nfs.c getquota_lustre.c \
+  util.c util.h list.c list.h getconf.c getconf.h \
+  rquota_xdr.c rquota_clnt.c rquota.h
 
 getquota_nfs.c: rquota.h
 rquota.h: rquota.x
