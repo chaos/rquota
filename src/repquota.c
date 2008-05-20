@@ -46,20 +46,18 @@
 #include "getconf.h"
 #include "getquota.h"
 #include "list.h"
+#include "listint.h"
 #include "util.h"
 
 static void usage(void);
-static void dirscan(confent_t *conf, List qlist, List uidrange);
-static int  valid_uidrange(List uidrange);
-static int  in_uidrange(uid_t uid, List uidrange);
-static int  parse_uid(char *s, uid_t *u1p, uid_t *u2p);
+static void dirscan(confent_t *conf, List qlist, List uids);
 static void add_quota(confent_t *cp, List qlist, uid_t uid);
-static void pwscan(confent_t *conf, List qlist, List uidrange);
-static void uidscan(confent_t *conf, List qlist, List uidrange);
+static void pwscan(confent_t *conf, List qlist, List uids);
+static void uidscan(confent_t *conf, List qlist, List uids);
 
 char *prog;
 
-#define OPTIONS "U:b:dhHrsFf:up"
+#define OPTIONS "U:b:dhHrsFf:upT"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
 static struct option longopts[] = {
@@ -73,6 +71,7 @@ static struct option longopts[] = {
     {"usage-only",       no_argument,        0, 'u'},
     {"suppress-heading", no_argument,        0, 'H'},
     {"config",           required_argument,  0, 'f'},
+    {"selftest",         no_argument,        0, 'T'},
     {0, 0, 0, 0},
 };
 #else
@@ -94,7 +93,7 @@ main(int argc, char *argv[])
     int sopt = 0;
     int Hopt = 0;
     int uopt = 0;
-    List uidrange = NULL;
+    List uids = NULL;
 
     prog = basename(argv[0]);
     while ((c = GETOPT(argc, argv, OPTIONS, longopts)) != EOF) {
@@ -112,8 +111,8 @@ main(int argc, char *argv[])
                 }
                 break;
             case 'U':   /* --uid-range */
-                uidrange = list_split(optarg, ",");
-                if (!valid_uidrange(uidrange)) {
+                uids = listint_create(optarg);
+                if (uids == NULL) {
                     fprintf(stderr, "%s: error parsing uid-range\n", prog);
                     exit(1);
                 }
@@ -136,6 +135,15 @@ main(int argc, char *argv[])
             case 'f':   /* --config */
                 setconfent(optarg);
                 break;
+            case 'T':   /* --selftest */
+#ifndef NDEBUG
+                listint_test();
+                exit(0);
+#else
+                fprintf(stderr, "%s: not built with debugging enabled\n", prog);
+                exit(1);
+#endif
+                break;
             case 'h':
             default:
                 usage();
@@ -149,7 +157,7 @@ main(int argc, char *argv[])
         fprintf(stderr, "%s: -p and -d are mutually exclusive\n", prog);
         exit(1);
     }
-    if (!popt && !dopt && !uidrange) {
+    if (!popt && !dopt && !uids) {
         fprintf(stderr, "%s: need at least one of -pdU\n", prog);
         exit(1);
     }
@@ -172,11 +180,11 @@ main(int argc, char *argv[])
      */
     qlist = list_create((ListDelF)quota_destroy);
     if (dopt) 
-        dirscan(conf, qlist, uidrange);
+        dirscan(conf, qlist, uids);
     else if (popt)
-        pwscan(conf, qlist, uidrange);
+        pwscan(conf, qlist, uids);
     else
-        uidscan(conf, qlist, uidrange);
+        uidscan(conf, qlist, uids);
 
 
     /* Sort.
@@ -217,8 +225,8 @@ main(int argc, char *argv[])
 
     if (qlist)
         list_destroy(qlist);
-    if (uidrange)
-        list_destroy(uidrange);
+    if (uids)
+        list_destroy(uids);
 
     return 0;
 }
@@ -242,81 +250,6 @@ usage(void)
     exit(1);
 }
 
-/* 's' may contain a single uid, or a hyphen-separated range of uid's.
- * Return 0 on error, 1 on single uid, 2 on uid range.
- */
-static int
-parse_uid(char *s, uid_t *u1p, uid_t *u2p)
-{
-    uid_t u1, u2;
-    char *endptr;
-
-    u1 = strtoul(s, &endptr, 10);
-    if (endptr == s)
-        return 0; /* fail: no initial numbers */
-    if (*endptr == '\0') {
-        if (*u1p)
-            *u1p = u1;
-        return 1; /* success: single uid */
-    }
-    if (*endptr != '-')
-        return 0; /* fail: no hyphen after first uid */
-    s = endptr + 1;
-    u2 = strtoul(s, &endptr, 10); 
-    if (endptr == s)
-        return 0; /* fail: no numbers after hyphen */
-    if (*endptr != '\0')
-        return 0; /* fail: garbage trailing second uid */ 
-    if (*u1p)
-        *u1p = u1;
-    if (*u2p)
-        *u2p = u2;
-    return 2;     /* success: uid range */
-}
-
-/* Return true if uid falls within range.
- */
-static int
-in_uidrange(uid_t uid, List uidrange)
-{
-    ListIterator itr;
-    uid_t u1, u2;
-    char *s;
-    int rc;
-    
-    itr = list_iterator_create(uidrange);
-    while ((s = list_next(itr))) {
-        rc = parse_uid(s, &u1, &u2);
-        if (rc == 1 && uid == u1)
-            return 1; /* singleton */
-        if (rc == 2 && uid >= u1 && uid <= u2)
-            return 1; /* range */
-        if (rc == 2 && uid >= u2 && uid <= u1)
-            return 1; /* reverse range */
-    }
-    list_iterator_destroy(itr);
-    return 0;
-}
-
-/* Return true if uidrange is valid.
- */
-static int
-valid_uidrange(List uidrange)
-{
-    ListIterator itr;
-    char *s;
-
-    if (!uidrange || list_count(uidrange) == 0)
-        return 0;
-    itr = list_iterator_create(uidrange);
-    while ((s = list_next(itr))) {
-        if (parse_uid(s, NULL, NULL) == 0)
-            return 0;
-    }
-    list_iterator_destroy(itr);
-    return 1;
-}
-
 /* Query the quota for uid and add it to qlist if successful.
  */
 static void
@@ -331,35 +264,28 @@ add_quota(confent_t *cp, List qlist, uid_t uid)
         list_append(qlist, q);
 }
 
-/* Get quotas for all uid's in uidrange.
+/* Get quotas for all uid's in uids list.
  */
 static void
-uidscan(confent_t *cp, List qlist, List uidrange)
+uidscan(confent_t *cp, List qlist, List uids)
 {
     ListIterator itr;
     quota_t q;
-    uid_t u1, u2, u;
-    char *s;
+    uid_t *up;
     int rc;
 
-    itr = list_iterator_create(uidrange);
-    while ((s = list_next(itr))) {
-        rc = parse_uid(s, &u1, &u2);
-        if (rc == 1) {
-            add_quota(cp, qlist, u1);
-        } else if (rc == 2) {
-            for (u = u1; u <= u2; u++)
-                add_quota(cp, qlist, u);
-        }
+    itr = list_iterator_create(uids);
+    while ((up = list_next(itr))) {
+        add_quota(cp, qlist, (uid_t)*up);
     }
     list_iterator_destroy(itr);
 }
 
 /* Get quotas for all owners of top-level directories, optionally
- * filtered by uidrange.
+ * filtered by uids.
  */
 static void
-dirscan(confent_t *cp, List qlist, List uidrange)
+dirscan(confent_t *cp, List qlist, List uids)
 {
     struct dirent *dp;
     DIR *dir;
@@ -377,7 +303,7 @@ dirscan(confent_t *cp, List qlist, List uidrange)
         snprintf(fqp, sizeof(fqp), "%s/%s", cp->cf_rpath, dp->d_name);
         if (stat(fqp, &sb) < 0)
             continue;
-        if (uidrange && !in_uidrange(sb.st_uid, uidrange))
+        if (uids && !listint_find(uids, sb.st_uid))
             continue;
         if (list_find_first(qlist, (ListFindF)quota_match_uid, &sb.st_uid))
             continue;
@@ -388,16 +314,16 @@ dirscan(confent_t *cp, List qlist, List uidrange)
 }
 
 /* Get quotas for all users in the password file, optionally filtered
- * by uidrange.
+ * by uids list.
  */
 static void
-pwscan(confent_t *cp, List qlist, List uidrange)
+pwscan(confent_t *cp, List qlist, List uids)
 {
     struct passwd *pw;
     quota_t q;
 
     while ((pw = getpwent()) != NULL) {
-        if (uidrange && !in_uidrange(pw->pw_uid, uidrange))
+        if (uids && !listint_find(uids, pw->pw_uid))
             continue;
         if (list_find_first(qlist, (ListFindF)quota_match_uid, &pw->pw_uid))
             continue;

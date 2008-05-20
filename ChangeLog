@@ -10,7 +10,7 @@
 
 	* src/Makefile.am : Add man pages to man_MANS. 
 
-	* src/util.c : Add list_split().
+	* src/listint.[ch] : Simple list-of-ints handling functions.
 
 	* src/repquota.c : Change --min-uid, --max-uid option to --uid-range.
 

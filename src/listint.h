@@ -22,9 +22,10 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
-char *size2str(unsigned long long size, char *str, int len);
-char *xstrdup(char *str);
-void *xmalloc(size_t size);
-int match_path(char *dir, const char *mountpoint);
-void test_match_path(void);
-unsigned long parse_blocksize(char *s, unsigned long *b);
+List listint_create(char *s);
+int listint_find(List l, unsigned long u);
+void listint_test(void);
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */

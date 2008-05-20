@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "list.h"
 #include "util.h"
 
 /* Convert integer size to string.
@@ -156,20 +155,6 @@ parse_blocksize(char *s, unsigned long *b)
     if (end[0] && end[1])
         err++;
     return err;
-}
-
-List 
-list_split(char *s, char *delim)
-{
-    List l = list_create((ListDelF)free);
-    char *t;
-
-    t = strtok(s, delim);
-    while (t) {
-        list_append(l, xstrdup(t));
-        t = strtok(NULL, delim);
-    }
-    return l;
 }
 
 /*
