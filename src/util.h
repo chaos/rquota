@@ -28,4 +28,4 @@ void *xmalloc(size_t size);
 int match_path(char *dir, const char *mountpoint);
 void test_match_path(void);
 unsigned long parse_blocksize(char *s, unsigned long *b);
-
+List list_split(char *s, char *delim);

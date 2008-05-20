@@ -47,8 +47,8 @@
 
 #include "getconf.h"
 #include "getquota.h"
-#include "util.h"
 #include "list.h"
+#include "util.h"
 
 static void usage(void);
 static void alarm_handler(int arg);

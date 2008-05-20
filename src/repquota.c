@@ -45,14 +45,14 @@
 
 #include "getconf.h"
 #include "getquota.h"
-#include "util.h"
 #include "list.h"
-#include "hostlist.h"
+#include "util.h"
 
 static void usage(void);
-static void dirscan(confent_t *conf, List qlist, hostlist_t uidrange);
-static void pwscan(confent_t *conf, List qlist, hostlist_t uidrange);
-static int  in_uidrange(uid_t uid, hostlist_t uidrange);
+static void dirscan(confent_t *conf, List qlist, List uidrange);
+static void pwscan(confent_t *conf, List qlist, List uidrange);
+static int  in_uidrange(uid_t uid, List uidrange);
+static int valid_uidrange(List uidrange);
 
 char *prog;
 
@@ -89,7 +89,7 @@ main(int argc, char *argv[])
     int sopt = 0;
     int Hopt = 0;
     int uopt = 0;
-    hostlist_t uidrange = NULL;
+    List uidrange = NULL;
 
     prog = basename(argv[0]);
     while ((c = GETOPT(argc, argv, OPTIONS, longopts)) != EOF) {
@@ -104,8 +104,8 @@ main(int argc, char *argv[])
                 }
                 break;
             case 'U':   /* --uid-range */
-                uidrange = hostlist_create(optarg);
-                if (!uidrange || hostlist_count(uidrange) == 0) {
+                uidrange = list_split(optarg, ",");
+                if (!valid_uidrange(uidrange)) {
                     fprintf(stderr, "%s: error parsing uid-range\n", prog);
                     exit(1);
                 }
@@ -200,7 +200,7 @@ main(int argc, char *argv[])
     if (qlist)
         list_destroy(qlist);
     if (uidrange)
-        hostlist_destroy(uidrange);
+        list_destroy(uidrange);
 
     return 0;
 }
@@ -224,18 +224,63 @@ usage(void)
 }
 
 static int
-in_uidrange(uid_t uid, hostlist_t uidrange)
+in_uidrange(uid_t uid, List uidrange)
 {
-    char tmpstr[16];
+    ListIterator itr;
+    char *s, *endptr;
+    uid_t u1, u2;
+    
+    itr = list_iterator_create(uidrange);
+    while ((s = list_next(itr))) {
+        u1 = strtoul(s, &endptr, 10);
+        if (*endptr == '\0') {          /* singleton */
+            if (u1 == uid)
+                return 1;
+        } else if (*endptr == '-') {    /* range */
+            s = endptr;
+            u2 = strtoul(s, &endptr, 10);
+            if (*endptr == '\0' && u1 <= u2 && uid >= u1 && uid <= u2)
+                return 1;
+        }
+    }
+    list_iterator_destroy(itr);
+    return 0;
+}
 
-    snprintf(tmpstr, sizeof(tmpstr), "%u", uid);
-    if (hostlist_find(uidrange, tmpstr) == -1)
+static int
+valid_uidrange(List uidrange)
+{
+    ListIterator itr;
+    char *s, *endptr;
+    uid_t u1, u2;
+
+    if (!uidrange || list_count(uidrange) == 0)
         return 0;
+    
+    itr = list_iterator_create(uidrange);
+    while ((s = list_next(itr))) {
+        u1 = strtoul(s, &endptr, 10);
+        if (endptr == s)
+            return 0;
+        else if (*endptr == '\0') {     /* singleton */
+            continue;
+        } else if (*endptr == '-') {    /* range */
+            s = endptr;
+            u2 = strtoul(s, &endptr, 10);
+            if (endptr == s)
+                return 0;
+            else if (endptr != '\0')
+                return 0;
+            else if (!(u1 <= u2))
+                return 0;
+        }
+    }
+    list_iterator_destroy(itr);
     return 1;
 }
 
 static void
-dirscan(confent_t *cp, List qlist, hostlist_t uidrange)
+dirscan(confent_t *cp, List qlist, List uidrange)
 {
     struct dirent *dp;
     DIR *dir;
@@ -270,7 +315,7 @@ dirscan(confent_t *cp, List qlist, hostlist_t uidrange)
 }
 
 static void
-pwscan(confent_t *cp, List qlist, hostlist_t uidrange)
+pwscan(confent_t *cp, List qlist, List uidrange)
 {
     struct passwd *pw;
     quota_t q;

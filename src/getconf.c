@@ -34,6 +34,7 @@
 #include <stdlib.h>
 
 #include "getconf.h"
+#include "list.h"
 #include "util.h"
 
 /* configuration file pointer */
