@@ -57,18 +57,18 @@ static void uidscan(confent_t *conf, List qlist, List uids);
 
 char *prog;
 
-#define OPTIONS "U:b:dhHrsFf:upT"
+#define OPTIONS "u:b:dhHrsFf:UpT"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
 static struct option longopts[] = {
     {"dirscan",          no_argument,        0, 'd'},
     {"pwscan",           no_argument,        0, 'p'},
     {"blocksize",        required_argument,  0, 'b'},
-    {"uid-range",        required_argument,  0, 'U'},
+    {"uid-range",        required_argument,  0, 'u'},
     {"reverse",          no_argument,        0, 'r'},
     {"space-sort",       no_argument,        0, 's'},
     {"files-sort",       no_argument,        0, 'F'},
-    {"usage-only",       no_argument,        0, 'u'},
+    {"usage-only",       no_argument,        0, 'U'},
     {"suppress-heading", no_argument,        0, 'H'},
     {"config",           required_argument,  0, 'f'},
     {"selftest",         no_argument,        0, 'T'},
@@ -92,7 +92,7 @@ main(int argc, char *argv[])
     int ropt = 0;
     int sopt = 0;
     int Hopt = 0;
-    int uopt = 0;
+    int Uopt = 0;
     List uids = NULL;
 
     prog = basename(argv[0]);
@@ -110,7 +110,7 @@ main(int argc, char *argv[])
                     exit(1);
                 }
                 break;
-            case 'U':   /* --uid-range */
+            case 'u':   /* --uid-range */
                 uids = listint_create(optarg);
                 if (uids == NULL) {
                     fprintf(stderr, "%s: error parsing uid-range\n", prog);
@@ -126,8 +126,8 @@ main(int argc, char *argv[])
             case 's':   /* --space-sort */
                 sopt++;
                 break;
-            case 'u':   /* --usage-only */
-                uopt++;
+            case 'U':   /* --usage-only */
+                Uopt++;
                 break;
             case 'H':   /* --suppress-heading */
                 Hopt++;
@@ -213,7 +213,7 @@ main(int argc, char *argv[])
         size2str(bsize, tmpstr, sizeof(tmpstr));
         printf("Quota report for %s (blocksize %s)\n", fsname, tmpstr);
     }
-    if (uopt) {
+    if (Uopt) {
         if (!Hopt)
             quota_report_heading_usageonly();
         list_for_each(qlist, (ListForF)quota_report_usageonly, &bsize);
@@ -239,11 +239,11 @@ usage(void)
   "  -d,--dirscan           report on users who own top level dirs of fs\n"
   "  -p,--pwscan            report on users in the password file\n"
   "  -b,--blocksize         report usage in blocksize units (default 1M)\n"
-  "  -U,--uid-range         set range/list of uid's to include in report\n"
+  "  -u,--uid-range         set range/list of uid's to include in report\n"
   "  -r,--reverse-sort      sort in reverse order\n"
   "  -s,--space-sort        sort on space used (default sort on uid)\n"
   "  -F,--files-sort        sort on files used (default sort on uid)\n"
-  "  -u,--usage-only        only report usage, not quota limits\n"
+  "  -U,--usage-only        only report usage, not quota limits\n"
   "  -H,--suppress-heading  suppress report heading\n"
   "  -f,--config            use a config file other than %s\n"
                 , prog, _PATH_QUOTA_CONF);
