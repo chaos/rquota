@@ -237,10 +237,16 @@ in_uidrange(uid_t uid, List uidrange)
             if (u1 == uid)
                 return 1;
         } else if (*endptr == '-') {    /* range */
-            s = endptr;
+            s = endptr + 1;
             u2 = strtoul(s, &endptr, 10);
-            if (*endptr == '\0' && u1 <= u2 && uid >= u1 && uid <= u2)
-                return 1;
+            if (endptr == s) { /* open-ended range */
+                if (uid >= u1)
+                    return 1;
+            } else {
+                assert(*endptr == '\0');
+                if ((uid >= u1 && uid <= u2) || (uid >= u2 && uid <= u1))
+                    return 1;
+            }
         }
     }
     list_iterator_destroy(itr);
@@ -265,14 +271,12 @@ valid_uidrange(List uidrange)
         else if (*endptr == '\0') {     /* singleton */
             continue;
         } else if (*endptr == '-') {    /* range */
-            s = endptr;
+            s = endptr + 1;
             u2 = strtoul(s, &endptr, 10);
             if (endptr == s)
-                return 0;
-            else if (endptr != '\0')
-                return 0;
-            else if (!(u1 <= u2))
-                return 0;
+                continue; /* open-ended range */
+            else if (*endptr != '\0')
+                return 0; /* some other non-numerical char */
         }
     }
     list_iterator_destroy(itr);
