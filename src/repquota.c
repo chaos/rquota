@@ -257,11 +257,14 @@ add_quota(confent_t *cp, List qlist, uid_t uid)
 {
     quota_t q;
 
-    q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, cp->cf_thresh);
-    if (quota_get(uid, q))
-        quota_destroy(q);
-    else
-        list_append(qlist, q);
+    if (! list_find_first(qlist, (ListFindF)quota_match_uid, &uid)) {
+        q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, 
+                         cp->cf_thresh);
+        if (quota_get(uid, q))
+            quota_destroy(q);
+        else
+            list_append(qlist, q);
+    }
 }
 
 /* Get quotas for all uid's in uids list.
@@ -305,8 +308,6 @@ dirscan(confent_t *cp, List qlist, List uids)
             continue;
         if (uids && !listint_find(uids, sb.st_uid))
             continue;
-        if (list_find_first(qlist, (ListFindF)quota_match_uid, &sb.st_uid))
-            continue;
         add_quota(cp, qlist, sb.st_uid);
     }
     if (closedir(dir) < 0)
@@ -324,8 +325,6 @@ pwscan(confent_t *cp, List qlist, List uids)
 
     while ((pw = getpwent()) != NULL) {
         if (uids && !listint_find(uids, pw->pw_uid))
-            continue;
-        if (list_find_first(qlist, (ListFindF)quota_match_uid, &pw->pw_uid))
             continue;
         add_quota(cp, qlist, pw->pw_uid);
     }
