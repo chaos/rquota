@@ -1,7 +1,7 @@
 ##
 # Prologue
 ##
-AC_INIT([quota])
+AC_INIT([rquota])
 AC_META
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([NEWS])
@@ -56,7 +56,7 @@ AC_DEFINE(WITH_LSD_NOMEM_ERROR_FUNC, 1, [Define lsd_fatal_error])
 # Epilogue
 ##
 AC_CONFIG_FILES( \
-  quota.spec \
+  rquota.spec \
   Makefile \
   src/Makefile \
   test/Makefile \
