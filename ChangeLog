@@ -10,8 +10,9 @@
 
 	* src/Makefile.am : Add man pages to man_MANS. 
 
-	* src/repquota.c, src/hostlist.[ch] : Change --min-uid, --max-uid
-	option to --uid-range, using 'reckless' hostranges.
+	* src/util.c : Add list_split().
+
+	* src/repquota.c : Change --min-uid, --max-uid option to --uid-range.
 
 2008-05-19 Jim Garlick <garlick@llnl.gov>
 

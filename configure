@@ -4926,11 +4926,6 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 
-cat >>confdefs.h <<\_ACEOF
-#define WANT_RECKLESS_HOSTRANGE_EXPANSION 1
-_ACEOF
-
-
 ##
 # Epilogue
 ##
