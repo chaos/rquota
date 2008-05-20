@@ -1,4 +1,4 @@
-TESTS	= 01 02 03
+TESTS	= 01 02 03 04 05 06
 QUOTA=../quota
 REPQUOTA=../repquota
 

@@ -76,30 +76,45 @@ quota_get_test(uid_t uid, quota_t q)
 {
     int rc = 0;
 
+    q->q_bytes_used = 0;
+    q->q_bytes_softlim = 0;
+    q->q_bytes_hardlim = 0;
+    q->q_bytes_secleft = 0;
+    q->q_bytes_state = NONE;
+    q->q_files_used = 0;
+    q->q_files_softlim = 0;
+    q->q_files_hardlim = 0;
+    q->q_files_secleft = 0;
+    q->q_files_state = NONE;
+
     switch (uid) {
-        case 100:
+        case 100:   /* test 01 - just usage, no limits */
             q->q_bytes_used = 1024*1024;
-            q->q_bytes_softlim = 0;
-            q->q_bytes_hardlim = 0;
-            q->q_bytes_secleft = 0;
-            q->q_bytes_state = NONE;
             q->q_files_used = 455555;
-            q->q_files_softlim = 0;
-            q->q_files_hardlim = 0;
-            q->q_files_secleft = 0;
-            q->q_files_state = NONE;
             break;
-        case 101:
+        case 101:   /* test 02, 03 - expired block quota */
             q->q_bytes_used = 1024*1024*1024;
             q->q_bytes_softlim = 1024*1024;
             q->q_bytes_hardlim = 1024*1024;
-            q->q_bytes_secleft = 0;
             q->q_bytes_state = EXPIRED;
             q->q_files_used = 455555;
             q->q_files_softlim = 1024*1024;
-            q->q_files_hardlim = 1024*1024;
-            q->q_files_secleft = 0;
-            q->q_files_state = NONE;
+            q->q_files_hardlim = 1024*1024; 
+            q->q_files_state = UNDER;
+            break;
+        case 102:   /* test 04, 05 - expired file quota */
+            q->q_bytes_used = 1024;
+            q->q_bytes_softlim = 1024*1024;
+            q->q_bytes_hardlim = 1024*1024*1024;
+            q->q_bytes_state = UNDER;
+            q->q_files_used = 455555;
+            q->q_files_softlim = 1024;
+            q->q_files_hardlim = 1024; 
+            q->q_files_state = EXPIRED;
+            break;
+        case 103:   /* test 06 - high usage (73PB / 17 trillion files) */
+            q->q_bytes_used = (unsigned long long)1024*1024*1024*1024*1024*73;
+            q->q_files_used = (unsigned long long)1024*1024*1024*1024*17;
             break;
         default:
             rc = 1;

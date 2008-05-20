@@ -44,7 +44,9 @@ size2str(unsigned long long size, char *str, int len)
      * i.e. 1000-1023MB should be displayed as GB.  Values should never
      * take up more chars than "999.9G".
      */
-    if (n >= 1000*1024*1024)
+    if (n >= 1000ULL*1024*1024*1024)
+        snprintf(str, len, "%.1fP", n / (1024ULL*1024*1024*1024));
+    else if (n >= 1000*1024*1024)
         snprintf(str, len, "%.1fT", n / (1024*1024*1024));
     else if (n >= 1000*1024)
         snprintf(str, len, "%.1fG", n / (1024*1024));

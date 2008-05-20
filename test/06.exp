@@ -1,0 +1,3 @@
+Disk quotas for 103:
+Filesystem     used   quota  limit    timeleft  files  quota  limit    timeleft
+/foo           73.0P  n/a    n/a                17.0T  n/a    n/a      
