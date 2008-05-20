@@ -105,7 +105,7 @@ main(int argc, char *argv[])
                 break;
             case 'U':   /* --uid-range */
                 uidrange = hostlist_create(optarg);
-                if (!uidrange) {
+                if (!uidrange || hostlist_count(uidrange) == 0) {
                     fprintf(stderr, "%s: error parsing uid-range\n", prog);
                     exit(1);
                 }
