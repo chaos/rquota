@@ -102,6 +102,7 @@ dup_str(char *s)
 
 /* Create a list of ints, parsing an string consisting of comma
  * separated numbers and ranges (mixed).  Return NULL on parse error.
+ * N.B. we allow duplicates.
  */
 List 
 listint_create(char *s)
@@ -125,12 +126,10 @@ listint_create(char *s)
             l = NULL;
             break;
         } else if (rc == SINGLE) {
-            if (!listint_find(l, u1))
-                list_append(l, dup_int(u1));
+            list_append(l, dup_int(u1));
         } else { /* rc == RANGE */
             for (u = u1; u <= u2; u++)
-                if (!listint_find(l, u))
-                    list_append(l, dup_int(u));
+                list_append(l, dup_int(u));
         }
         t = strtok(NULL, ",");
     }
@@ -175,7 +174,7 @@ listint_test(void)
 
     l = listint_create("1-1000,1,2,50-100");
     assert(l);
-    assert(list_count(l) == 1000);
+    assert(list_count(l) == 1053);
     list_destroy(l);
 
     l = listint_create("0,1-1000,1005");
