@@ -1,3 +1,15 @@
+2008-05-20 Jim Garlick <garlick@llnl.gov>
+
+	* src/* : Main source moved here.
+
+	* test/* : Test infrastructure created here with some initial tests.
+
+	* getquota.c : Add some test hooks.
+
+	* quota.spec.in : Use install target.
+
+	* src/Makefile.am : Add man pages to man_MANS. 
+
 2008-05-19 Jim Garlick <garlick@llnl.gov>
 
 	* getquota.[ch], quota.c : If not in -v mode and warnings are

@@ -2,6 +2,8 @@ AM_CFLAGS = @GCCWARN@
 
 bin_PROGRAMS = quota repquota
 
+man_MANS = quota.1 repquota.1 quota.conf.5
+
 quota_SOURCES = quota.c $(common_sources)
 repquota_SOURCES = repquota.c $(common_sources)
 
