@@ -13,37 +13,36 @@ generates a report of quota limits and usage information for all users
 of the specified file system.
 .SH OPTIONS
 .TP 
-.I "-d,--dirscan"
+\fI-d\fR, \fI--dirscan\fR
 Report on users who own top-level directories in the target file system.
 Without this option, report on users in the password file.
 .TP
-.I "-b,--blocksize N"
-Report disk usage in N-size units.  The suffixes `K', `M', or `G'
+\fI-b\fR, \fI--blocksize\fR \fIblocksize\fR
+Report disk usage in blocksize units.  The suffixes `K', `M', or `G'
 may be used for kilobytes, megabytes, or gigabytes, respectively.
 Default: 1M.
 .TP
-.I "-m,--min-uid N"
-Do not report on users whose UID is less than N.
+\fI-U\fR, \fI--uid-range range\fR
+Only report users whose UID is included in uid-range,
+where uid-range consists of any combination of hyphenated ranges and
+single values deliminated by commas, e.g. ``0,100-9999,65536''.
 .TP
-.I "-M,--max-uid N"
-Do not report on users whose UID is greater than N.
-.TP
-.I "-r,--reverse-sort"
+\fI-r\fR, \fI--reverse-sort\fR
 Sort output in descending order.
 .TP
-.I "-s,--space-sort"
+\fI-s\fR, \fI--space-sort\fR
 Sort output by space used (default is to sort on uid).
 .TP
-.I "-F,--files-sort"
+\fI-F\fR, \fI--files-sort\fR
 Sort output by number of files used (default is to sort on uid).
 .TP
-.I "-u,--usage-only"
+\fI-u\fR, \fI--usage-only\fR
 Only report usage information, not quota limits.
 .TP
-.I "-H,--suppress-heading"
+\fI-H\fR, \fI--suppress-heading\fR
 Suppress printing of the initial heading in the report.
 .TP
-.I "-f configfile"
+\fI-f\fR \fIconfigfile\fR
 loads a configuration file other than the default (see FILES below).
 .SH "FILES"
 /etc/quota.conf

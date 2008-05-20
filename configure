@@ -4913,7 +4913,7 @@ fi
 
 
 ##
-# For list.c
+# For list.c, hostlist.c
 ##
 
 cat >>confdefs.h <<\_ACEOF
@@ -4923,6 +4923,11 @@ _ACEOF
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_LSD_NOMEM_ERROR_FUNC 1
+_ACEOF
+
+
+cat >>confdefs.h <<\_ACEOF
+#define WANT_RECKLESS_HOSTRANGE_EXPANSION 1
 _ACEOF
 
 

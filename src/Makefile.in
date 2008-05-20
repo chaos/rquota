@@ -50,7 +50,8 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am__objects_1 = getquota.$(OBJEXT) getquota_nfs.$(OBJEXT) \
 	getquota_lustre.$(OBJEXT) util.$(OBJEXT) list.$(OBJEXT) \
-	getconf.$(OBJEXT) rquota_xdr.$(OBJEXT) rquota_clnt.$(OBJEXT)
+	getconf.$(OBJEXT) rquota_xdr.$(OBJEXT) rquota_clnt.$(OBJEXT) \
+	hostlist.$(OBJEXT)
 am_quota_OBJECTS = quota.$(OBJEXT) $(am__objects_1)
 quota_OBJECTS = $(am_quota_OBJECTS)
 quota_LDADD = $(LDADD)
@@ -185,7 +186,7 @@ LDADD = $(LIBLUSTREAPI)
 common_sources = \
   getquota.c getquota.h getquota_private.h getquota_nfs.c getquota_lustre.c \
   util.c util.h list.c list.h getconf.c getconf.h \
-  rquota_xdr.c rquota_clnt.c rquota.h
+  rquota_xdr.c rquota_clnt.c rquota.h hostlist.c hostlist.h
 
 CLEANFILES = rquota.h rquota_xdr.c rquota_clnt.c
 all: all-am
@@ -261,6 +262,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getquota.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getquota_lustre.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getquota_nfs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hostlist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quota.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/repquota.Po@am__quote@

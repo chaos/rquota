@@ -47,10 +47,12 @@ AC_SEARCH_LIBS([clnt_create],[nsl])
 AC_LUSTRE
 
 ##
-# For list.c
+# For list.c, hostlist.c
 ##
 AC_DEFINE(WITH_LSD_FATAL_ERROR_FUNC, 1, [Define lsd_fatal_error])
 AC_DEFINE(WITH_LSD_NOMEM_ERROR_FUNC, 1, [Define lsd_fatal_error])
+AC_DEFINE(WANT_RECKLESS_HOSTRANGE_EXPANSION, 1, 
+                                        [Allow reckless hostname expansion])
 
 ##
 # Epilogue

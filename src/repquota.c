@@ -47,21 +47,22 @@
 #include "getquota.h"
 #include "util.h"
 #include "list.h"
+#include "hostlist.h"
 
 static void usage(void);
-static void dirscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid);
-static void pwscan(confent_t *conf, List qlist, uid_t minuid, uid_t maxuid);
+static void dirscan(confent_t *conf, List qlist, hostlist_t uidrange);
+static void pwscan(confent_t *conf, List qlist, hostlist_t uidrange);
+static int  in_uidrange(uid_t uid, hostlist_t uidrange);
 
 char *prog;
 
-#define OPTIONS "m:M:b:dhHrsFf:u"
+#define OPTIONS "U:b:dhHrsFf:u"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
 static struct option longopts[] = {
     {"dirscan",          no_argument,        0, 'd'},
     {"blocksize",        required_argument,  0, 'b'},
-    {"min-uid",          required_argument,  0, 'm'},
-    {"max-uid",          required_argument,  0, 'M'},
+    {"uid-range",        required_argument,  0, 'U'},
     {"reverse",          no_argument,        0, 'r'},
     {"space-sort",       no_argument,        0, 's'},
     {"files-sort",       no_argument,        0, 'F'},
@@ -81,8 +82,6 @@ main(int argc, char *argv[])
     int c;
     int dopt = 0;
     unsigned long bsize = 1024*1024;
-    uid_t minuid = 0;
-    uid_t maxuid = 0;
     char *fsname = NULL;
     List qlist;
     int Fopt = 0;
@@ -90,6 +89,7 @@ main(int argc, char *argv[])
     int sopt = 0;
     int Hopt = 0;
     int uopt = 0;
+    hostlist_t uidrange = NULL;
 
     prog = basename(argv[0]);
     while ((c = GETOPT(argc, argv, OPTIONS, longopts)) != EOF) {
@@ -103,19 +103,8 @@ main(int argc, char *argv[])
                     exit(1);
                 }
                 break;
-            case 'm':   /* --min-uid */
-                minuid = strtoul(optarg, NULL, 10);
-                if (minuid == 0) {
-                    fprintf(stderr, "%s: --min-uid must be >0\n", prog);
-                    exit(1);
-                }
-                break;
-            case 'M':   /* --max-uid */
-                maxuid = strtoul(optarg, NULL, 10);
-                if (maxuid == 0) {
-                    fprintf(stderr, "%s: --max-uid must be >0\n", prog);
-                    exit(1);
-                }
+            case 'U':   /* --uid-range */
+                uidrange = hostlist_create(optarg);
                 break;
             case 'r':   /* --reverse */
                 ropt++;
@@ -163,9 +152,9 @@ main(int argc, char *argv[])
      */
     qlist = list_create((ListDelF)quota_destroy);
     if (dopt) 
-        dirscan(conf, qlist, minuid, maxuid);
+        dirscan(conf, qlist, uidrange);
     else
-        pwscan(conf, qlist, minuid, maxuid);
+        pwscan(conf, qlist, uidrange);
 
 
     /* Sort.
@@ -204,7 +193,10 @@ main(int argc, char *argv[])
         list_for_each(qlist, (ListForF)quota_report, &bsize);
     }
 
-    list_destroy(qlist);
+    if (qlist)
+        list_destroy(qlist);
+    if (uidrange)
+        hostlist_destroy(uidrange);
 
     return 0;
 }
@@ -216,8 +208,7 @@ usage(void)
   "Usage: %s [--options] fs\n"
   "  -d,--dirscan           report on users who own top level dirs of fs\n"
   "  -b,--blocksize         report usage in blocksize units (default 1M)\n"
-  "  -m,--min-uid           set minimum uid to include in report\n"
-  "  -M,--max-uid           set maximum uid to include in report\n"
+  "  -U,--uid-range         set range/list of uid's to include in report\n"
   "  -r,--reverse-sort      sort in reverse order\n"
   "  -s,--space-sort        sort on space used (default sort on uid)\n"
   "  -F,--files-sort        sort on files used (default sort on uid)\n"
@@ -228,8 +219,19 @@ usage(void)
     exit(1);
 }
 
+static int
+in_uidrange(uid_t uid, hostlist_t uidrange)
+{
+    char tmpstr[16];
+
+    snprintf(tmpstr, sizeof(tmpstr), "%u", uid);
+    if (hostlist_find(uidrange, tmpstr) == -1)
+        return 0;
+    return 1;
+}
+
 static void
-dirscan(confent_t *cp, List qlist, uid_t minuid, uid_t maxuid)
+dirscan(confent_t *cp, List qlist, hostlist_t uidrange)
 {
     struct dirent *dp;
     DIR *dir;
@@ -247,9 +249,7 @@ dirscan(confent_t *cp, List qlist, uid_t minuid, uid_t maxuid)
         snprintf(fqp, sizeof(fqp), "%s/%s", cp->cf_rpath, dp->d_name);
         if (stat(fqp, &sb) < 0)
             continue;
-        if (minuid != 0 && sb.st_uid < minuid)
-            continue;
-        if (maxuid != 0 && sb.st_uid > maxuid)
+        if (uidrange && !in_uidrange(sb.st_uid, uidrange))
             continue;
         if (list_find_first(qlist, (ListFindF)quota_match_uid, &sb.st_uid))
             continue;
@@ -266,15 +266,13 @@ dirscan(confent_t *cp, List qlist, uid_t minuid, uid_t maxuid)
 }
 
 static void
-pwscan(confent_t *cp, List qlist, uid_t minuid, uid_t maxuid)
+pwscan(confent_t *cp, List qlist, hostlist_t uidrange)
 {
     struct passwd *pw;
     quota_t q;
 
     while ((pw = getpwent()) != NULL) {
-        if (minuid && pw->pw_uid < minuid)
-            continue;
-        if (maxuid != 0 && pw->pw_uid > maxuid)
+        if (uidrange && !in_uidrange(pw->pw_uid, uidrange))
             continue;
         if (list_find_first(qlist, (ListFindF)quota_match_uid, &pw->pw_uid))
             continue;

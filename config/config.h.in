@@ -66,6 +66,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* Allow reckless hostname expansion */
+#undef WANT_RECKLESS_HOSTRANGE_EXPANSION
+
 /* Define lsd_fatal_error */
 #undef WITH_LSD_FATAL_ERROR_FUNC
 
