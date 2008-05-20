@@ -9,7 +9,7 @@ echo Starting quota tests at `date`
 passes=0
 total=$#
 for t in $*; do
-	echo -n $t.............
+	echo -n $t...........................................
 	./$t.sh $quota $repquota >$t.out 2>&1
 	rc=$?
 	if test $rc != 0; then

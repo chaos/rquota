@@ -1,0 +1,4 @@
+Disk quotas for 101:
+Filesystem     used   quota  limit    timeleft  files  quota  limit    timeleft
+/foo           1.0G   1.0M   1.0M     expired   444.9K n/a    n/a      
+*** Over block quota on /foo, time limit expired.
