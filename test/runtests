@@ -1,15 +1,16 @@
 #!/bin/sh
 
-quota=$1; shift
-test -x $quota || exit 1
-repquota=$1; shift
-test -x $repquota || exit 1
-echo Starting quota tests at `date`
+test -x "$PATH_QUOTA" || exit 1
+test -x "$PATH_REPQUOTA" || exit 1
+
+if test $# = 0; then
+	set `echo [0-9][0-9].sh | sed -e 's/\.sh//g'`
+fi
 
 passes=0
 total=$#
 for t in $*; do
-	echo -n $t...........................................
+	echo -n $t.........................................................
 	./$t.sh $quota $repquota >$t.out 2>&1
 	rc=$?
 	if test $rc != 0; then
@@ -24,6 +25,5 @@ for t in $*; do
 		fi
 	fi
 done
-echo Finished quota tests at `date`
 echo $passes of $total tests passed 
 exit `expr $total - $passes`

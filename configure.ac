@@ -58,5 +58,7 @@ AC_DEFINE(WITH_LSD_NOMEM_ERROR_FUNC, 1, [Define lsd_fatal_error])
 AC_CONFIG_FILES( \
   quota.spec \
   Makefile \
+  src/Makefile \
+  test/Makefile \
 )
 AC_OUTPUT
