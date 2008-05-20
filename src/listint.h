@@ -23,7 +23,9 @@
 \*****************************************************************************/
 
 List listint_create(char *s);
-int listint_find(List l, unsigned long u);
+int  listint_member(List l, unsigned long u);
+void listint_destroy(List l);
+
 void listint_test(void);
 
 /*

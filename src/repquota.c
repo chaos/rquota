@@ -226,7 +226,7 @@ main(int argc, char *argv[])
     if (qlist)
         list_destroy(qlist);
     if (uids)
-        list_destroy(uids);
+        listint_destroy(uids);
 
     return 0;
 }
@@ -306,7 +306,7 @@ dirscan(confent_t *cp, List qlist, List uids)
         snprintf(fqp, sizeof(fqp), "%s/%s", cp->cf_rpath, dp->d_name);
         if (stat(fqp, &sb) < 0)
             continue;
-        if (uids && !listint_find(uids, sb.st_uid))
+        if (uids && !listint_member(uids, sb.st_uid))
             continue;
         add_quota(cp, qlist, sb.st_uid);
     }
@@ -324,7 +324,7 @@ pwscan(confent_t *cp, List qlist, List uids)
     quota_t q;
 
     while ((pw = getpwent()) != NULL) {
-        if (uids && !listint_find(uids, pw->pw_uid))
+        if (uids && !listint_member(uids, pw->pw_uid))
             continue;
         add_quota(cp, qlist, pw->pw_uid);
     }

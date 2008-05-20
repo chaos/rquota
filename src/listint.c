@@ -148,12 +148,18 @@ listint_match(unsigned long *entry, unsigned long *key)
 }
 
 int
-listint_find(List l, unsigned long u)
+listint_member(List l, unsigned long u)
 {
     unsigned long *up;
  
     up = list_find_first(l, (ListFindF)listint_match, &u);
     return (up ? 1 : 0);
+}
+
+void
+listint_destroy(List l)
+{
+    list_destroy(l);
 }
 
 #ifndef NDEBUG
