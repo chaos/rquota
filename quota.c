@@ -36,6 +36,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/param.h>          /* MAXHOSTNAMELEN */
+#if HAVE_GETOPT_LONG
+#include <getopt.h>
+#endif
 #include <signal.h>
 #include <assert.h>
 #include <dirent.h>
@@ -55,6 +58,22 @@ static void lookup_self(char **userp, uid_t *uidp, char **dirp);
 static void get_login_quota(char *homedir, uid_t uid, List qlist);
 static void get_all_quota(uid_t uid, List qlist);
 
+#define OPTIONS "f:rvlt:T"
+#if HAVE_GETOPT_LONG
+#define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
+static struct option longopts[] = {
+    {"login",            no_argument,        0, 'l'},
+    {"timeout",          required_argument,  0, 't'},
+    {"realpath",         no_argument,        0, 'r'},
+    {"verbose",          no_argument,        0, 'v'},
+    {"config",           required_argument,  0, 'f'},
+    {"selftest",         no_argument,        0, 'T'},
+    {0, 0, 0, 0},
+};
+#else
+#define GETOPT(ac,av,opt,lopt) getopt(ac,av,opt)
+#endif
+
 char *prog;
 
 int 
@@ -71,25 +90,25 @@ main(int argc, char *argv[])
 
     /* handle args */
     prog = basename(argv[0]);
-    while ((c = getopt(argc, argv, "f:rvlt:T")) != EOF) {
+    while ((c = GETOPT(argc, argv, OPTIONS, longopts)) != EOF) {
         switch (c) {
-        case 'l':              /* -l display home directory quota only */
+        case 'l':   /* --login */
             lopt = 1;
             break;
-        case 't':               /* -t set timeout in seconds */
+        case 't':   /* --timeout */
             signal(SIGALRM, alarm_handler);
             alarm(strtoul(optarg, NULL, 10));
             break;
-        case 'r':              /* -r display rmt mntpt, not descriptive name */
+        case 'r':   /* --realpath */
             ropt = 1;
             break;
-        case 'v':              /* -v show all quota info for selected fs's */
+        case 'v':   /* --verbose */
             vopt = 1;
             break;
-        case 'f':              /* -f use alternate config file */
+        case 'f':   /* --config file */
             setconfent(optarg); /* perror/exit on error */
             break;
-        case 'T':              /* -T (undocumented) internal unit tests */
+        case 'T':   /* --selftest (undocumented) */
 #ifndef NDEBUG
             test_match_path();
             exit(0);
@@ -138,10 +157,14 @@ main(int argc, char *argv[])
         else
             list_for_each(qlist, (ListForF)quota_print, NULL);
     } else {
+        int i = 0;
+
         if (ropt)
-            list_for_each(qlist, (ListForF)quota_print_justwarn_realpath, NULL);
+            list_for_each(qlist, (ListForF)quota_print_justwarn_realpath, &i);
         else
-            list_for_each(qlist, (ListForF)quota_print_justwarn, NULL);
+            list_for_each(qlist, (ListForF)quota_print_justwarn, &i);
+        if (i > 0)
+            printf("Run quota -v for more detailed information.\n");
     }
 
     list_destroy(qlist);
@@ -181,7 +204,6 @@ lookup_self(char **userp, uid_t *uidp, char **dirp)
     *userp = xstrdup(pw->pw_name);
 }
 
-/* user contains uid string */
 static void
 lookup_user_byuid(char *user, uid_t *uidp, char **dirp)
 {

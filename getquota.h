@@ -44,9 +44,9 @@ int quota_report_usageonly(quota_t x, unsigned long *bsize);
 
 void quota_print_heading(char *name);
 int quota_print(quota_t x, void *arg);
-int quota_print_justwarn(quota_t x, void *arg);
 int quota_print_realpath(quota_t x, void *arg);
-int quota_print_justwarn_realpath(quota_t x, void *arg);
+int quota_print_justwarn(quota_t x, int *msgcount);
+int quota_print_justwarn_realpath(quota_t x, int *msgcount);
 
 int quota_print_raw(quota_t q, void *arg);
 

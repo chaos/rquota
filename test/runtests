@@ -1,0 +1,29 @@
+#!/bin/sh
+
+quota=$1; shift
+test -x $quota || exit 1
+repquota=$1; shift
+test -x $repquota || exit 1
+echo Starting quota tests at `date`
+
+passes=0
+total=$#
+for t in $*; do
+	echo -n $t.............
+	./$t.sh $quota $repquota >$t.out 2>&1
+	rc=$?
+	if test $rc != 0; then
+		echo "failed rc=$rc, see $t.out"
+	else
+		diff -u $t.exp $t.out >$t.diff
+		if test $? != 0; then
+			echo "unexpected output, see $t.diff"
+		else
+			echo "success"
+			passes=`expr $passes + 1`
+		fi
+	fi
+done
+echo Finished quota tests at `date`
+echo $passes of $total tests passed 
+exit `expr $total - $passes`

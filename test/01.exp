@@ -1,0 +1,3 @@
+Disk quotas for 100:
+Filesystem     used   quota  limit    timeleft  files  quota  limit    timeleft
+/foo           1.0M   n/a    n/a                444.9K n/a    n/a      

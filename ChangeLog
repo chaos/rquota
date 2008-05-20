@@ -1,3 +1,10 @@
+2008-05-19 Jim Garlick <garlick@llnl.gov>
+
+	* getquota.[ch], quota.c : If not in -v mode and warnings are
+	issued, notify user to run -v to get more info.
+
+	* quota.c : Add getopt_long() support.
+
 2008-05-13 Jim Garlick <garlick@llnl.gov>
 
 	* config/*, Makefile.in, configure, INSTALL : 

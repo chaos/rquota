@@ -457,7 +457,6 @@ quota_print_realpath(quota_t q, void *arg)
     assert(q->q_magic == QUOTA_MAGIC);
     report_usage(q, make_realpath(q));
     report_warning(q, make_realpath(q), "*** ");
-    /*printf("Run quota -v for more detailed information.\n");*/
     return 0;
 }
 
@@ -467,23 +466,22 @@ quota_print(quota_t q, void *arg)
     assert(q->q_magic == QUOTA_MAGIC);
     report_usage(q, q->q_label);
     report_warning(q, q->q_label, "*** ");
-    /*printf("Run quota -v for more detailed information.\n");*/
     return 0;
 }
 
 int
-quota_print_justwarn(quota_t q, void *arg)
+quota_print_justwarn(quota_t q, int *msgcount)
 {
     assert(q->q_magic == QUOTA_MAGIC);
-    report_warning(q, q->q_label, "");
+    *msgcount += report_warning(q, q->q_label, "");
     return 0;
 }
 
 int
-quota_print_justwarn_realpath(quota_t q, void *arg)
+quota_print_justwarn_realpath(quota_t q, int *msgcount)
 {  
     assert(q->q_magic == QUOTA_MAGIC);
-    report_warning(q, make_realpath(q), "");
+    *msgcount += report_warning(q, make_realpath(q), "");
     return 0;
 }
 
