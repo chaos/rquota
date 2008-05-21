@@ -67,9 +67,9 @@ parse_int(char *s, unsigned long *u1p, unsigned long *u2p)
     s = endptr + 1;
     u2 = strtoul(s, &endptr, 10);
     if (endptr == s)
-        return INVALID;
+        goto done;
     if (*endptr != '\0')
-        return INVALID;
+        goto done;
     rc = RANGE;
 done:
     if ((rc == SINGLE || rc == RANGE) && u1p)
