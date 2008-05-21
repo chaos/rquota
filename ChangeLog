@@ -1,5 +1,11 @@
 2008-05-20 Jim Garlick <garlick@llnl.gov>
 
+	* src/repquota.c : Fix error an error message.
+
+	* src/repquota.1 : Fix option descriptions.
+
+2008-05-20 Jim Garlick <garlick@llnl.gov>
+
 	* : tag 1.10
 
 	* src/* : Main source moved here.
