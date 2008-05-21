@@ -15,17 +15,19 @@ of the specified file system.
 .TP 
 \fI-d\fR, \fI--dirscan\fR
 Report on users who own top-level directories in the target file system.
-Without this option, report on users in the password file.
+.TP 
+\fI-p\fR, \fI--pwscan\fR
+Report on users from the password file.
+.TP
+\fI-u\fR, \fI--uid-range range\fR
+Report on users whose UID is included in range,
+where range consists of any combination of hyphenated ranges and
+single values deliminated by commas, e.g. ``0,100-9999,65536''.
 .TP
 \fI-b\fR, \fI--blocksize\fR \fIblocksize\fR
 Report disk usage in blocksize units.  The suffixes `K', `M', or `G'
 may be used for kilobytes, megabytes, or gigabytes, respectively.
 Default: 1M.
-.TP
-\fI-u\fR, \fI--uid-range range\fR
-Only report users whose UID is included in range,
-where range consists of any combination of hyphenated ranges and
-single values deliminated by commas, e.g. ``0,100-9999,65536''.
 .TP
 \fI-r\fR, \fI--reverse-sort\fR
 Sort output in descending order.

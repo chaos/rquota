@@ -158,7 +158,7 @@ main(int argc, char *argv[])
         exit(1);
     }
     if (!popt && !dopt && !uids) {
-        fprintf(stderr, "%s: need at least one of -pdU\n", prog);
+        fprintf(stderr, "%s: need at least one of -pdu\n", prog);
         exit(1);
     }
     if (optind < argc)
