@@ -262,7 +262,7 @@ quota_cmp_files_reverse(quota_t x, quota_t y)
 void
 quota_report_heading(void)
 {
-    printf("%-10s %-11s %-11s %-11s %-12s %-12s %-12s\n", "User", 
+    printf("%-5s %-11s %-11s %-11s %-12s %-12s %-12s\n", "User", 
             "Space-used", "Space-soft", "Space-hard",
             "Files-used", "Files-soft", "Files-hard");
 }
@@ -270,14 +270,14 @@ quota_report_heading(void)
 void
 quota_report_heading_usageonly(void)
 {
-    printf("%-10s %-11s %-12s\n", "User", "Space-used", "Files-used");
+    printf("%-5s %-11s %-12s\n", "User", "Space-used", "Files-used");
 }
 
 int
 quota_report(quota_t x, unsigned long *bsize)
 {
     assert(x->q_magic == QUOTA_MAGIC);
-    printf("%-10u %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n", x->q_uid, 
+    printf("%-5u %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n", x->q_uid, 
         x->q_bytes_used    / *bsize,
         x->q_bytes_softlim / *bsize,
         x->q_bytes_hardlim / *bsize,
@@ -291,7 +291,7 @@ int
 quota_report_usageonly(quota_t x, unsigned long *bsize)
 {
     assert(x->q_magic == QUOTA_MAGIC);
-    printf("%-10u %-11llu %-12llu\n", x->q_uid, 
+    printf("%-5u %-11llu %-12llu\n", x->q_uid, 
         x->q_bytes_used / *bsize, x->q_files_used);
     return 0;
 }

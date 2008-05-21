@@ -1,6 +1,6 @@
-Name: @PROJECT@
-Version: @VERSION@
-Release:  @RELEASE@
+Name:
+Version: 
+Release:
 
 Summary: Quota utility for displaying remote NFS quotas
 Group:   System Environment/Base

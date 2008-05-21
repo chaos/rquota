@@ -56,7 +56,6 @@ AC_DEFINE(WITH_LSD_NOMEM_ERROR_FUNC, 1, [Define lsd_fatal_error])
 # Epilogue
 ##
 AC_CONFIG_FILES( \
-  rquota.spec \
   Makefile \
   src/Makefile \
   test/Makefile \
