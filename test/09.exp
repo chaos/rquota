@@ -1,0 +1,4 @@
+Disk quotas for 106:
+Filesystem     used   quota  limit    timeleft  files  quota  limit    timeleft
+/foo           -0-    n/a    n/a                100.0K 90.0K  105.0K   [7 days]
+*** Over file quota on /foo, remove 10.0K files within [7 days].

@@ -171,10 +171,6 @@ main(int argc, char *argv[])
         fprintf(stderr, "%s: %s: not found in quota.conf\n", prog, fsname);
         exit(1);
     }
-    if (geteuid() != 0) {
-        fprintf(stderr, "%s: must run with root privileges\n", prog);
-        exit(1);
-    }
         
     /* Scan.
      */

@@ -13,6 +13,7 @@
 	* src/listint.[ch] : Simple list-of-ints handling functions.
 
 	* src/repquota.c : Change --min-uid, --max-uid option to --uid-range.
+	Swap -u and -U.
 
 2008-05-19 Jim Garlick <garlick@llnl.gov>
 

@@ -77,6 +77,8 @@ quota_get_test(uid_t uid, quota_t q)
 {
     int rc = 0;
 
+    q->q_uid = uid;
+
     q->q_bytes_used = 0;
     q->q_bytes_softlim = 0;
     q->q_bytes_hardlim = 0;
@@ -116,6 +118,26 @@ quota_get_test(uid_t uid, quota_t q)
         case 103:   /* test 06 - high usage (73PB / 17 trillion files) */
             q->q_bytes_used = (unsigned long long)1024*1024*1024*1024*1024*73;
             q->q_files_used = (unsigned long long)1024*1024*1024*1024*17;
+            break;
+        case 104:   /* test 07 - usage over 90% of hard quota (quota.conf) */
+            q->q_bytes_used = 1024*100;
+            q->q_bytes_softlim = 1024*105;
+            q->q_bytes_hardlim = 1024*105;
+            q->q_bytes_state = UNDER;
+            break;
+        case 105:   /* test 08 - usage over usage soft, timer started */
+            q->q_bytes_used = 1024*100;
+            q->q_bytes_softlim = 1024*90;
+            q->q_bytes_hardlim = 1024*105;
+            q->q_bytes_secleft = 60*60*24*3;
+            q->q_bytes_state = STARTED;
+            break;
+        case 106:   /* test 09 - usage over file soft, timer not started */
+            q->q_files_used = 1024*100;
+            q->q_files_softlim = 1024*90;
+            q->q_files_hardlim = 1024*105;
+            q->q_files_secleft = 60*60*24*3;
+            q->q_files_state = NOTSTARTED;
             break;
         default:
             rc = 1;
@@ -240,7 +262,7 @@ quota_cmp_files_reverse(quota_t x, quota_t y)
 void
 quota_report_heading(void)
 {
-    printf("%-10s%-11s%-11s%-11s %-12s%-12s%-12s\n", "User", 
+    printf("%-10s %-11s %-11s %-11s %-12s %-12s %-12s\n", "User", 
             "Space-used", "Space-soft", "Space-hard",
             "Files-used", "Files-soft", "Files-hard");
 }
@@ -248,7 +270,7 @@ quota_report_heading(void)
 void
 quota_report_heading_usageonly(void)
 {
-    printf("%-10s%-11s %-12s\n", "User", "Space-used", "Files-used");
+    printf("%-10s %-11s %-12s\n", "User", "Space-used", "Files-used");
 }
 
 int
@@ -264,7 +286,7 @@ quota_report(quota_t x, unsigned long *bsize)
         snprintf(tmp, sizeof(tmp), "%u", x->q_uid);
         name = tmp;
     }
-    printf("%-10s%-11llu%-11llu%-11llu %-12llu%-12llu%-12llu\n", name, 
+    printf("%-10s %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n", name, 
         x->q_bytes_used    / *bsize,
         x->q_bytes_softlim / *bsize,
         x->q_bytes_hardlim / *bsize,
@@ -287,7 +309,7 @@ quota_report_usageonly(quota_t x, unsigned long *bsize)
         snprintf(tmp, sizeof(tmp), "%u", x->q_uid);
         name = tmp;
     }
-    printf("%-10s%-11llu %-12llu\n", name, 
+    printf("%-10s %-11llu %-12llu\n", name, 
         x->q_bytes_used / *bsize, x->q_files_used);
     return 0;
 }

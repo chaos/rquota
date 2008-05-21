@@ -1,0 +1,5 @@
+Quota report for /foo (blocksize 1.0M)
+User       Space-used  Space-soft  Space-hard  Files-used   Files-soft   Files-hard  
+100        1           0           0           455555       0            0           
+101        1024        1           1           455555       1048576      1048576     
+102        0           1           1024        455555       1024         1024        
