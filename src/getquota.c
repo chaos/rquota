@@ -276,17 +276,8 @@ quota_report_heading_usageonly(void)
 int
 quota_report(quota_t x, unsigned long *bsize)
 {
-    struct passwd *pw;
-    char *name, tmp[16];
-
     assert(x->q_magic == QUOTA_MAGIC);
-    if ((pw = getpwuid(x->q_uid)))
-        name = pw->pw_name;
-    else {
-        snprintf(tmp, sizeof(tmp), "%u", x->q_uid);
-        name = tmp;
-    }
-    printf("%-10s %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n", name, 
+    printf("%-10u %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n", x->q_uid, 
         x->q_bytes_used    / *bsize,
         x->q_bytes_softlim / *bsize,
         x->q_bytes_hardlim / *bsize,
@@ -299,17 +290,8 @@ quota_report(quota_t x, unsigned long *bsize)
 int
 quota_report_usageonly(quota_t x, unsigned long *bsize)
 {
-    struct passwd *pw;
-    char *name, tmp[16];
-
     assert(x->q_magic == QUOTA_MAGIC);
-    if ((pw = getpwuid(x->q_uid)))
-        name = pw->pw_name;
-    else {
-        snprintf(tmp, sizeof(tmp), "%u", x->q_uid);
-        name = tmp;
-    }
-    printf("%-10s %-11llu %-12llu\n", name, 
+    printf("%-10u %-11llu %-12llu\n", x->q_uid, 
         x->q_bytes_used / *bsize, x->q_files_used);
     return 0;
 }

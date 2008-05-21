@@ -10,13 +10,13 @@ fi
 passes=0
 total=$#
 for t in $*; do
-	echo -n $t.........................................................
+	printf "%s..........................................."  $t
 	./$t.sh $quota $repquota >$t.out 2>&1
 	rc=$?
 	if test $rc != 0; then
 		echo "failed rc=$rc, see $t.out"
 	else
-		diff -u $t.exp $t.out >$t.diff
+		diff $t.exp $t.out >$t.diff
 		if test $? != 0; then
 			echo "unexpected output, see $t.diff"
 		else
