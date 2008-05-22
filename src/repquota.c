@@ -27,7 +27,7 @@
 #endif
 #include <ctype.h>
 #include <pwd.h>
-#if HAVE_GETOPT_LONG
+#if HAVE_GETOPT_H
 #include <getopt.h>
 #endif
 #include <rpc/rpc.h>
@@ -60,7 +60,7 @@ char *prog;
 #define OPTIONS "u:b:dhHrsFf:UpT"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
-static struct option longopts[] = {
+static const struct option longopts[] = {
     {"dirscan",          no_argument,        0, 'd'},
     {"pwscan",           no_argument,        0, 'p'},
     {"blocksize",        required_argument,  0, 'b'},

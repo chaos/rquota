@@ -1,3 +1,7 @@
+2008-05-22 Jim Garlick <garlick@llnl.gov>
+
+	* src/repquota.c, src/quota.c : Tidy up longopt handling.
+	
 2008-05-20 Jim Garlick <garlick@llnl.gov>
 
 	* src/repquota.c : Fix error an error message.

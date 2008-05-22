@@ -36,7 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/param.h>          /* MAXHOSTNAMELEN */
-#if HAVE_GETOPT_LONG
+#if HAVE_GETOPT_H
 #include <getopt.h>
 #endif
 #include <signal.h>
@@ -61,7 +61,7 @@ static void get_all_quota(uid_t uid, List qlist);
 #define OPTIONS "f:rvlt:T"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
-static struct option longopts[] = {
+static const struct option longopts[] = {
     {"login",            no_argument,        0, 'l'},
     {"timeout",          required_argument,  0, 't'},
     {"realpath",         no_argument,        0, 'r'},
