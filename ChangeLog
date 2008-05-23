@@ -1,3 +1,7 @@
+2008-05-23 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 2.0
+
 2008-05-22 Jim Garlick <garlick@llnl.gov>
 
 	* src/repquota.c, src/quota.c : Tidy up longopt handling.
