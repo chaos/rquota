@@ -1,11 +1,11 @@
 ========================================================================
-quota-2.0 Release Notes                                       2008-05-23
+rquota-2.0 Release Notes                                      2008-05-23
 ========================================================================
 
 * Tidy up.  First release for sourceforge.
 
 ========================================================================
-quota-1.10 Release Notes                                      2008-05-20
+rquota-1.10 Release Notes                                     2008-05-20
 ========================================================================
 
 * Integrated automake.
@@ -13,7 +13,7 @@ quota-1.10 Release Notes                                      2008-05-20
 * Added test suite.
 
 ========================================================================
-quota-1.9 Release Notes                                       2008-05-03
+rquota-1.9 Release Notes                                      2008-05-03
 ========================================================================
 
 * Add support for Lustre quotas.
@@ -23,14 +23,14 @@ quota-1.9 Release Notes                                       2008-05-03
 * General refactoring and cleanup.
 
 ========================================================================
-quota-1.8 Release Notes                                       2008-04-18
+rquota-1.8 Release Notes                                      2008-04-18
 ========================================================================
 
 * Fix bug where home directory of /g/g53/user matched mount point of
   /g/g5.  https://chaos.llnl.gov/bugzilla/show_bug.cgi?id=301
 
 ========================================================================
-quota-1.7 Release Notes                                       2007-10-29
+rquota-1.7 Release Notes                                      2007-10-29
 ========================================================================
 
 * Rename package to 'rquota' and have it obsolete the Red Hat quota 

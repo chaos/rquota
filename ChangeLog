@@ -1,3 +1,9 @@
+2008-05-30 Jim Garlick <garlick@llnl.gov>
+
+	* rquota.spec : Set --program-prefix to prevent AIX from adding one.
+
+	* src/listint.c : Silence warning on AIX.
+
 2008-05-23 Jim Garlick <garlick@llnl.gov>
 
 	* : tag 2.0

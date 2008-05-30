@@ -28,10 +28,11 @@ Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 %setup
 
 %build
+# N.B. --program-prefix="" needed on AIX
 %if 0%{?ch4}
-%configure --with-lustre
+%configure --program-prefix="" --with-lustre
 %else
-%configure
+%configure --program-prefix=""
 %endif
 make
 make check

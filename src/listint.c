@@ -51,7 +51,7 @@ static int           listint_match(unsigned long *entry, unsigned long *key);
 static parsetype_t
 parse_int(char *s, unsigned long *u1p, unsigned long *u2p)
 {
-    unsigned long u1, u2;
+    unsigned long u1, u2 = 0;
     char *endptr;
     int rc = INVALID;
 
