@@ -15,6 +15,10 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 
 Source0: %{name}-%{version}-%{release}.tgz
 
+%if 0%{?ch4}
+%define _with_lustre 1
+%endif
+
 %description
 Quota is a utility for displaying remote filesystem quota information.
 This particular implentation does not report local filesystem quotas
@@ -28,12 +32,9 @@ Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 %setup
 
 %build
-# N.B. --program-prefix="" needed on AIX
-%if 0%{?ch4}
-%configure --program-prefix="" --with-lustre
-%else
-%configure --program-prefix=""
-%endif
+%configure \
+	%{?_with_lustre: --with-lustre} \
+	--program-prefix=%{?_program_prefix:%{_program_prefix}}
 make
 make check
 
