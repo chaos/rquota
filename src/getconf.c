@@ -32,13 +32,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
+#include <ctype.h>
 
-#include "getconf.h"
 #include "list.h"
+#include "getconf.h"
 #include "util.h"
 
-/* configuration file pointer */
-static FILE *fsys = NULL;
+#define CONF_MAGIC 0x33221144
+struct conf_struct {
+    int conf_magic;
+    List conf_ents; 
+};
 
 /*
  * Helper for getconfent().  Parse out a field within a string.
@@ -60,94 +65,144 @@ next_field(char **str, char sep)
     return rv;
 }
 
-/*
- * Open/rewind the config file
- * 	path (IN)	pathname to open if not open already
- */
-void 
-setconfent(char *path)
+static void
+zap_trailing_spaces(char *str)
 {
-    if (!fsys) {
-        fsys = fopen(path, "r");
-        if (fsys == NULL) {
-            perror(path);
-            exit(1);
-        }
-    } else
-        rewind(fsys);
+    char *p = &str[strlen(str) - 1];
+
+    while (p >= str && isspace(*p))
+        *p-- = '\0';
 }
 
 /*
- * Close the config file if open.
+ * Read/parse the next configuration file entry.
+ * 	RETURN		config file entry (caller must free)
  */
-void 
-endconfent(void)
-{
-    if (fsys)
-        fclose(fsys);
-}
-
-/*
- * Return the next configuration file entry.  Open the default config file 
- * path if the config file has not already been opened.
- * 	RETURN		config file entry
- */
-confent_t *
-getconfent(void)
+static confent_t *
+getconfent(FILE *f)
 {
     static char buf[BUFSIZ];
-    static confent_t conf;
-    confent_t *result = NULL;
+    char *thresh, *label, *rhost, *rpath, *p;
+    confent_t *e = NULL;
 
-    if (!fsys)
-        setconfent(_PATH_QUOTA_CONF);
-
-    while (fgets(buf, BUFSIZ, fsys)) {
-        char *threshp, *p;
+    while (fgets(buf, BUFSIZ, f)) {
 
         if ((p = strchr(buf, '#'))) /* zap comment */
             *p = '\0';
+        zap_trailing_spaces(buf);
         if (strlen(buf) > 0) {
             p = buf;
-            conf.cf_label = next_field(&p, ':');
-            conf.cf_rhost = next_field(&p, ':');
-            conf.cf_rpath = next_field(&p, ':');
-            threshp = next_field(&p, ':');
-            conf.cf_thresh = 0;
-            if (threshp != NULL)
-                conf.cf_thresh = atoi(threshp);
+            label = next_field(&p, ':');
+            rhost = next_field(&p, ':');
+            rpath = next_field(&p, ':');
+            thresh = next_field(&p, ':');
 
-            result = &conf;
+            e = (confent_t *)xmalloc(sizeof(confent_t));
+            e->cf_label = xstrdup(label);
+            e->cf_rhost = xstrdup(rhost);
+            e->cf_rpath = xstrdup(rpath);
+            e->cf_thresh = thresh ? strtoul(thresh, NULL, 10) : 0;
             break;
         }
     }
 
-    return result;
-}
-
-confent_t *
-getconflabelsub(char *dir)
-{
-    confent_t *e;
- 
-    setconfent(_PATH_QUOTA_CONF);   
-    while ((e = getconfent()) != NULL) {
-        if (match_path(dir, e->cf_label))
-            break;
-    }
     return e;
 }
 
-confent_t *
-getconflabel(char *label)
+static void
+freeconfent(confent_t *e)
 {
-    confent_t *e;
- 
-    setconfent(_PATH_QUOTA_CONF);   
-    while ((e = getconfent()) != NULL) {
-        if (!strcmp(e->cf_label, label))
-            break;
+    if (e) {
+        if (e->cf_label)
+            free(e->cf_label);
+        if (e->cf_rhost)
+            free(e->cf_rhost);
+        if (e->cf_rpath)
+            free(e->cf_rpath);
+        free(e);
     }
+}
+
+conf_t
+conf_init(char *path)
+{
+    conf_t cp; 
+    FILE *f = stdin;
+    confent_t *e;
+
+    if (strcmp(path, "-") != 0) {
+        if (!(f = fopen(path, "r"))) {
+            perror(path);
+            exit(1);
+        }
+    } 
+
+    cp = (conf_t)xmalloc(sizeof(struct conf_struct));
+    cp->conf_magic = CONF_MAGIC;
+    cp->conf_ents = list_create((ListDelF)freeconfent);
+
+    while ((e = getconfent(f)))
+        list_append(cp->conf_ents, e);
+
+    if (strcmp(path, "-") != 0)
+        fclose(f);
+        
+    return cp;
+}
+
+void 
+conf_fini(conf_t cp)
+{
+    assert(cp);
+    assert(cp->conf_magic == CONF_MAGIC);
+
+    cp->conf_magic = 0;
+    list_destroy(cp->conf_ents);
+    free(cp);
+}
+
+conf_iterator_t
+conf_iterator_create(conf_t cp)
+{
+    assert(cp);
+    assert(cp->conf_magic == CONF_MAGIC);
+
+    return list_iterator_create(cp->conf_ents);
+}
+
+void
+conf_iterator_destroy(conf_iterator_t itr)
+{
+    list_iterator_destroy(itr);
+}
+
+confent_t *
+conf_next(conf_iterator_t itr)
+{
+    return list_next(itr);
+}
+
+confent_t *
+conf_get_bylabel(conf_t cp, char *label, int flags)
+{
+    conf_iterator_t itr;
+    confent_t *e;
+
+    assert(cp);
+    assert(cp->conf_magic == CONF_MAGIC);
+
+    itr = conf_iterator_create(cp);
+    while ((e = conf_next(itr))) {
+        if ((flags & CONF_MATCH_SUBDIR)) {
+            if (match_path(label, e->cf_label))
+                break;
+        } else {
+            if (!strcmp(label, e->cf_label))
+                break;
+        }
+    }
+    conf_iterator_destroy(itr);
+
     return e;
 }
 

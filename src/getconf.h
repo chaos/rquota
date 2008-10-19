@@ -33,12 +33,18 @@ typedef struct {
 #define _PATH_QUOTA_CONF "/etc/quota.conf"
 #endif
 
-void setconfent(char *path);
-void endconfent(void);
-confent_t *getconfent(void);
-confent_t *getconflabelsub(char *dir);
-confent_t *getconflabel(char *label);
+typedef ListIterator          conf_iterator_t;
+typedef struct conf_struct *  conf_t;
 
+#define CONF_MATCH_SUBDIR 1 /* conf_get_bylabel() flag: match mountpt subdir */
+                            /* see util.c::match_path() */
+
+conf_t            conf_init(char *path);
+void              conf_fini(conf_t conf);
+confent_t *       conf_get_bylabel(conf_t conf, char *label, int flags);
+conf_iterator_t   conf_iterator_create(conf_t conf);
+void              conf_iterator_destroy(conf_iterator_t itr);
+confent_t *       conf_next(conf_iterator_t itr);
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

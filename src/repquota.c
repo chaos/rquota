@@ -43,9 +43,9 @@
 #include <libgen.h>
 #include <sys/stat.h>
 
+#include "list.h"
 #include "getconf.h"
 #include "getquota.h"
-#include "list.h"
 #include "listint.h"
 #include "util.h"
 
@@ -94,6 +94,8 @@ main(int argc, char *argv[])
     int Hopt = 0;
     int Uopt = 0;
     List uids = NULL;
+    char *conf_path = _PATH_QUOTA_CONF;
+    conf_t config;
 
     prog = basename(argv[0]);
     while ((c = GETOPT(argc, argv, OPTIONS, longopts)) != EOF) {
@@ -133,7 +135,7 @@ main(int argc, char *argv[])
                 Hopt++;
                 break;
             case 'f':   /* --config */
-                setconfent(optarg);
+                conf_path = optarg;
                 break;
             case 'T':   /* --selftest */
 #ifndef NDEBUG
@@ -167,7 +169,9 @@ main(int argc, char *argv[])
         usage();
     if (optind < argc)
         usage();
-    if (!(conf = getconflabel(fsname))) {
+    config = conf_init(conf_path); /* exit/perror on error */
+
+    if (!(conf = conf_get_bylabel(config, fsname, 0))) {
         fprintf(stderr, "%s: %s: not found in quota.conf\n", prog, fsname);
         exit(1);
     }
@@ -223,6 +227,7 @@ main(int argc, char *argv[])
         list_destroy(qlist);
     if (uids)
         listint_destroy(uids);
+    conf_fini(config);
 
     return 0;
 }

@@ -1,3 +1,11 @@
+2008-10-19 Jim Garlick <garlick@llnl.gov>
+
+	* src/getconf.[ch] : Redo interface.  Handle comments properly.
+
+	* test/tconf.c, test/13.sh, test/13.exp : Test for above.
+
+	* src/quota.c src/repquota.c : Use new configuration interface.
+
 2008-06-03 Jim Garlick <garlick@llnl.gov>
 
 	* : tag 2.1

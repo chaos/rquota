@@ -45,9 +45,9 @@
 #include <libgen.h>
 #include <errno.h>
 
+#include "list.h"
 #include "getconf.h"
 #include "getquota.h"
-#include "list.h"
 #include "util.h"
 
 static void usage(void);
@@ -55,8 +55,8 @@ static void alarm_handler(int arg);
 static void lookup_user_byname(char *user, uid_t *uidp, char **dirp);
 static void lookup_user_byuid(char *user, uid_t *uidp, char **dirp);
 static void lookup_self(char **userp, uid_t *uidp, char **dirp);
-static void get_login_quota(char *homedir, uid_t uid, List qlist);
-static void get_all_quota(uid_t uid, List qlist);
+static void get_login_quota(conf_t config, char *homedir, uid_t uid,List qlist);
+static void get_all_quota(conf_t config, uid_t uid, List qlist);
 
 #define OPTIONS "f:rvlt:T"
 #if HAVE_GETOPT_LONG
@@ -87,6 +87,8 @@ main(int argc, char *argv[])
     extern char *optarg;
     extern int optind;
     List qlist;
+    char *conf_path = _PATH_QUOTA_CONF;
+    conf_t config = NULL;
 
     /* handle args */
     prog = basename(argv[0]);
@@ -106,7 +108,7 @@ main(int argc, char *argv[])
             vopt = 1;
             break;
         case 'f':   /* --config file */
-            setconfent(optarg); /* perror/exit on error */
+            conf_path = optarg;
             break;
         case 'T':   /* --selftest (undocumented) */
 #ifndef NDEBUG
@@ -132,6 +134,8 @@ main(int argc, char *argv[])
     else
         lookup_user_byname(user, &uid, &dir);
 
+    config = conf_init(conf_path); /* exit/perror on error */
+
     /* 2>&1 so any errors interrupt the report in a predictable way */
     if (close(2) < 0) {
         fprintf(stderr, "%s: close stderr: %s\n", prog, strerror(errno));
@@ -145,9 +149,9 @@ main(int argc, char *argv[])
     /* build list of quotas */
     qlist = list_create((ListDelF)quota_destroy);
     if (lopt)
-        get_login_quota(dir, uid, qlist);
+        get_login_quota(config, dir, uid, qlist);
     else
-        get_all_quota(uid, qlist);
+        get_all_quota(config, uid, qlist);
 
     /* print output */   
     if (vopt) {
@@ -172,6 +176,7 @@ main(int argc, char *argv[])
         free(user);
     if (dir)
         free(dir);
+    conf_fini(config);
     alarm(0);
     exit(0);
 }
@@ -244,12 +249,12 @@ lookup_user_byname(char *user, uid_t *uidp, char **dirp)
 }
 
 static void
-get_login_quota(char *homedir, uid_t uid, List qlist)
+get_login_quota(conf_t config, char *homedir, uid_t uid, List qlist)
 {
     confent_t *cp;
     quota_t q;
     
-    if ((cp = getconflabelsub(homedir)) == NULL) {
+    if ((cp = conf_get_bylabel(config, homedir, CONF_MATCH_SUBDIR)) == NULL) {
         fprintf(stderr, "%s: could not find quota.conf entry for %s\n",
                 prog, homedir);
         exit(1);
@@ -263,12 +268,14 @@ get_login_quota(char *homedir, uid_t uid, List qlist)
 }
 
 static void
-get_all_quota(uid_t uid, List qlist)
+get_all_quota(conf_t config, uid_t uid, List qlist)
 {
     confent_t *cp;
     quota_t q;
+    conf_iterator_t itr;
 
-    while ((cp = getconfent()) != NULL) {
+    itr = conf_iterator_create(config);
+    while ((cp = conf_next(itr)) != NULL) {
         q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, 
                           cp->cf_thresh);
         if (quota_get(uid, q)) {
@@ -277,6 +284,7 @@ get_all_quota(uid_t uid, List qlist)
         }
         list_append(qlist, q);
     }
+    conf_iterator_destroy(itr);
 }
 
 /*
