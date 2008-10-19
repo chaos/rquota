@@ -1,5 +1,6 @@
 #!/bin/sh
-
+# Check that config files with embedded spaces and comments
+# can be parsed properly.
 cat >x.conf <<EOT
 #
 # Comment

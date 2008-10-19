@@ -58,7 +58,7 @@ static void lookup_self(char **userp, uid_t *uidp, char **dirp);
 static void get_login_quota(conf_t config, char *homedir, uid_t uid,List qlist);
 static void get_all_quota(conf_t config, uid_t uid, List qlist);
 
-#define OPTIONS "f:rvlt:T"
+#define OPTIONS "f:rvlt:Td"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
 static const struct option longopts[] = {
@@ -68,6 +68,7 @@ static const struct option longopts[] = {
     {"verbose",          no_argument,        0, 'v'},
     {"config",           required_argument,  0, 'f'},
     {"selftest",         no_argument,        0, 'T'},
+    {"debug",            no_argument,        0, 'd'},
     {0, 0, 0, 0},
 };
 #else
@@ -75,6 +76,7 @@ static const struct option longopts[] = {
 #endif
 
 char *prog;
+int debug = 0;
 
 int 
 main(int argc, char *argv[])
@@ -118,6 +120,9 @@ main(int argc, char *argv[])
             fprintf(stderr, "%s: compiled with -DNDEBUG\n", prog);
             exit(1);
 #endif
+        case 'd':   /* --debug (undocumented) */
+            debug = 1;
+            break;
         default:
             usage();
         }

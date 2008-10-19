@@ -5,7 +5,12 @@
 	* test/tconf.c, test/13.sh, test/13.exp, test/14.sh, test/14.exp : 
 	Tests for above.
 
-	* src/quota.c src/repquota.c : Use new configuration interface.
+	* src/quota.c, src/repquota.c : Use new configuration interface.
+
+	* src/getquota_nfs.c : If debug, show responses from servers and
+	indicate if any quirks are being applied.
+
+	* src/quota.c, src/repquota.c : Add --debug option.
 
 2008-06-03 Jim Garlick <garlick@llnl.gov>
 

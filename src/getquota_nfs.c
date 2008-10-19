@@ -48,6 +48,7 @@
 #define QUIRK_DEC     0 /* 2 block block limits == no quota */
 
 extern char *prog;
+extern int debug;
 
 /* Normalize reply from quirky servers.
  */
@@ -56,18 +57,33 @@ workaround_quirks(struct rquota *rq)
 {
 #if QUIRK_NETAPP
 #define NETAPP_NOQUOTA (0xffffffff) /* (uint32_t)(-1) */
-    if (rq->rq_bsoftlimit == NETAPP_NOQUOTA)
+    if (rq->rq_bsoftlimit == NETAPP_NOQUOTA) {
+        if (debug)
+            printf("quirk: rq_bsoftlimit = NETAPP_NOQUOTA\n");
         rq->rq_bsoftlimit = 0;
-    if (rq->rq_bhardlimit == NETAPP_NOQUOTA)
+    }
+    if (rq->rq_bhardlimit == NETAPP_NOQUOTA) {
+        if (debug)
+            printf("quirk: rq_bhardlimit = NETAPP_NOQUOTA\n");
         rq->rq_bhardlimit = 0;
-    if (rq->rq_fsoftlimit == NETAPP_NOQUOTA)
+    }
+    if (rq->rq_fsoftlimit == NETAPP_NOQUOTA) {
+        if (debug)
+            printf("quirk: rq_fsoftlimit = NETAPP_NOQUOTA\n");
         rq->rq_fsoftlimit = 0;
-    if (rq->rq_fhardlimit == NETAPP_NOQUOTA)
+    }
+    if (rq->rq_fhardlimit == NETAPP_NOQUOTA) {
+        if (debug)
+            printf("quirk: rq_fhardlimit = NETAPP_NOQUOTA\n");
         rq->rq_fhardlimit = 0;
+    }
 #endif
 #if QUIRK_DEC
-    if (rq->rq_bhardlimit == 2 && rq->rq_bsoftlimit == 2)
+    if (rq->rq_bhardlimit == 2 && rq->rq_bsoftlimit == 2) {
+        if (debug)
+            printf("quirk: rq_bhardlimit = rq_bsoftlimit = 2 (DEC)\n");
         rq->rq_bhardlimit = rq->rq_bsoftlimit = 0;
+    }
 #endif
 }
 
@@ -155,6 +171,21 @@ quota_get_nfs(uid_t uid, quota_t q)
 
     if (q) {
         struct rquota *rq = &result->getquota_rslt_u.gqr_rquota;
+
+        if (debug) {
+            printf("%s:%s: rq_bsize=%llu rq_curblocks=%llu rq_bsoftlimit=%llu rq_bhardlimit=%llu rq_btimeleft=%llu rq_curfiles=%llu rq_fsoftlimit=%llu rq_fhardlimit=%llu rq_ftimeleft=%llu\n",
+                   q->q_rhost, q->q_rpath,
+                   (unsigned long long)rq->rq_bsize,
+                   (unsigned long long)rq->rq_curblocks,
+                   (unsigned long long)rq->rq_bsoftlimit,
+                   (unsigned long long)rq->rq_bhardlimit,
+                   (unsigned long long)rq->rq_btimeleft,
+                   (unsigned long long)rq->rq_curfiles,
+                   (unsigned long long)rq->rq_fsoftlimit,
+                   (unsigned long long)rq->rq_fhardlimit,
+                   (unsigned long long)rq->rq_ftimeleft
+            );
+        }
 
         workaround_quirks(rq);
 

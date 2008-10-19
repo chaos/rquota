@@ -56,8 +56,9 @@ static void pwscan(confent_t *conf, List qlist, List uids);
 static void uidscan(confent_t *conf, List qlist, List uids);
 
 char *prog;
+int debug = 0;
 
-#define OPTIONS "u:b:dhHrsFf:UpT"
+#define OPTIONS "u:b:dhHrsFf:UpTD"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
 static const struct option longopts[] = {
@@ -72,6 +73,7 @@ static const struct option longopts[] = {
     {"suppress-heading", no_argument,        0, 'H'},
     {"config",           required_argument,  0, 'f'},
     {"selftest",         no_argument,        0, 'T'},
+    {"debug",            no_argument,        0, 'D'},
     {0, 0, 0, 0},
 };
 #else
@@ -145,6 +147,9 @@ main(int argc, char *argv[])
                 fprintf(stderr, "%s: not built with debugging enabled\n", prog);
                 exit(1);
 #endif
+                break;
+            case 'D':   /* --debug */
+                debug = 1;
                 break;
             case 'h':
             default:
