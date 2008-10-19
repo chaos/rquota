@@ -2,7 +2,8 @@
 
 	* src/getconf.[ch] : Redo interface.  Handle comments properly.
 
-	* test/tconf.c, test/13.sh, test/13.exp : Test for above.
+	* test/tconf.c, test/13.sh, test/13.exp, test/14.sh, test/14.exp : 
+	Tests for above.
 
 	* src/quota.c src/repquota.c : Use new configuration interface.
 
