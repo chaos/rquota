@@ -66,6 +66,15 @@ next_field(char **str, char sep)
 }
 
 static void
+zap_comment(char *str)
+{
+    char *p = strchr(str, '#');
+
+    if (p)
+        *p = '\0';
+}
+
+static void
 zap_trailing_spaces(char *str)
 {
     char *p = &str[strlen(str) - 1];
@@ -86,9 +95,7 @@ getconfent(FILE *f)
     confent_t *e = NULL;
 
     while (fgets(buf, BUFSIZ, f)) {
-
-        if ((p = strchr(buf, '#'))) /* zap comment */
-            *p = '\0';
+        zap_comment(buf);
         zap_trailing_spaces(buf);
         if (strlen(buf) > 0) {
             p = buf;
