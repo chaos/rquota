@@ -96,9 +96,9 @@ match_path(char *dir, const char *mountpoint)
     if (!strcmp(mountpoint, "/") || !strcmp(mountpoint, dir))
         return 1;
     if (n > m)
-	return 0;
+	    return 0;
     if (!strncmp(dir, mountpoint, n) && dir[n] == '/')
-	return 1;
+	    return 1;
     return 0;
 }
 
