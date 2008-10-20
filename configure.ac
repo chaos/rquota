@@ -21,6 +21,14 @@ AC_PROG_CC
 if test "$GCC" = yes; then
   GCCWARN="-Wall -Wno-unused"
   AC_SUBST([GCCWARN])
+  # Lustre libraries are 64-bit only on ppc64
+  AC_MSG_CHECKING([whether to force 64-bit mode on ppc64])
+  if test x`uname -m` = xppc64 && $CC -v 2>&1 | grep -q biarch; then
+    AC_MSG_RESULT([yes])
+    CC="$CC -m64"
+  else
+    AC_MSG_RESULT([no])
+  fi
 fi
 
 ##

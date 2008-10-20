@@ -173,7 +173,9 @@ quota_get_nfs(uid_t uid, quota_t q)
         struct rquota *rq = &result->getquota_rslt_u.gqr_rquota;
 
         if (debug) {
-            printf("%s:%s: rq_bsize=%llu rq_curblocks=%llu rq_bsoftlimit=%llu rq_bhardlimit=%llu rq_btimeleft=%llu rq_curfiles=%llu rq_fsoftlimit=%llu rq_fhardlimit=%llu rq_ftimeleft=%llu\n",
+            printf("%s:%s: rq_bsize=%llu rq_curblocks=%llu rq_bsoftlimit=%llu "
+                   "rq_bhardlimit=%llu rq_btimeleft=%llu rq_curfiles=%llu "
+                   "rq_fsoftlimit=%llu rq_fhardlimit=%llu rq_ftimeleft=%llu\n",
                    q->q_rhost, q->q_rpath,
                    (unsigned long long)rq->rq_bsize,
                    (unsigned long long)rq->rq_curblocks,
