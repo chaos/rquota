@@ -128,8 +128,12 @@ listint_create(char *s)
         } else if (rc == SINGLE) {
             list_append(l, dup_int(u1));
         } else { /* rc == RANGE */
-            for (u = u1; u <= u2; u++)
-                list_append(l, dup_int(u));
+            if (u1 <= u2)
+                for (u = u1; u <= u2; u++)
+                    list_append(l, dup_int(u));
+            else
+                for (u = u1; u >= u2; u--)
+                    list_append(l, dup_int(u));
         }
         t = strtok(NULL, ",");
     }
@@ -202,14 +206,9 @@ listint_test(void)
     l = listint_create("1,x");
     assert(l == NULL);
 
-    l = listint_create("100-102,204-106"); /* ../test/10.sh */
+    l = listint_create("100-102,204-106");
     assert(l);
-    assert(list_count(l) == 3); /* 204-106 will be ignored */
-    i = 100;
-    itr = list_iterator_create(l);
-    while ((u = list_next(itr)) != NULL)
-        assert(*u == i++);
-    list_iterator_destroy(itr);
+    assert(list_count(l) == 102);
     list_destroy(l);
     
     l = listint_create("100-106"); /* ../test/11.sh */
