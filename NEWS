@@ -1,4 +1,13 @@
 ========================================================================
+rquota-2.2 Release Notes                                      2008-10-20
+========================================================================
+
+* Clean up config file parsing.  Handle free format placement of hash-
+  begun comments.  Handle config file path of "-" (standard input).
+
+* Portability to biarch ppc64 (e.g. SuSE).
+
+========================================================================
 rquota-2.1 Release Notes                                      2008-06-03
 ========================================================================
 
