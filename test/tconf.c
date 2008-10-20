@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
         }
     }
     conf_fini(config);
+    exit(0);
 }
 
 static void 

@@ -280,13 +280,12 @@ uidscan(confent_t *cp, List qlist, List uids)
 {
     ListIterator itr;
     quota_t q;
-    uid_t *up;
+    unsigned long *up;
     int rc;
 
     itr = list_iterator_create(uids);
-    while ((up = list_next(itr))) {
+    while ((up = list_next(itr)))
         add_quota(cp, qlist, (uid_t)*up);
-    }
     list_iterator_destroy(itr);
 }
 

@@ -167,6 +167,9 @@ void
 listint_test(void)
 {
     List l;
+    ListIterator itr;
+    unsigned long *u;
+    int i;
 
     l = listint_create("1,2,3");
     assert(l);
@@ -198,6 +201,26 @@ listint_test(void)
 
     l = listint_create("1,x");
     assert(l == NULL);
+
+    l = listint_create("100-102,204-106"); /* ../test/10.sh */
+    assert(l);
+    assert(list_count(l) == 3); /* 204-106 will be ignored */
+    i = 100;
+    itr = list_iterator_create(l);
+    while ((u = list_next(itr)) != NULL)
+        assert(*u == i++);
+    list_iterator_destroy(itr);
+    list_destroy(l);
+    
+    l = listint_create("100-106"); /* ../test/11.sh */
+    assert(l);
+    assert(list_count(l) == 7);
+    i = 100;
+    itr = list_iterator_create(l);
+    while ((u = list_next(itr)) != NULL)
+        assert(*u == i++);
+    list_iterator_destroy(itr);
+    list_destroy(l);
 }
 #endif
 

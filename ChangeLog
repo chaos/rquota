@@ -3,6 +3,8 @@
 	* configure.ac : Force 64-bit on biarch ppc64 configurations.
 	This is needed because Lustre libs are 64-bit only in this environment.
 
+	* src/repquota.c : Fix casting problem that broke repquota -u on ppc64.
+
 2008-10-19 Jim Garlick <garlick@llnl.gov>
 
 	* src/getconf.[ch] : Redo interface.  Handle comments properly.
