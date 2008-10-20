@@ -1,5 +1,7 @@
 2008-10-20 Jim Garlick <garlick@llnl.gov>
 
+	* : tag 2.2
+
 	* configure.ac : Force 64-bit on biarch ppc64 configurations.
 	This is needed because Lustre libs are 64-bit only in this environment.
 
