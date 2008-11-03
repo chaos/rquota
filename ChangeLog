@@ -1,3 +1,9 @@
+2008-11-03 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 2.2.1
+
+	* rquota.spec : Build with lustre on SLES.
+
 2008-10-20 Jim Garlick <garlick@llnl.gov>
 
 	* src/listint.c : Properly handle descending numerical ranges.

@@ -7,15 +7,17 @@ Group:   System Environment/Base
 License: GPL
 # we replace the redhat quota program
 Conflicts: quota
-%if 0%{?ch4}
-BuildRequires: lustre
-%endif
 
 BuildRoot: %{_tmppath}/%{name}-%{version}
 
 Source0: %{name}-%{version}-%{release}.tgz
 
+%if 0%{?sles}
+BuildRequires: lustre
+%define _with_lustre 1
+%endif
 %if 0%{?ch4}
+BuildRequires: lustre
 %define _with_lustre 1
 %endif
 
