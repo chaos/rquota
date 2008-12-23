@@ -27,4 +27,4 @@ the local mount point if the file system type is Lustre.
 exceeded, causes quota to warn the user.  This can be used in place of 
 soft quotas if a simpler mechanism is desired.
 .SH "SEE ALSO"
-quota(1)
+quota(1), repquota(8)

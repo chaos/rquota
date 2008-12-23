@@ -70,7 +70,7 @@ AC_CONFIG_FILES( \
   test/Makefile \
   man/Makefile \
   man/quota.1 \
-  man/repquota.1 \
   man/quota.conf.5 \
+  man/repquota.8 \
 )
 AC_OUTPUT

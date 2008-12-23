@@ -1,4 +1,4 @@
-.TH repquota 1 "@META_DATE@" "@META_ALIAS@" "@META_NAME@"
+.TH repquota 8 "@META_DATE@" "@META_ALIAS@" "@META_NAME@"
 .SH NAME
 repquota \- report file system quota information
 .SH SYNOPSIS
@@ -50,4 +50,4 @@ A file name of \f-\fR indicates standard input.
 .SH "CAVEATS"
 Group quotas are not supported.
 .SH "SEE ALSO"
-quota.conf(5), quota(1)
+quota(1), quota.conf(5)

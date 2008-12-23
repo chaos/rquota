@@ -48,4 +48,4 @@ View the quota of another user.
 .SH "CAVEATS"
 Group quotas are not supported.
 .SH "SEE ALSO"
-quota.conf(5), repquota(1)
+quota.conf(5), repquota(8)

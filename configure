@@ -5241,7 +5241,7 @@ _ACEOF
 ##
 # Epilogue
 ##
-ac_config_files="$ac_config_files Makefile src/Makefile test/Makefile man/Makefile man/quota.1 man/repquota.1 man/quota.conf.5"
+ac_config_files="$ac_config_files Makefile src/Makefile test/Makefile man/Makefile man/quota.1 man/quota.conf.5 man/repquota.8"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5834,8 +5834,8 @@ do
     "test/Makefile") CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
     "man/Makefile") CONFIG_FILES="$CONFIG_FILES man/Makefile" ;;
     "man/quota.1") CONFIG_FILES="$CONFIG_FILES man/quota.1" ;;
-    "man/repquota.1") CONFIG_FILES="$CONFIG_FILES man/repquota.1" ;;
     "man/quota.conf.5") CONFIG_FILES="$CONFIG_FILES man/quota.conf.5" ;;
+    "man/repquota.8") CONFIG_FILES="$CONFIG_FILES man/repquota.8" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
