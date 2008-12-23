@@ -2,15 +2,16 @@
 # Prologue
 ##
 AC_INIT([rquota])
-AC_META
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([NEWS])
 AC_CANONICAL_SYSTEM
+X_AC_META
+X_AC_EXPAND_INSTALL_DIRS
 
 ##
 # Automake support
 ##
-AM_INIT_AUTOMAKE($PROJECT, $VERSION)
+AM_INIT_AUTOMAKE($META_NAME, $META_VERSION)
 AM_CONFIG_HEADER([config/config.h])
 AM_MAINTAINER_MODE
 
@@ -67,5 +68,9 @@ AC_CONFIG_FILES( \
   Makefile \
   src/Makefile \
   test/Makefile \
+  man/Makefile \
+  man/quota.1 \
+  man/repquota.1 \
+  man/quota.conf.5 \
 )
 AC_OUTPUT

@@ -1,6 +1,4 @@
-\." $Id$
-.\"
-.TH QUOTA.CONF 5 "CHAOS" "" "QUOTA.CONF"
+.TH quota.conf 5 "@META_DATE@" "@META_ALIAS@" "@META_NAME@"
 .SH NAME
 /etc/quota.conf \- configuration file for remote quota program
 .SH DESCRIPTION
