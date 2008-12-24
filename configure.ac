@@ -72,5 +72,6 @@ AC_CONFIG_FILES( \
   man/quota.1 \
   man/quota.conf.5 \
   man/repquota.8 \
+  etc/Makefile \
 )
 AC_OUTPUT

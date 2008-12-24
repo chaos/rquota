@@ -1,1 +1,1 @@
-SUBDIRS = src test
+SUBDIRS = src etc man test

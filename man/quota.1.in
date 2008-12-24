@@ -44,7 +44,7 @@ A file name of \f-\fR indicates standard input.
 \fIuser\fR
 View the quota of another user.
 .SH "FILES"
-/etc/quota.conf
+@X_SYSCONFDIR@/quota.conf
 .SH "CAVEATS"
 Group quotas are not supported.
 .SH "SEE ALSO"

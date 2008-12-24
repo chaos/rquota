@@ -195,7 +195,7 @@ target_os = @target_os@
 target_vendor = @target_vendor@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CFLAGS = @GCCWARN@
+AM_CFLAGS = @GCCWARN@ -D_PATH_QUOTA_CONF=\"@X_SYSCONFDIR@/quota.conf\"
 quota_SOURCES = quota.c $(common_sources)
 repquota_SOURCES = repquota.c $(common_sources)
 LDADD = $(LIBLUSTREAPI)

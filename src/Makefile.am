@@ -1,4 +1,4 @@
-AM_CFLAGS = @GCCWARN@
+AM_CFLAGS = @GCCWARN@ -D_PATH_QUOTA_CONF=\"@X_SYSCONFDIR@/quota.conf\"
 
 bin_PROGRAMS = quota repquota
 

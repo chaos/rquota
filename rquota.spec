@@ -56,3 +56,4 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_mandir}/man1/quota.1*
 %{_mandir}/man1/repquota.1*
 %{_mandir}/man5/quota.conf.5*
+%config(noreplace) %{_sysconfdir}/quota.conf
