@@ -44,7 +44,7 @@ Suppress printing of the initial heading in the report.
 .TP
 \fI-f\fR \fIconfigfile\fR
 loads a configuration file other than the default (see FILES below).
-A file name of \f-\fR indicates standard input.
+A file name of ``-'' indicates standard input.
 .SH "FILES"
 @X_SYSCONFDIR@/quota.conf
 .SH "CAVEATS"
