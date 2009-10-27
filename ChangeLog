@@ -8,6 +8,8 @@
 	* src/getquota_lustre.c : Define QUOTABLOCK_SIZE if undefined.
 	This was exported via liblustreapi.h in lustre-1.6, not in lustre-1.8.
 
+	* rquota.spec : Fix install path for repquota.8
+
 2009-10-23 Jim Garlick <garlick@llnl.gov>
 
 	* man/repquota.8.in : Fix some troff formatting.
