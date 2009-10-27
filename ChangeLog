@@ -2,6 +2,8 @@
 
 	* : tag 2.2.2
 
+	* man/Makefile.in, man/Makefile.am : Add missing Makefiles.
+
 	* src/getquota_lustre.c : Define QUOTABLOCK_SIZE if undefined.
 	This was exported via liblustreapi.h in lustre-1.6, not in lustre-1.8.
 
