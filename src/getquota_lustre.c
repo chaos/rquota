@@ -33,6 +33,9 @@
 #include <time.h>
 #include <errno.h>
 #include <lustre/liblustreapi.h>
+#ifndef QUOTABLOCK_SIZE
+#define QUOTABLOCK_SIZE (1 << 10)
+#endif
 #include <assert.h>
 
 #include "list.h"
