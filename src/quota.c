@@ -141,16 +141,6 @@ main(int argc, char *argv[])
 
     config = conf_init(conf_path); /* exit/perror on error */
 
-    /* 2>&1 so any errors interrupt the report in a predictable way */
-    if (close(2) < 0) {
-        fprintf(stderr, "%s: close stderr: %s\n", prog, strerror(errno));
-        exit(1);
-    }
-    if (dup(1) < 0) {
-        fprintf(stderr, "%s: dup stdout: %s\n", prog, strerror(errno));
-        exit(1);
-    }
-
     /* build list of quotas */
     qlist = list_create((ListDelF)quota_destroy);
     if (lopt)
