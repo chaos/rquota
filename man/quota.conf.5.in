@@ -1,0 +1,32 @@
+.TH quota.conf 5 "@META_DATE@" "@META_ALIAS@" "@META_NAME@"
+.SH NAME
+quota.conf \- configuration file for remote quota program
+.SH DESCRIPTION
+.B quota
+reads a list of filesystems from the
+.I "quota.conf"
+configuration file.  Filesystems are one per line, with no provision for
+continuation lines.  A ``#'' character anywhere on a line is used to begin
+a comment.  Each line has the following format:
+.IP
+   description:hostname:remote_path:percent
+.LP
+.I "description" 
+is the path that will be displayed by the quota program,
+typically the local mount point.
+.LP
+.I "hostname" 
+is the name of the NFS server exporting the file system, or
+the string ``lustre'' if the file system type is Lustre.
+.LP
+.I "remote_path"
+is the NFS server-side path of file system, or
+the local mount point if the file system type is Lustre.
+.LP
+\fIpercent\fR, if nonzero, is the percentage of hard quota which, when 
+exceeded, causes quota to warn the user.  This can be used in place of 
+soft quotas if a simpler mechanism is desired.
+.SH "FILES"
+@X_SYSCONFDIR@/quota.conf
+.SH "SEE ALSO"
+quota(1), repquota(8)

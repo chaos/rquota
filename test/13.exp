@@ -1,0 +1,17 @@
+=== list ===
+/home:lustre:/home:90
+/g/g1:fruity.bar.z:/vol/2/4:0
+/g/g2:pebbles.foo.org:/:0
+=== conf_get_bylabel ===
+/home: /home:lustre:/home:90
+/g/g1: /g/g1:fruity.bar.z:/vol/2/4:0
+/g/g2: /g/g2:pebbles.foo.org:/:0
+/g: not found
+/g/g1/foo: not found
+=== conf_get_bylabel CONF_MATCH_SUBDIR ===
+/home: /home:lustre:/home:90
+/g/g1: /g/g1:fruity.bar.z:/vol/2/4:0
+/g/g2: /g/g2:pebbles.foo.org:/:0
+/g: not found
+/g/g1/foo: /g/g1:fruity.bar.z:/vol/2/4:0
+/g/g1/a/b/c/d/e/f/g/: /g/g1:fruity.bar.z:/vol/2/4:0

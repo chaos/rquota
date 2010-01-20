@@ -1,0 +1,53 @@
+.TH repquota 8 "@META_DATE@" "@META_ALIAS@" "@META_NAME@"
+.SH NAME
+repquota \- report file system quota information
+.SH SYNOPSIS
+.B repquota
+.I "[--options] file-system"
+.br
+.SH DESCRIPTION
+.B repquota
+generates a report of quota limits and usage information for all users
+of the specified file system.
+.SH OPTIONS
+.TP 
+\fI-d\fR, \fI--dirscan\fR
+Report on users who own top-level directories in the target file system.
+.TP 
+\fI-p\fR, \fI--pwscan\fR
+Report on users from the password file.
+.TP
+\fI-u\fR, \fI--uid-range range\fR
+Report on users whose UID is included in range,
+where range consists of any combination of hyphenated ranges and
+single values deliminated by commas, e.g. ``0,100-9999,65536''.
+.TP
+\fI-b\fR, \fI--blocksize\fR \fIblocksize\fR
+Report disk usage in blocksize units.  The suffixes `K', `M', or `G'
+may be used for kilobytes, megabytes, or gigabytes, respectively.
+Default: 1M.
+.TP
+\fI-r\fR, \fI--reverse-sort\fR
+Sort output in descending order.
+.TP
+\fI-s\fR, \fI--space-sort\fR
+Sort output by space used (default is to sort on uid).
+.TP
+\fI-F\fR, \fI--files-sort\fR
+Sort output by number of files used (default is to sort on uid).
+.TP
+\fI-U\fR, \fI--usage-only\fR
+Only report usage information, not quota limits.
+.TP
+\fI-H\fR, \fI--suppress-heading\fR
+Suppress printing of the initial heading in the report.
+.TP
+\fI-f\fR \fIconfigfile\fR
+loads a configuration file other than the default (see FILES below).
+A file name of ``-'' indicates standard input.
+.SH "FILES"
+@X_SYSCONFDIR@/quota.conf
+.SH "CAVEATS"
+Group quotas are not supported.
+.SH "SEE ALSO"
+quota(1), quota.conf(5)

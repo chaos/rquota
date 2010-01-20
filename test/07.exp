@@ -1,0 +1,4 @@
+Disk quotas for 104:
+Filesystem     used   quota  limit    timeleft  files  quota  limit    timeleft
+/foo           100.0K 105.0K 105.0K             -0-    n/a    n/a      
+*** Block usage on /foo has exceeded 90% of quota.

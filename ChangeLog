@@ -1,0 +1,352 @@
+2009-12-14 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 2.2.3
+
+	* src/quota.c : Stop redirecting stderr to stdout as this
+	confuses Livermore login scripts.
+
+2009-10-27 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 2.2.2
+
+	* man/Makefile.in, man/Makefile.am, etc/Makefile.in :
+	Add missing Makefiles.
+
+	* src/getquota_lustre.c : Define QUOTABLOCK_SIZE if undefined.
+	This was exported via liblustreapi.h in lustre-1.6, not in lustre-1.8.
+
+	* rquota.spec : Fix install path for repquota.8
+
+2009-10-23 Jim Garlick <garlick@llnl.gov>
+
+	* man/repquota.8.in : Fix some troff formatting.
+
+2008-12-23 Jim Garlick <garlick@llnl.gov>
+
+	* man : Move man pages from src directory.
+
+	* man/*.in : Standardize man page headers.  Move repquota to section 8.
+
+2008-11-03 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 2.2.1
+
+	* rquota.spec : Build with lustre on SLES.
+
+2008-10-20 Jim Garlick <garlick@llnl.gov>
+
+	* src/listint.c : Properly handle descending numerical ranges.
+
+2008-10-20 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 2.2
+
+	* configure.ac : Force 64-bit on biarch ppc64 configurations.
+	This is needed because Lustre libs are 64-bit only in this environment.
+
+	* src/repquota.c : Fix casting problem that broke repquota -u on ppc64.
+
+2008-10-19 Jim Garlick <garlick@llnl.gov>
+
+	* src/getconf.[ch] : Redo interface.  Handle comments properly.
+
+	* test/tconf.c, test/13.sh, test/13.exp, test/14.sh, test/14.exp : 
+	Tests for above.
+
+	* src/quota.c, src/repquota.c : Use new configuration interface.
+
+	* src/getquota_nfs.c : If debug, show responses from servers and
+	indicate if any quirks are being applied.
+
+	* src/quota.c, src/repquota.c : Add --debug option.
+
+2008-06-03 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 2.1
+
+	* htdocs/index.html : Add SF logo per policy.
+
+2008-05-30 Jim Garlick <garlick@llnl.gov>
+
+	* rquota.spec : Set --program-prefix to prevent AIX from adding one.
+
+	* src/listint.c : Silence warning on AIX.
+
+2008-05-23 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 2.0
+
+2008-05-22 Jim Garlick <garlick@llnl.gov>
+
+	* src/repquota.c, src/quota.c : Tidy up longopt handling.
+	
+2008-05-20 Jim Garlick <garlick@llnl.gov>
+
+	* src/repquota.c : Fix error an error message.
+
+	* src/repquota.1 : Fix option descriptions.
+
+2008-05-20 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 1.10
+
+	* src/* : Main source moved here.
+
+	* test/* : Test infrastructure created here with some initial tests.
+
+	* getquota.c : Add some test hooks.
+
+	* quota.spec.in : Use install target.
+
+	* src/Makefile.am : Add man pages to man_MANS. 
+
+	* src/listint.[ch] : Simple list-of-ints handling functions.
+
+	* src/repquota.c : Change --min-uid, --max-uid option to --uid-range.
+	Swap -u and -U.
+
+2008-05-19 Jim Garlick <garlick@llnl.gov>
+
+	* getquota.[ch], quota.c : If not in -v mode and warnings are
+	issued, notify user to run -v to get more info.
+
+	* quota.c : Add getopt_long() support.
+
+2008-05-13 Jim Garlick <garlick@llnl.gov>
+
+	* config/*, Makefile.in, configure, INSTALL : 
+	Checked in bootstrap products.
+
+2008-05-12 Jim Garlick <garlick@llnl.gov>
+
+	* : Integrated with automake/autoconf.
+
+2008-05-07 Jim Garlick <garlick@llnl.gov>
+
+	* getquota.c : Factor common code from repquota.c and quota.c.
+	Add test hooks.
+
+	* quota.c : Use a List to manage quota results like repquota.
+	Allow unqualified uid's to be passed in for testing.
+	
+2008-05-06 Jim Garlick <garlick@llnl.gov>
+
+	* util.c : Add lsd_* error handling functions.
+
+	* Makefile : Add LSD_* to CFLAGS.
+
+	* getquota_nfs.c : Only allow root to query another's quota.
+
+2008-05-05 Jim Garlick <garlick@llnl.gov>
+
+	* repquota.c : Add HAS_GETOPT_LONG.  Add root check.
+
+2008-05-02 Jim Garlick <garlick@llnl.gov>
+
+	* repquota.c : Add -u option to report only usage information.
+
+2008-05-02 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 1.9
+
+2008-05-01 Jim Garlick <garlick@llnl.gov>
+
+	* getquota.c : Implement fs-neutral getquota() interface.
+
+	* repquota.c : Quota reporting program.
+
+	* list.[ch]: New from lsd-tools.
+
+2008-05-01 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Add initial support for Lustre quotas.
+	Rewrite crufty reporting functions.
+	Add repquota functionality.
+
+	* getquota.h : New generic quota structure so results from
+	getquota_nfs() and getquota_lustre() can look identical.
+
+	* getquota_nfs.c : Factor out nfs-specific quota code.
+
+	* getquota_lustre.c : New lustre-specific quota code.
+
+	* util.c : Factor out common code.
+
+	* getconf.c : Add getconfdesc() and getconfdescsub().
+	Allow hash-comments in quota.conf file.
+
+	* rquota.x : Rename from quota.x to avoid confusion.
+
+2008-04-18 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Fix bug with quota -lv, documented in
+	https://chaos.llnl.gov/bugzilla/show_bug.cgi?id=301
+
+	* : tag 1.8
+
+2007-10-29 Jim Garlick <garlick@llnl.gov>
+
+	* quota.spec : Change Conflicts: to Obsoletes: [Trent D'Hooge]
+
+	* : tag 1.7
+
+2007-10-22 Jim Garlick <garlick@llnl.gov>
+
+	* META : Change package name to rquota to distinguish this package
+	from the Red Hat quota package.
+
+	* quota.spec : Conflicts: quota.
+
+	* : tag 1.6
+
+2006-10-06 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Change boolean_t to int (conflict on AIX 5.2).
+
+	* quota.c : Add -t (timeout) option.
+
+	* quota.spec : Comment out BuildRequires: /usr/bin/rpcgen for AIX.
+
+	* quota.spec : Use _mandir and _bindir macros.
+
+	* : tag 1.5
+
+	* NEWS : New.
+
+2006-10-05 Jim Garlick <garlick@llnl.gov>
+
+	* : Migration from CVS to subversion.
+
+	* Make-rpm.mk : Removed (artifact of old build system).
+
+	* quota.c : Added -l (login) option.
+
+	* quota.h : Make /etc/quota.conf the default.
+
+	* ChangeLog : Reformatted.
+
+2003-01-21 Jim Garlick <garlick@llnl.gov>
+
+	* : tag quota-1-4-1
+
+2002-12-08 Jim Garlick <garlick@llnl.gov>
+
+	* : Updated source file headers and DISCLAIMER file according 
+	to release instructions.
+
+	* : Ran through "indent --no-tabs -kr *.[ch]" and installed standard
+	vi footers.
+
+	* Make-rpm.mk : Updated to latest.
+
+	* : tag quota-1-3-1chaos.
+
+2002-11-19 Jim Garlick <garlick@llnl.gov>
+
+	* ChangeLog : Reformatted
+
+	* COPYING, DISCLAIMER: New.
+
+	* : Updated headers for (c) Regents.
+
+	* quota.c : Check a couple of ignored system call return values.
+
+	* quota.1 : Added BUGS section.
+
+2002-04-29 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Cleanup including tear-down of rpc client.
+
+	* quota.c : Added debug flag (-d).
+
+	* : tag quota-1-2-4chaos.
+
+2002-04-23 Jim Garlick <garlick@llnl.gov>
+
+	* quota.spec :  Force /etc/quota.conf.
+
+	* : tag quota-1-2-3chaos.
+
+2002-04-11 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Some minor code cleanup.
+
+	* quota.c : Use T/G/K abbreviations in 'file' quota report (GNATS#50)
+
+2002-04-10 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Add -f option to read config file from user-specified path.
+
+	* quota.c : Tru64 users in more than sixteen 
+	groups would fail authunix_create_default().  
+	Call authunix_create() instead [Dave Fox, GNATS #48].
+
+	* quota.h : Look for quota.conf in /usr/local/etc and override 
+	to /etc for spec file on Linux.
+
+	* : tag quota-1-2-2chaos.
+
+2002-04-03 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Minor cleanup.
+
+	* quota.c : Fix overflow problem in OVERTHRESH macro in quota.c 
+	where 25G used of 100G quota triggered 90% exceeded message.
+
+	* : Minor cleanup and RPMification for Linux.
+
+	* quota.h : Changed quota.conf path to /etc.
+
+	* : tag quota-1-2-1chaos.
+
+2001-xx-xx Jim Garlick <garlick@llnl.gov>
+
+	* : California State University, Chico relinquished copyright.
+
+	* : Added GPL text to all .c files and GPL licence in ./GPL.
+
+	* : Release 1.1
+
+2001-xx-xx Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : quota.fs renamed to quota.conf
+
+	* getconf.[ch] : Renamed from getfs.[ch].
+
+	* getconf.c : Eliminated first field ("code") of quota.conf which 
+	was no longer used.
+
+	* quota.c : Use getopt() instead of ad-hoc argv processing.  
+	Now it is possible to specify -v and -r at the same time.
+
+	* quota.1, quota.conf.5 : New.
+
+	* : Release 1.0
+
+1998-08-28 Jim Garlick <garlick@llnl.gov>
+
+	* getfs.[ch] : Added field to quota.fs file for percentage, which, 
+	if nonzero, causes quota to report when user has exceeded this 
+	percentage of hard quota.  Added for benefit of simplitic quotas 
+	on NetApp boxes (just implements hard quota; no soft quota, 
+	no grace period).
+
+1998-08-27 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Changed abbrev() so 1000-1023MB is displayed GB.
+
+	* quota.c : Changed HASBLOCK, HASFILE macros so -1 also indicates 
+	!quota (NetApp)
+
+	* : Release 0.2
+
+1998-06-11 Jim Garlick <garlick@llnl.gov>
+
+	* quota.c : Cleanup, port to DEC, Solaris, AIX.
+
+	* quota.c : Added MB / GB / TB abbreviations.
+
+	* quota.c : Added DEC_HACK for ignoring some bad data (see comment 
+	in quota.c).
+
+	* : Release 0.1 (first Livermore release)
