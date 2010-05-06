@@ -1,4 +1,13 @@
 ========================================================================
+rquota-2.2.5 Release Notes                                    2010-05-06
+========================================================================
+
+* Allow repquota -p and -d options to be used together.
+
+* If a username derived from a -d directory scan cannot be looked up,
+  substitute the directory name in square brackets.
+
+========================================================================
 rquota-2.2.4 Release Notes                                    2010-05-06
 ========================================================================
 
