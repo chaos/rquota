@@ -193,11 +193,11 @@ main(int argc, char *argv[])
     /* Scan.
      */
     qlist = list_create((ListDelF)quota_destroy);
+    if (popt)
+        pwscan(conf, qlist, uids, !nopt);
     if (dopt) 
         dirscan(conf, qlist, uids, !nopt);
-    else if (popt)
-        pwscan(conf, qlist, uids, !nopt);
-    else
+    if (!dopt && !popt)
         uidscan(conf, qlist, uids, !nopt);
 
 
@@ -306,12 +306,17 @@ uidscan(confent_t *cp, List qlist, List uids, int getusername)
     quota_t q;
     unsigned long *up;
     int rc;
+    char name[32];
 
     itr = list_iterator_create(uids);
     while ((up = list_next(itr))) {
-        if (getusername && (pw = getpwuid ((uid_t)*up)))
-            add_quota(cp, qlist, pw->pw_uid, pw->pw_name);
-        else
+        if (getusername) {
+            if ((pw = getpwuid ((uid_t)*up)))
+                snprintf (name, sizeof(name), "%s", pw->pw_name);
+            else 
+                snprintf (name, sizeof(name), "[%lu]", *up);
+            add_quota(cp, qlist, pw->pw_uid, name);
+        } else
             add_quota(cp, qlist, (uid_t)*up, NULL);
     }
     list_iterator_destroy(itr);
@@ -329,6 +334,7 @@ dirscan(confent_t *cp, List qlist, List uids, int getusername)
     char fqp[MAXPATHLEN];
     struct stat sb;
     quota_t q;
+    char name[32];
 
     if (!(dir = opendir(cp->cf_rpath))) {
         fprintf(stderr, "%s: could not open %s\n", prog, cp->cf_rpath);
@@ -342,9 +348,13 @@ dirscan(confent_t *cp, List qlist, List uids, int getusername)
             continue;
         if (uids && !listint_member(uids, sb.st_uid))
             continue;
-        if (getusername && (pw = getpwuid(sb.st_uid)))
-            add_quota(cp, qlist, pw->pw_uid, pw->pw_name);
-        else
+        if (getusername) {
+            if ((pw = getpwuid(sb.st_uid)))
+                snprintf (name, sizeof(name), "%s", pw->pw_name);
+            else
+                snprintf (name, sizeof(name), "[%s]", dp->d_name);
+            add_quota(cp, qlist, sb.st_uid, name);
+        } else
             add_quota(cp, qlist, sb.st_uid, NULL);
     }
     if (closedir(dir) < 0)
