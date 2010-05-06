@@ -28,6 +28,7 @@ quota_t quota_create(char *label, char *rhost, char *rpath, int thresh);
 void quota_destroy(quota_t q);
 
 int quota_get(uid_t uid, quota_t q);
+void quota_adduser(quota_t q, char *name);
 
 int quota_match_uid(quota_t x, uid_t *key);
 int quota_cmp_uid(quota_t x, quota_t y);
@@ -41,6 +42,8 @@ void quota_report_heading(void);
 void quota_report_heading_usageonly(void);
 int quota_report(quota_t x, unsigned long *bsize);
 int quota_report_usageonly(quota_t x, unsigned long *bsize);
+int quota_report_h(quota_t x, unsigned long *bsize);
+int quota_report_usageonly_h(quota_t x, unsigned long *bsize);
 
 void quota_print_heading(char *name);
 int quota_print(quota_t x, void *arg);

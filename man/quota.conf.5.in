@@ -9,7 +9,7 @@ configuration file.  Filesystems are one per line, with no provision for
 continuation lines.  A ``#'' character anywhere on a line is used to begin
 a comment.  Each line has the following format:
 .IP
-   description:hostname:remote_path:percent
+   description:hostname:remote_path:percent[:nolimit]
 .LP
 .I "description" 
 is the path that will be displayed by the quota program,
@@ -23,9 +23,13 @@ the string ``lustre'' if the file system type is Lustre.
 is the NFS server-side path of file system, or
 the local mount point if the file system type is Lustre.
 .LP
-\fIpercent\fR, if nonzero, is the percentage of hard quota which, when 
-exceeded, causes quota to warn the user.  This can be used in place of 
-soft quotas if a simpler mechanism is desired.
+\fIpercent\fR is the percentage of hard quota which, when exceeded,
+causes quota to warn the user.  This can be used as a simpler alternative
+to soft quotas if desired.  Set to zero to disable.
+.LP
+\fInolimit\fR is an optional flag that indicates that this file system
+has no limits set so don't bother querying it when \fBquota\fR is run
+without the \fI-v\fR option.
 .SH "FILES"
 @X_SYSCONFDIR@/quota.conf
 .SH "SEE ALSO"

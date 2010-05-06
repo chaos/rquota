@@ -50,15 +50,15 @@
 #include "util.h"
 
 static void usage(void);
-static void dirscan(confent_t *conf, List qlist, List uids);
-static void add_quota(confent_t *cp, List qlist, uid_t uid);
-static void pwscan(confent_t *conf, List qlist, List uids);
-static void uidscan(confent_t *conf, List qlist, List uids);
+static void add_quota(confent_t *cp, List qlist, uid_t uid, char *name);
+static void dirscan(confent_t *conf, List qlist, List uids, int getusername);
+static void pwscan(confent_t *conf, List qlist, List uids, int getusername);
+static void uidscan(confent_t *conf, List qlist, List uids, int getusername);
 
 char *prog;
 int debug = 0;
 
-#define OPTIONS "u:b:dhHrsFf:UpTD"
+#define OPTIONS "u:b:dHrsFf:UpTDnh"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
 static const struct option longopts[] = {
@@ -74,6 +74,8 @@ static const struct option longopts[] = {
     {"config",           required_argument,  0, 'f'},
     {"selftest",         no_argument,        0, 'T'},
     {"debug",            no_argument,        0, 'D'},
+    {"nouserlookup",     no_argument,        0, 'n'},
+    {"human-readable",   no_argument,        0, 'h'},
     {0, 0, 0, 0},
 };
 #else
@@ -95,6 +97,8 @@ main(int argc, char *argv[])
     int sopt = 0;
     int Hopt = 0;
     int Uopt = 0;
+    int nopt = 0;
+    int hopt = 0;
     List uids = NULL;
     char *conf_path = _PATH_QUOTA_CONF;
     conf_t config;
@@ -151,7 +155,12 @@ main(int argc, char *argv[])
             case 'D':   /* --debug */
                 debug = 1;
                 break;
-            case 'h':
+            case 'n':   /* --nouserlookup */
+                nopt = 1;
+                break;
+            case 'h':   /* --human-readable */
+                hopt = 1;
+                break;
             default:
                 usage();
         }
@@ -185,11 +194,11 @@ main(int argc, char *argv[])
      */
     qlist = list_create((ListDelF)quota_destroy);
     if (dopt) 
-        dirscan(conf, qlist, uids);
+        dirscan(conf, qlist, uids, !nopt);
     else if (popt)
-        pwscan(conf, qlist, uids);
+        pwscan(conf, qlist, uids, !nopt);
     else
-        uidscan(conf, qlist, uids);
+        uidscan(conf, qlist, uids, !nopt);
 
 
     /* Sort.
@@ -213,19 +222,29 @@ main(int argc, char *argv[])
     /* Report.
      */
     if (!Hopt) {
-        char tmpstr[16];
 
-        size2str(bsize, tmpstr, sizeof(tmpstr));
-        printf("Quota report for %s (blocksize %s)\n", fsname, tmpstr);
+        if (hopt)
+            printf("Quota report for %s\n", fsname);
+        else {
+            char tmpstr[16];
+            size2str(bsize, tmpstr, sizeof(tmpstr));
+            printf("Quota report for %s (blocksize %s)\n", fsname, tmpstr);
+        }
     }
     if (Uopt) {
         if (!Hopt)
             quota_report_heading_usageonly();
-        list_for_each(qlist, (ListForF)quota_report_usageonly, &bsize);
+        if (hopt)
+            list_for_each(qlist, (ListForF)quota_report_usageonly_h, &bsize);
+        else
+            list_for_each(qlist, (ListForF)quota_report_usageonly, &bsize);
     } else {
         if (!Hopt)
             quota_report_heading();
-        list_for_each(qlist, (ListForF)quota_report, &bsize);
+        if (hopt)
+            list_for_each(qlist, (ListForF)quota_report_h, &bsize);
+        else
+            list_for_each(qlist, (ListForF)quota_report, &bsize);
     }
 
     if (qlist)
@@ -251,6 +270,8 @@ usage(void)
   "  -F,--files-sort        sort on files used (default sort on uid)\n"
   "  -U,--usage-only        only report usage, not quota limits\n"
   "  -H,--suppress-heading  suppress report heading\n"
+  "  -L,--nolimits          do not include quota limits in report\n"
+  "  -n,--nouserlookup      do not try to map uid's to user names\n"
   "  -f,--config            use a config file other than %s\n"
                 , prog, _PATH_QUOTA_CONF);
     exit(1);
@@ -259,33 +280,40 @@ usage(void)
 /* Query the quota for uid and add it to qlist if successful.
  */
 static void
-add_quota(confent_t *cp, List qlist, uid_t uid)
+add_quota(confent_t *cp, List qlist, uid_t uid, char *name)
 {
     quota_t q;
 
-    if (! list_find_first(qlist, (ListFindF)quota_match_uid, &uid)) {
-        q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, 
-                         cp->cf_thresh);
-        if (quota_get(uid, q))
-            quota_destroy(q);
-        else
-            list_append(qlist, q);
+    if (list_find_first(qlist, (ListFindF)quota_match_uid, &uid))
+        return;
+    q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, cp->cf_thresh);
+    if (quota_get(uid, q)) {
+        quota_destroy(q);
+        return;
     }
+    if (name)
+        quota_adduser (q, name);
+    list_append(qlist, q);
 }
 
 /* Get quotas for all uid's in uids list.
  */
 static void
-uidscan(confent_t *cp, List qlist, List uids)
+uidscan(confent_t *cp, List qlist, List uids, int getusername)
 {
+    struct passwd *pw;
     ListIterator itr;
     quota_t q;
     unsigned long *up;
     int rc;
 
     itr = list_iterator_create(uids);
-    while ((up = list_next(itr)))
-        add_quota(cp, qlist, (uid_t)*up);
+    while ((up = list_next(itr))) {
+        if (getusername && (pw = getpwuid ((uid_t)*up)))
+            add_quota(cp, qlist, pw->pw_uid, pw->pw_name);
+        else
+            add_quota(cp, qlist, (uid_t)*up, NULL);
+    }
     list_iterator_destroy(itr);
 }
 
@@ -293,8 +321,9 @@ uidscan(confent_t *cp, List qlist, List uids)
  * filtered by uids.
  */
 static void
-dirscan(confent_t *cp, List qlist, List uids)
+dirscan(confent_t *cp, List qlist, List uids, int getusername)
 {
+    struct passwd *pw;
     struct dirent *dp;
     DIR *dir;
     char fqp[MAXPATHLEN];
@@ -313,7 +342,10 @@ dirscan(confent_t *cp, List qlist, List uids)
             continue;
         if (uids && !listint_member(uids, sb.st_uid))
             continue;
-        add_quota(cp, qlist, sb.st_uid);
+        if (getusername && (pw = getpwuid(sb.st_uid)))
+            add_quota(cp, qlist, pw->pw_uid, pw->pw_name);
+        else
+            add_quota(cp, qlist, sb.st_uid, NULL);
     }
     if (closedir(dir) < 0)
         fprintf(stderr, "%s: closedir %s: %m\n", prog, cp->cf_rpath);
@@ -323,7 +355,7 @@ dirscan(confent_t *cp, List qlist, List uids)
  * by uids list.
  */
 static void
-pwscan(confent_t *cp, List qlist, List uids)
+pwscan(confent_t *cp, List qlist, List uids, int getusername)
 {
     struct passwd *pw;
     quota_t q;
@@ -331,7 +363,7 @@ pwscan(confent_t *cp, List qlist, List uids)
     while ((pw = getpwent()) != NULL) {
         if (uids && !listint_member(uids, pw->pw_uid))
             continue;
-        add_quota(cp, qlist, pw->pw_uid);
+        add_quota(cp, qlist, pw->pw_uid, getusername ? pw->pw_name : NULL);
     }
 }
 

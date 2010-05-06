@@ -42,9 +42,15 @@ Only report usage information, not quota limits.
 \fI-H\fR, \fI--suppress-heading\fR
 Suppress printing of the initial heading in the report.
 .TP
-\fI-f\fR \fIconfigfile\fR
+\fI-f\fR, \fI--config\fR \fIconfigfile\fR
 loads a configuration file other than the default (see FILES below).
 A file name of ``-'' indicates standard input.
+.TP
+\fI-n\fR, \fI--nouserlookup\fR
+Suppress user lookup and report only uid's in the quota report.
+.TP
+\fI-h\fR, \fI--human-readable\fR
+Include human-readable space units in the quota report.
 .SH "FILES"
 @X_SYSCONFDIR@/quota.conf
 .SH "CAVEATS"

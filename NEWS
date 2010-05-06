@@ -1,4 +1,17 @@
 ========================================================================
+rquota-2.2.4 Release Notes                                    2010-05-06
+========================================================================
+
+* Add an optional flag field to /etc/quota.conf, with one possible flag:
+  "nolimit".  A file system with the nolimit flag will not be contacted
+  when quota would only report quota violations (e.g. without -v).
+
+* Change repquota to look up uid's and report usernames by default.
+  Add -n option to get the old behavior of reporting uids.
+
+* Add repquota -h option to produce human readable space units.
+
+========================================================================
 rquota-2.2.3 Release Notes                                    2009-12-14
 ========================================================================
 
