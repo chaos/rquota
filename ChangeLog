@@ -1,5 +1,7 @@
 2010-05-06 Jim Garlick <garlick@llnl.gov>
 
+	* : tag 2.2.5
+
 	* src/repquota.c : Allow -p and -d to be used together.  Also if a uid
 	derived from -d scanning cannot be mapped to a username, substitute
 	the directory name in square brackets [ideas from Chris Morrone]
