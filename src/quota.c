@@ -1,5 +1,5 @@
 /*****************************************************************************\
- *  $Id$
+ *  $Id: quota.c 186 2009-12-14 18:58:09Z garlick $
  *****************************************************************************
  *  Copyright (C) 2001-2008 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -55,8 +55,10 @@ static void alarm_handler(int arg);
 static void lookup_user_byname(char *user, uid_t *uidp, char **dirp);
 static void lookup_user_byuid(char *user, uid_t *uidp, char **dirp);
 static void lookup_self(char **userp, uid_t *uidp, char **dirp);
-static void get_login_quota(conf_t config, char *homedir, uid_t uid,List qlist);
-static void get_all_quota(conf_t config, uid_t uid, List qlist);
+static void get_login_quota(conf_t config, char *homedir, uid_t uid,
+                            List qlist, int skipnolimit);
+static void get_all_quota(conf_t config, uid_t uid, List qlist,
+                          int skipnolimit);
 
 #define OPTIONS "f:rvlt:Td"
 #if HAVE_GETOPT_LONG
@@ -144,9 +146,9 @@ main(int argc, char *argv[])
     /* build list of quotas */
     qlist = list_create((ListDelF)quota_destroy);
     if (lopt)
-        get_login_quota(config, dir, uid, qlist);
+        get_login_quota(config, dir, uid, qlist, !vopt);
     else
-        get_all_quota(config, uid, qlist);
+        get_all_quota(config, uid, qlist, !vopt);
 
     /* print output */   
     if (vopt) {
@@ -244,7 +246,8 @@ lookup_user_byname(char *user, uid_t *uidp, char **dirp)
 }
 
 static void
-get_login_quota(conf_t config, char *homedir, uid_t uid, List qlist)
+get_login_quota(conf_t config, char *homedir, uid_t uid, List qlist,
+                int skipnolimit)
 {
     confent_t *cp;
     quota_t q;
@@ -254,6 +257,8 @@ get_login_quota(conf_t config, char *homedir, uid_t uid, List qlist)
                 prog, homedir);
         exit(1);
     }
+    if (skipnolimit && cp->cf_nolimit)
+        return;
     q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, cp->cf_thresh);
     if (quota_get(uid, q)) {
         quota_destroy(q);
@@ -263,7 +268,7 @@ get_login_quota(conf_t config, char *homedir, uid_t uid, List qlist)
 }
 
 static void
-get_all_quota(conf_t config, uid_t uid, List qlist)
+get_all_quota(conf_t config, uid_t uid, List qlist, int skipnolimit)
 {
     confent_t *cp;
     quota_t q;
@@ -271,6 +276,8 @@ get_all_quota(conf_t config, uid_t uid, List qlist)
 
     itr = conf_iterator_create(config);
     while ((cp = conf_next(itr)) != NULL) {
+        if (skipnolimit && cp->cf_nolimit)
+            continue;
         q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, 
                           cp->cf_thresh);
         if (quota_get(uid, q)) {

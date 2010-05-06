@@ -27,6 +27,7 @@ typedef struct {
     char *cf_rhost;
     char *cf_rpath;
     int   cf_thresh;
+    int   cf_nolimit;
 } confent_t;
 
 #ifndef _PATH_QUOTA_CONF

@@ -49,6 +49,7 @@ quota_create(char *label, char *rhost, char *rpath, int thresh)
 
     memset(q, 0, sizeof(struct quota_struct));
     q->q_magic = QUOTA_MAGIC;
+    q->q_name = NULL;
     q->q_label = xstrdup(label);
     q->q_rhost = xstrdup(rhost);
     q->q_rpath = xstrdup(rpath);
@@ -61,6 +62,8 @@ void
 quota_destroy(quota_t q)
 {
     assert(q->q_magic == QUOTA_MAGIC);
+    if (q->q_name)
+        free(q->q_name);
     if (q->q_label)
         free(q->q_label);
     if (q->q_rhost)
@@ -173,6 +176,13 @@ quota_get(uid_t uid, quota_t q)
     return rc;
 }
 
+void
+quota_adduser(quota_t q, char *name)
+{
+    assert(q->q_magic == QUOTA_MAGIC);
+    q->q_name = xstrdup(name);
+}
+
 int
 quota_match_uid(quota_t x, uid_t *key)
 {
@@ -262,7 +272,7 @@ quota_cmp_files_reverse(quota_t x, quota_t y)
 void
 quota_report_heading(void)
 {
-    printf("%-5s %-11s %-11s %-11s %-12s %-12s %-12s\n", "User", 
+    printf("%-10s %-11s %-11s %-11s %-12s %-12s %-12s\n", "User", 
             "Space-used", "Space-soft", "Space-hard",
             "Files-used", "Files-soft", "Files-hard");
 }
@@ -270,20 +280,59 @@ quota_report_heading(void)
 void
 quota_report_heading_usageonly(void)
 {
-    printf("%-5s %-11s %-12s\n", "User", "Space-used", "Files-used");
+    printf("%-10s %-11s %-12s\n", "User", "Space-used", "Files-used");
 }
 
 int
 quota_report(quota_t x, unsigned long *bsize)
 {
     assert(x->q_magic == QUOTA_MAGIC);
-    printf("%-5u %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n", x->q_uid, 
-        x->q_bytes_used    / *bsize,
-        x->q_bytes_softlim / *bsize,
-        x->q_bytes_hardlim / *bsize,
-        x->q_files_used,
-        x->q_files_softlim,
-        x->q_files_hardlim);
+    if (x->q_name) {
+        printf("%-10s %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n",
+            x->q_name, 
+            x->q_bytes_used    / *bsize,
+            x->q_bytes_softlim / *bsize,
+            x->q_bytes_hardlim / *bsize,
+            x->q_files_used,
+            x->q_files_softlim,
+            x->q_files_hardlim);
+    } else {
+        printf("%-10u %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n",
+            x->q_uid, 
+            x->q_bytes_used    / *bsize,
+            x->q_bytes_softlim / *bsize,
+            x->q_bytes_hardlim / *bsize,
+            x->q_files_used,
+            x->q_files_softlim,
+            x->q_files_hardlim);
+    }
+    return 0;
+}
+
+int
+quota_report_h(quota_t x, unsigned long *bsize)
+{
+    char used[64], soft[64], hard[64];
+
+    assert(x->q_magic == QUOTA_MAGIC);
+
+    size2str(x->q_bytes_used, used, sizeof(used));
+    size2str(x->q_bytes_softlim, soft, sizeof(soft));
+    size2str(x->q_bytes_hardlim, hard, sizeof(hard));
+
+    if (x->q_name) {
+        printf("%-10s %-11s %-11s %-11s %-12llu %-12llu %-12llu\n", x->q_name,
+            used, soft, hard,
+            x->q_files_used,
+            x->q_files_softlim,
+            x->q_files_hardlim);
+    } else {
+        printf("%-10u %-11s %-11s %-11s %-12llu %-12llu %-12llu\n", x->q_uid, 
+            used, soft, hard,
+            x->q_files_used,
+            x->q_files_softlim,
+            x->q_files_hardlim);
+    }
     return 0;
 }
 
@@ -291,8 +340,29 @@ int
 quota_report_usageonly(quota_t x, unsigned long *bsize)
 {
     assert(x->q_magic == QUOTA_MAGIC);
-    printf("%-5u %-11llu %-12llu\n", x->q_uid, 
-        x->q_bytes_used / *bsize, x->q_files_used);
+    if (x->q_name) {
+        printf("%-10s %-11llu %-12llu\n", x->q_name, 
+            x->q_bytes_used / *bsize, x->q_files_used);
+    } else {
+        printf("%-10u %-11llu %-12llu\n", x->q_uid, 
+            x->q_bytes_used / *bsize, x->q_files_used);
+    }
+    return 0;
+}
+
+int
+quota_report_usageonly_h(quota_t x, unsigned long *bsize)
+{
+    char used[64];
+
+    assert(x->q_magic == QUOTA_MAGIC);
+
+    size2str(x->q_bytes_used, used, sizeof(used));
+
+    if (x->q_name)
+        printf("%-10s %-11s %-12llu\n", x->q_name, used, x->q_files_used);
+    else
+        printf("%-10u %-11s %-12llu\n", x->q_uid, used, x->q_files_used);
     return 0;
 }
 

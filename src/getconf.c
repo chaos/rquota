@@ -91,7 +91,7 @@ static confent_t *
 getconfent(FILE *f)
 {
     static char buf[BUFSIZ];
-    char *thresh, *label, *rhost, *rpath, *p;
+    char *thresh, *label, *rhost, *rpath, *flags, *p;
     confent_t *e = NULL;
 
     while (fgets(buf, BUFSIZ, f)) {
@@ -103,12 +103,14 @@ getconfent(FILE *f)
             rhost = next_field(&p, ':');
             rpath = next_field(&p, ':');
             thresh = next_field(&p, ':');
+            flags = next_field(&p, ':');
 
             e = (confent_t *)xmalloc(sizeof(confent_t));
             e->cf_label = xstrdup(label);
             e->cf_rhost = xstrdup(rhost);
             e->cf_rpath = xstrdup(rpath);
             e->cf_thresh = thresh ? strtoul(thresh, NULL, 10) : 0;
+            e->cf_nolimit = !strcmp(flags, "nolimit") ? 1 : 0;
             break;
         }
     }

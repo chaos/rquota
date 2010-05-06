@@ -27,6 +27,7 @@ typedef enum { NONE, UNDER, NOTSTARTED, STARTED, EXPIRED } qstate_t;
 struct quota_struct {
     int                q_magic;
     uid_t              q_uid;
+    char              *q_name;
     char              *q_label;        /* assumed to be local mount point */
     char              *q_rhost;        /* lustre: set to "lustre" */
     char              *q_rpath;        /* lustre: set to local mount pt */

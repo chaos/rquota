@@ -1,9 +1,9 @@
 ##
-# $Id$
+# $Id: META 186 2009-12-14 18:58:09Z garlick $
 ##
 # Metadata for RPM/TAR makefile targets
 ##
   Meta:         1
   Name:         rquota
-  Version:      2.2.3
-  Date:		2009-12-14
+  Version:      2.2.4
+  Date:		2010-05-06
