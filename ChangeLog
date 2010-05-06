@@ -1,8 +1,15 @@
 2010-05-06 Jim Garlick <garlick@llnl.gov>
 
+	* src/repquota.c : Allow -p and -d to be used together.  Also if a uid
+	derived from -d scanning cannot be mapped to a username, substitute
+	the directory name in square brackets [ideas from Chris Morrone]
+
+2010-05-06 Jim Garlick <garlick@llnl.gov>
+
 	* : tag 2.2.4
 
-	* src/getquota.[ch], repquota.c, man/repquota.8.in : New options:
+	* src/getquota.[ch], repquota.c, man/repquota.8.in :  Map uid's to
+	names [chaos bz 963] and add new options:
 	- -n report uid's instead of user names
 	- -h report human-readable space units
 
