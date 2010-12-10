@@ -1,3 +1,10 @@
+2010-12-08 Jim Garlick <garlick@llnl.gov>
+
+	* src/getquota_lustre.c : Handle file system not mounted case
+	a little more sensibly per chaos bz 1100 and gcode issue 1.
+
+	* : Fix 'make dist' and add 'make rpm' target.
+
 2010-05-06 Jim Garlick <garlick@llnl.gov>
 
 	* : tag 2.2.5

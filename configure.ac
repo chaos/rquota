@@ -1,7 +1,8 @@
 ##
 # Prologue
 ##
-AC_INIT([rquota])
+AC_INIT(m4_esyscmd([awk '/Name:/ {printf "%s",$2; exit}' META]),
+        m4_esyscmd([awk '/Version:/ {printf "%s",$2; exit}' META]))
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([NEWS])
 AC_CANONICAL_SYSTEM
@@ -66,6 +67,7 @@ AC_DEFINE(WITH_LSD_NOMEM_ERROR_FUNC, 1, [Define lsd_fatal_error])
 ##
 AC_CONFIG_FILES( \
   Makefile \
+  rquota.spec \
   src/Makefile \
   test/Makefile \
   man/Makefile \

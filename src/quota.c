@@ -224,7 +224,7 @@ lookup_user_byuid(char *user, uid_t *uidp, char **dirp)
     /* N.B. Passwd lookup failure of numerical user arg is not fatal.
      * In testing, we pass in arbitrary uid's to trigger hardwired response
      * from getquota_test(), and we don't want test results to be dependent 
-     * on password file conteint.
+     * on password file content.
      */
     } else { 
         *uidp = uid;

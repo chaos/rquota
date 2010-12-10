@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/statvfs.h>
 #include <time.h>
 #include <errno.h>
 #include <lustre/liblustreapi.h>
@@ -68,10 +69,23 @@ quota_get_lustre(uid_t uid, quota_t q)
 {
     time_t now = 0;
     struct if_quotactl qctl;
+    struct statvfs f;
     int rc;
 
     assert(q->q_magic == QUOTA_MAGIC);
-   
+
+    /* additional 'fs not mounted' error hanlding per chaos bz 1100/issue 1 */
+    if (statvfs (q->q_rpath, &f) < 0) {
+        if (errno == ENOENT)
+            fprintf (stderr, "%s: %s is not mounted\n", prog, q->q_rpath);
+        else
+            fprintf (stderr, "%s: %s %s\n", prog, q->q_rpath, strerror (errno));
+        return -1;
+    }
+    if (f.f_fsid != LL_SUPER_MAGIC) {
+        fprintf (stderr, "%s: %s is not mounted\n", prog, q->q_rpath);
+        return -1;
+    }
     if (time(&now) < 0) {
         fprintf(stderr, "%s: time: %s\n", prog, strerror(errno));
         return -1;

@@ -198,6 +198,7 @@ common_sources = \
   rquota_xdr.c rquota_clnt.c rquota.h listint.c listint.h
 
 CLEANFILES = rquota.h rquota_xdr.c rquota_clnt.c
+EXTRA_DIST = rquota.x
 all: all-am
 
 .SUFFIXES:
