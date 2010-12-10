@@ -12,3 +12,5 @@ tconf_SOURCES = tconf.c \
 		$(top_srcdir)/src/getconf.c \
 		$(top_srcdir)/src/list.c \
 		$(top_srcdir)/src/util.c
+
+EXTRA_DIST = $(TESTS) *.sh *.exp

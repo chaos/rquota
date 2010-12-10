@@ -21,3 +21,5 @@ rquota_xdr.c: rquota.x rquota.h
 	rpcgen -o $@ -c rquota.x
 rquota_clnt.c: rquota.x rquota.h
 	rpcgen -o $@ -l rquota.x
+
+EXTRA_DIST = rquota.x

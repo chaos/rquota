@@ -1,6 +1,6 @@
-Name: rquota
-Version: 2.2.6
-Release: 1
+Name: @META_NAME@
+Version: @META_VERSION@
+Release: @META_RELEASE@
 
 Summary: Quota utility for displaying remote NFS quotas
 Group:   System Environment/Base
