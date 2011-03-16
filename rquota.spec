@@ -1,5 +1,5 @@
 Name: rquota
-Version: 2.2.6
+Version: 2.2.7
 Release: 1
 
 Summary: Quota utility for displaying remote NFS quotas
