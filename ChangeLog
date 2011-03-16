@@ -1,5 +1,14 @@
 2010-12-08 Jim Garlick <garlick@llnl.gov>
 
+	* : tag 2.2.7
+
+	* src/getquota_lustre.c : Revamp the fix in 2.2.6.
+	Call statfs and check f_type, not statvfs and f_fsid.
+
+2011-03-16 Jim Garlick <garlick@llnl.gov>
+
+	* : tag 2.2.6
+
 	* src/getquota_lustre.c : Handle file system not mounted case
 	a little more sensibly per chaos bz 1100 and gcode issue 1.
 
