@@ -1,5 +1,5 @@
 Name: rquota
-Version: 2.2.7
+Version: 2.2.8
 Release: 1
 
 Summary: Quota utility for displaying remote NFS quotas
@@ -12,13 +12,10 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 
 Source0: %{name}-%{version}.tar.gz
 
-%if 0%{?sles}
+%bcond_with lustre
+
+%if 0%{?with_lustre}
 BuildRequires: lustre
-%define _with_lustre 1
-%endif
-%if 0%{?ch4}
-BuildRequires: lustre
-%define _with_lustre 1
 %endif
 
 %description
@@ -35,7 +32,7 @@ Quotas are reported in human-readable units: 'K', 'M', and 'T' bytes.
 
 %build
 %configure \
-	%{?_with_lustre: --with-lustre} \
+	%{?with_lustre: --with-lustre} \
 	--program-prefix=%{?_program_prefix:%{_program_prefix}}
 make
 make check
