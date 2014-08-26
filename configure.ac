@@ -20,6 +20,7 @@ AM_MAINTAINER_MODE
 # Checks for programs
 ##
 AC_PROG_CC
+AM_PROG_CC_C_O
 if test "$GCC" = yes; then
   GCCWARN="-Wall -Wno-unused"
   AC_SUBST([GCCWARN])
