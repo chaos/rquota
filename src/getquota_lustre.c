@@ -33,7 +33,8 @@
 #include <sys/vfs.h>
 #include <time.h>
 #include <errno.h>
-#include <lustre/liblustreapi.h>
+#include <dlfcn.h>
+#include <lustre/lustreapi.h>
 #ifndef QUOTABLOCK_SIZE
 #define QUOTABLOCK_SIZE (1 << 10)
 #endif
@@ -62,6 +63,27 @@ set_state(unsigned long long used, unsigned long long soft,
         state = UNDER;
 
     return state;
+}
+
+int llapi_quotactl(char *mnt, struct if_quotactl *qctl)
+{
+    void *dso = NULL;
+    int (*fun)(char *mnt, struct if_quotactl *qctl);
+    int rc = -1;
+
+    if (!(dso = dlopen("liblustreapi.so", RTLD_LAZY | RTLD_LOCAL))) {
+        errno = EINVAL;
+        goto done;
+    }
+    if (!(fun = dlsym (dso, "llapi_quotactl"))) {
+        errno = EINVAL;
+        goto done;
+    }
+    rc = fun(mnt, qctl);
+done:
+    if (dso)
+        dlclose(dso);
+    return rc;
 }
 
 int
