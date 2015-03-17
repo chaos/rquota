@@ -3,20 +3,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Quota, a remote quota program.
  *  For details, see <http://www.llnl.gov/linux/quota/>.
- *  
+ *
  *  Quota is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Quota is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Quota; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -33,7 +33,8 @@
 #include <sys/vfs.h>
 #include <time.h>
 #include <errno.h>
-#include <lustre/liblustreapi.h>
+#include <dlfcn.h>
+#include <lustre/lustreapi.h>
 #ifndef QUOTABLOCK_SIZE
 #define QUOTABLOCK_SIZE (1 << 10)
 #endif
@@ -46,7 +47,7 @@
 
 extern char *prog;
 
-static qstate_t 
+static qstate_t
 set_state(unsigned long long used, unsigned long long soft,
           unsigned long long hard, unsigned long long xtim, time_t now)
 {
@@ -62,6 +63,27 @@ set_state(unsigned long long used, unsigned long long soft,
         state = UNDER;
 
     return state;
+}
+
+int llapi_quotactl(char *mnt, struct if_quotactl *qctl)
+{
+    void *dso = NULL;
+    int (*fun)(char *mnt, struct if_quotactl *qctl);
+    int rc = -1;
+
+    if (!(dso = dlopen("liblustreapi.so", RTLD_LAZY | RTLD_LOCAL))) {
+        errno = EINVAL;
+        goto done;
+    }
+    if (!(fun = dlsym (dso, "llapi_quotactl"))) {
+        errno = EINVAL;
+        goto done;
+    }
+    rc = fun(mnt, qctl);
+done:
+    if (dso)
+        dlclose(dso);
+    return rc;
 }
 
 int
