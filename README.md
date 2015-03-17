@@ -30,6 +30,9 @@ limits set so don’t bother querying it when quota is run without the -v option
 
 ### Origin
 
-This utility was originally written by Jim Garlick for California State
-University, Chico in the mid 1990s, for a network of HP-UX systems.
-CSU, Chico graciously allowed it to be released as open source.
+This utility was originally written for California State University, Chico
+in the mid 1990s, for a network of Sun and HP-UX systems in the Computer
+Science and Engineering department.  It allowed NFS quotas to be displayed
+compactly at login without delaying the login process waiting for irrelevant
+mounted file systems to respond to quota requests.  CSU, Chico graciously
+allowed it to be released as open source.
