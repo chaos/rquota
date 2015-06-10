@@ -5,8 +5,10 @@ Release: @META_RELEASE@%{?dist}
 Summary: Quota utility for displaying remote NFS quotas
 Group:   System Environment/Base
 License: GPL
+Url: http://github.com/chaos/rquota
 # we replace the redhat quota program
 Conflicts: quota
+Provides: quota = 4
 
 BuildRoot: %{_tmppath}/%{name}-%{version}
 
@@ -54,3 +56,9 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_mandir}/man8/repquota.8*
 %{_mandir}/man5/quota.conf.5*
 %config(noreplace) %{_sysconfdir}/quota.conf
+
+%changelog
+
+* Wed Jun 10 2015 Jim Garlick <garlick.jim@gmail.com 2.2.21-2
+- TOSS 3: Add Provides: quota = 4 per Trent in TOSS-2882
+- Add project URL
