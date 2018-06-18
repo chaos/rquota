@@ -117,7 +117,7 @@ quota_get_lustre(uid_t uid, quota_t q)
     qctl.qc_id = uid;
     rc = llapi_quotactl(q->q_rpath, &qctl);
     if (rc) {
-        fprintf(stderr, "%s: llapi_quotactl %s: %s\n", 
+        fprintf(stderr, "%s: llapi_quotactl %s: %s\n",
                         prog, q->q_rpath, strerror(errno));
         return rc;
     }

@@ -3,20 +3,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Quota, a remote quota program.
  *  For details, see <http://www.llnl.gov/linux/quota/>.
- *  
+ *
  *  Quota is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Quota is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Quota; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -153,17 +153,17 @@ quota_get_nfs(uid_t uid, quota_t q)
         goto done;
     }
     if (result->gqr_status == Q_NOQUOTA) {
-        fprintf(stderr, "%s: rquota %s:%s: no quota\n", prog, 
+        fprintf(stderr, "%s: rquota %s:%s: no quota\n", prog,
                 q->q_rhost, q->q_rpath);
         goto done;
     }
     if (result->gqr_status == Q_EPERM) {
-        fprintf(stderr, "%s: rquota %s:%s: permission denied\n", 
+        fprintf(stderr, "%s: rquota %s:%s: permission denied\n",
                 prog, q->q_rhost, q->q_rpath);
         goto done;
     }
     if (result->gqr_status != Q_OK) {
-        fprintf(stderr, "%s: rquota %s:%s: unknown error: %d\n", 
+        fprintf(stderr, "%s: rquota %s:%s: unknown error: %d\n",
                 prog, q->q_rhost, q->q_rpath, result->gqr_status);
         goto done;
     }
@@ -196,7 +196,7 @@ quota_get_nfs(uid_t uid, quota_t q)
         q->q_bytes_used = (unsigned long long)rq->rq_curblocks*rq->rq_bsize;
         q->q_bytes_softlim = (unsigned long long)rq->rq_bsoftlimit*rq->rq_bsize;
         q->q_bytes_hardlim = (unsigned long long)rq->rq_bhardlimit*rq->rq_bsize;
-        q->q_bytes_state = set_state(q->q_bytes_used, q->q_bytes_softlim, 
+        q->q_bytes_state = set_state(q->q_bytes_used, q->q_bytes_softlim,
                                      q->q_bytes_hardlim, rq->rq_btimeleft);
         if (q->q_bytes_state == STARTED)
             q->q_bytes_secleft  = rq->rq_btimeleft;
@@ -204,7 +204,7 @@ quota_get_nfs(uid_t uid, quota_t q)
         q->q_files_used     = rq->rq_curfiles;
         q->q_files_softlim  = rq->rq_fsoftlimit;
         q->q_files_hardlim  = rq->rq_fhardlimit;
-        q->q_files_state = set_state(q->q_files_used, q->q_files_softlim, 
+        q->q_files_state = set_state(q->q_files_used, q->q_files_softlim,
                                      q->q_files_hardlim, rq->rq_ftimeleft);
         if (q->q_files_state == STARTED)
             q->q_files_secleft  = rq->rq_ftimeleft;

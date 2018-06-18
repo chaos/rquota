@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     config = conf_init(argv[1]);
 
     if (argc == 2) {
-        itr = conf_iterator_create(config); 
+        itr = conf_iterator_create(config);
         while ((e = conf_next(itr)))
             print_conf_ent(NULL, e);
         conf_iterator_destroy(itr);
@@ -41,14 +41,14 @@ int main(int argc, char *argv[])
     exit(0);
 }
 
-static void 
+static void
 usage(void)
 {
     fprintf(stderr, "Usage: tconf config_path [label-str ...]\n");
     exit(1);
 }
 
-static void 
+static void
 print_conf_ent(char *key, confent_t *e)
 {
     if (key)

@@ -3,20 +3,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Quota, a remote quota program.
  *  For details, see <http://www.llnl.gov/linux/quota/>.
- *  
+ *
  *  Quota is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Quota is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Quota; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -104,16 +104,16 @@ dup_str(char *s)
  * separated numbers and ranges (mixed).  Return NULL on parse error.
  * N.B. we allow duplicates.
  */
-List 
+List
 listint_create(char *s)
 {
     List l;
     char *cpy, *t;
     unsigned long u, u1, u2;
     int rc;
-  
+
     if (!(l = list_create((ListDelF)free)))
-        return NULL; 
+        return NULL;
     if (!(cpy = dup_str(s))) {
         list_destroy(l);
         return NULL;
@@ -155,7 +155,7 @@ int
 listint_member(List l, unsigned long u)
 {
     unsigned long *up;
- 
+
     up = list_find_first(l, (ListFindF)listint_match, &u);
     return (up ? 1 : 0);
 }
@@ -210,7 +210,7 @@ listint_test(void)
     assert(l);
     assert(list_count(l) == 102);
     list_destroy(l);
-    
+
     l = listint_create("100-106"); /* ../test/11.sh */
     assert(l);
     assert(list_count(l) == 7);

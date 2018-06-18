@@ -3,20 +3,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Quota, a remote quota program.
  *  For details, see <http://www.llnl.gov/linux/quota/>.
- *  
+ *
  *  Quota is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Quota is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Quota; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -82,7 +82,7 @@ static const struct option longopts[] = {
 #define GETOPT(ac,av,opt,lopt) getopt(ac,av,opt)
 #endif
 
-int 
+int
 main(int argc, char *argv[])
 {
     confent_t *conf;
@@ -114,7 +114,7 @@ main(int argc, char *argv[])
                 break;
             case 'b':   /* --blocksize */
                 if (parse_blocksize(optarg, &bsize)) {
-                    fprintf(stderr, "%s: error parsing blocksize\n", prog); 
+                    fprintf(stderr, "%s: error parsing blocksize\n", prog);
                     exit(1);
                 }
                 break;
@@ -189,13 +189,13 @@ main(int argc, char *argv[])
         fprintf(stderr, "%s: %s: not found in quota.conf\n", prog, fsname);
         exit(1);
     }
-        
+
     /* Scan.
      */
     qlist = list_create((ListDelF)quota_destroy);
     if (popt)
         pwscan(conf, qlist, uids, !nopt);
-    if (dopt) 
+    if (dopt)
         dirscan(conf, qlist, uids, !nopt);
     if (!dopt && !popt)
         uidscan(conf, qlist, uids, !nopt);
@@ -259,7 +259,7 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
-    fprintf(stderr, 
+    fprintf(stderr,
   "Usage: %s [--options] fs\n"
   "  -d,--dirscan           report on users who own top level dirs of fs\n"
   "  -p,--pwscan            report on users in the password file\n"
@@ -313,7 +313,7 @@ uidscan(confent_t *cp, List qlist, List uids, int getusername)
         if (getusername) {
             if ((pw = getpwuid ((uid_t)*up)))
                 snprintf (name, sizeof(name), "%s", pw->pw_name);
-            else 
+            else
                 snprintf (name, sizeof(name), "[%lu]", *up);
             add_quota(cp, qlist, pw->pw_uid, name);
         } else
