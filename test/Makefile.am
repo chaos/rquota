@@ -8,9 +8,10 @@ CLEANFILES = *.out *.diff x.conf
 
 AM_CFLAGS = -I$(top_srcdir)/src
 
-tconf_SOURCES = tconf.c \
-		$(top_srcdir)/src/getconf.c \
-		$(top_srcdir)/src/list.c \
-		$(top_srcdir)/src/util.c
+tconf_SOURCES = tconf.c
+tconf_LDADD = \
+	$(top_builddir)/src/getconf.o \
+	$(top_builddir)/src/list.o \
+	$(top_builddir)/src/util.o
 
 EXTRA_DIST = $(TESTS) *.sh *.exp
