@@ -10,7 +10,7 @@ TESTS_ENVIRONMENT += "PATH_REPQUOTA=$(top_builddir)/src/repquota"
 
 TESTS = runtests
 
-CLEANFILES = *.out *.diff x.conf
+CLEANFILES = *.out *.diff
 
 AM_CFLAGS = -I$(top_srcdir)/src
 
