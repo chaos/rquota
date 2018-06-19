@@ -2,7 +2,8 @@ AM_CFLAGS = @GCCWARN@
 
 AM_CPPFLAGS = \
 	-D_PATH_QUOTA_CONF=\"@X_SYSCONFDIR@/quota.conf\" \
-	-I$(top_srcdir)
+	-I$(top_srcdir) \
+	-I$(top_builddir)
 
 bin_PROGRAMS = quota repquota
 

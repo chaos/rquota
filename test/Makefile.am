@@ -2,17 +2,17 @@ AM_CPPFLAGS = -I$(top_srcdir)
 
 check_PROGRAMS = tconf
 
-dist_check_SCRIPTS = runtests \
-	00.sh 01.sh 02.sh 03.sh 04.sh 05.sh 06.sh \
-	07.sh 08.sh 09.sh 10.sh 11.sh 12.sh 13.sh 14.sh
+dist_check_SCRIPTS = 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14
 
 TESTS_ENVIRONMENT = env 
 TESTS_ENVIRONMENT += "PATH_QUOTA=$(top_builddir)/src/cmd/quota"
 TESTS_ENVIRONMENT += "PATH_REPQUOTA=$(top_builddir)/src/cmd/repquota"
+TESTS_ENVIRONMENT += "TEST_BUILDDIR=$(builddir)"
+TESTS_ENVIRONMENT += "TEST_SRCDIR=$(srcdir)"
 
-TESTS = runtests
+TESTS = $(dist_check_SCRIPTS)
 
-CLEANFILES = *.out *.diff
+CLEANFILES = *.out *.diff *.conf
 
 tconf_SOURCES = tconf.c
 tconf_LDADD = \
