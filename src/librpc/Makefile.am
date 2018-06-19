@@ -27,3 +27,26 @@ rquota_xdr.c: rquota.x
 	$(RPCGEN) -o $@ -c <$<
 rquota_clnt.c: rquota.x
 	$(RPCGEN) -o $@ -l <$<
+
+#
+# Test client/server
+#
+check_PROGRAMS = \
+	rquota_svc_test \
+	rquota_clnt_test
+
+rquota_clnt_test_SOURCES = \
+	rquota_clnt_test.c
+rquota_clnt_test_LDADD = librpc.a
+
+rquota_svc_test_SOURCES = \
+	rquota_svc_main.c \
+	rquota_svc_test.c
+rquota_svc_test_LDADD = librpc.a
+
+rquota_svc_main.o: rquota.h
+
+rquota_svc_main.c: rquota.x
+	$(RPCGEN) -o $@ -s udp -DTEST <$<
+
+CLEANFILES += rquota_svc_main.c
