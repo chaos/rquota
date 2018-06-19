@@ -35,7 +35,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include "list.h"
 #include "getconf.h"
 #include "util.h"
 

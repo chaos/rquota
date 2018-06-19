@@ -43,7 +43,6 @@
 #include <libgen.h>
 #include <sys/stat.h>
 
-#include "list.h"
 #include "getconf.h"
 #include "getquota.h"
 #include "listint.h"

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "list.h"
 #include "getconf.h"
 
 static void print_conf_ent(char *key, confent_t *e);

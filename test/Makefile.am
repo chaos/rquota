@@ -1,3 +1,5 @@
+AM_CPPFLAGS = -I$(top_srcdir)
+
 check_PROGRAMS = tconf
 
 dist_check_SCRIPTS = runtests \
@@ -17,8 +19,8 @@ AM_CFLAGS = -I$(top_srcdir)/src
 tconf_SOURCES = tconf.c
 tconf_LDADD = \
 	$(top_builddir)/src/getconf.o \
-	$(top_builddir)/src/list.o \
-	$(top_builddir)/src/util.o
+	$(top_builddir)/src/util.o \
+	$(top_builddir)/src/liblsd/liblsd.a
 
 EXTRA_DIST = \
 	00.exp 01.exp 02.exp 03.exp 04.exp 05.exp 06.exp \

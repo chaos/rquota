@@ -45,7 +45,6 @@
 #include <libgen.h>
 #include <errno.h>
 
-#include "list.h"
 #include "getconf.h"
 #include "getquota.h"
 #include "util.h"

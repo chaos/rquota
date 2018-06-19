@@ -33,6 +33,7 @@ if test "$GCC" = yes; then
     AC_MSG_RESULT([no])
   fi
 fi
+AC_PROG_RANLIB
 
 ##
 # Checks for header files.
@@ -70,6 +71,7 @@ AC_DEFINE(WITH_LSD_NOMEM_ERROR_FUNC, 1, [Define lsd_fatal_error])
 AC_CONFIG_FILES( \
   Makefile \
   rquota.spec \
+  src/liblsd/Makefile \
   src/Makefile \
   test/Makefile \
   man/Makefile \
