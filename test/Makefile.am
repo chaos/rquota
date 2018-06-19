@@ -7,8 +7,8 @@ dist_check_SCRIPTS = runtests \
 	07.sh 08.sh 09.sh 10.sh 11.sh 12.sh 13.sh 14.sh
 
 TESTS_ENVIRONMENT = env 
-TESTS_ENVIRONMENT += "PATH_QUOTA=$(top_builddir)/src/quota"
-TESTS_ENVIRONMENT += "PATH_REPQUOTA=$(top_builddir)/src/repquota"
+TESTS_ENVIRONMENT += "PATH_QUOTA=$(top_builddir)/src/cmd/quota"
+TESTS_ENVIRONMENT += "PATH_REPQUOTA=$(top_builddir)/src/cmd/repquota"
 
 TESTS = runtests
 

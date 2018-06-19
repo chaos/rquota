@@ -77,6 +77,7 @@ AC_CONFIG_FILES( \
   src/liblsd/Makefile \
   src/libutil/Makefile \
   src/librpc/Makefile \
+  src/cmd/Makefile \
   src/Makefile \
   test/Makefile \
   man/Makefile \
