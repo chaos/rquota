@@ -1,4 +1,4 @@
-SUBDIRS = liblsd libutil
+SUBDIRS = liblsd libutil librpc
 
 AM_CFLAGS = @GCCWARN@
 
@@ -17,20 +17,12 @@ repquota_LDADD = $(common_ldadd)
 
 common_ldadd = \
 	$(top_builddir)/src/liblsd/liblsd.a \
-	$(top_builddir)/src/libutil/libutil.a
+	$(top_builddir)/src/libutil/libutil.a \
+	$(top_builddir)/src/librpc/librpc.a
 
 common_sources = \
-  getquota.c getquota.h getquota_private.h getquota_nfs.c getquota_lustre.c \
-  rquota_xdr.c rquota_clnt.c rquota.h
-
-CLEANFILES = rquota.h rquota_xdr.c rquota_clnt.c
-
-getquota_nfs.c: rquota.h
-rquota.h: rquota.x
-	rpcgen -o $@ -h rquota.x
-rquota_xdr.c: rquota.x rquota.h
-	rpcgen -o $@ -c rquota.x
-rquota_clnt.c: rquota.x rquota.h
-	rpcgen -o $@ -l rquota.x
-
-EXTRA_DIST = rquota.x
+	getquota.c \
+	getquota.h \
+	getquota_private.h \
+	getquota_nfs.c \
+	getquota_lustre.c

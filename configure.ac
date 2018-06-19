@@ -34,6 +34,9 @@ if test "$GCC" = yes; then
   fi
 fi
 AC_PROG_RANLIB
+AC_PATH_PROG([RPCGEN], [rpcgen], [no])
+AM_CONDITIONAL([HAVE_RPCGEN], [test "x$ac_cv_path_RPCGEN" != "xno"])
+
 
 ##
 # Checks for header files.
@@ -73,6 +76,7 @@ AC_CONFIG_FILES( \
   rquota.spec \
   src/liblsd/Makefile \
   src/libutil/Makefile \
+  src/librpc/Makefile \
   src/Makefile \
   test/Makefile \
   man/Makefile \

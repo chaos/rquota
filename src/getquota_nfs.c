@@ -39,8 +39,8 @@
 #include <errno.h>
 
 #include "src/libutil/util.h"
+#include "src/librpc/rquota.h"
 
-#include "rquota.h"
 #include "getquota.h"
 #include "getquota_private.h"
 
