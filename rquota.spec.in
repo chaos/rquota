@@ -1,6 +1,6 @@
-Name: @META_NAME@
-Version: @META_VERSION@
-Release: @META_RELEASE@%{?dist}
+Name: @PACKAGE_NAME@
+Version: @PACKAGE_VERSION@
+Release: 1%{?dist}
 
 Summary: Quota utility for displaying remote NFS quotas
 Group:   System Environment/Base
@@ -59,6 +59,9 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %changelog
 
-* Wed Jun 10 2015 Jim Garlick <garlick.jim@gmail.com 2.2.21-2
+* Mon Jun 18 2018 Jim Garlick <garlick.jim@gmail.com 2.2.12-1
+- Build without META file
+
+* Wed Jun 10 2015 Jim Garlick <garlick.jim@gmail.com 2.2.11-2
 - TOSS 3: Add Provides: quota = 4 per Trent in TOSS-2882
 - Add project URL

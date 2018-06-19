@@ -1,4 +1,4 @@
-.TH quota 1 "@META_DATE@" "@META_ALIAS@" "@META_NAME@"
+.TH quota 1 "18 June 2018" "@PACKAGE_NAME@-@PACKAGE_VERSION@"
 .SH NAME
 quota \- display file system quota information
 .SH SYNOPSIS

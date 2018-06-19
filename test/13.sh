@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/sh -e
 # Check that config files with embedded spaces and comments
 # can be parsed properly.
-cat >x.conf <<EOT
+TMPCONF=$(mktemp)
+cat >$TMPCONF <<EOT
 #
 # Comment
 #
@@ -13,8 +14,10 @@ cat >x.conf <<EOT
     # Comment  
 EOT
 echo "=== list ==="
-./tconf x.conf
+./tconf $TMPCONF
 echo "=== conf_get_bylabel ==="
-./tconf x.conf /home /g/g1 /g/g2 /g /g/g1/foo
+./tconf $TMPCONF /home /g/g1 /g/g2 /g /g/g1/foo
 echo "=== conf_get_bylabel CONF_MATCH_SUBDIR ==="
-./tconf x.conf -/home -/g/g1 -/g/g2 -/g -/g/g1/foo -/g/g1/a/b/c/d/e/f/g/
+./tconf $TMPCONF -/home -/g/g1 -/g/g2 -/g -/g/g1/foo -/g/g1/a/b/c/d/e/f/g/
+
+rm -f $TMPCONF

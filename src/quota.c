@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Quota, a remote quota program.
  *  For details, see <http://www.llnl.gov/linux/quota/>.
- *  
+ *
  *  Quota is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Quota is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Quota; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -80,7 +80,7 @@ static const struct option longopts[] = {
 char *prog;
 int debug = 0;
 
-int 
+int
 main(int argc, char *argv[])
 {
     int vopt = 0, ropt = 0, lopt = 0;
@@ -150,7 +150,7 @@ main(int argc, char *argv[])
     else
         get_all_quota(config, uid, qlist, !vopt);
 
-    /* print output */   
+    /* print output */
     if (vopt) {
         quota_print_heading(user);
         if (ropt)
@@ -178,14 +178,14 @@ main(int argc, char *argv[])
     exit(0);
 }
 
-static void 
+static void
 usage(void)
 {
     fprintf(stderr, "Usage: %s [-vlr] [-t sec] [-f conffile] [user]\n", prog);
     exit(1);
 }
 
-static void 
+static void
 alarm_handler(int arg)
 {
     fprintf(stderr, "%s: timeout, aborting\n", prog);
@@ -212,21 +212,21 @@ lookup_user_byuid(char *user, uid_t *uidp, char **dirp)
     struct passwd *pw;
     char *endptr;
     uid_t uid = strtoul(user, &endptr, 10);
-    
+
     if (*endptr != '\0') {
         fprintf(stderr, "%s: error parsing uid\n", prog);
         exit(1);
     }
     pw = getpwuid(uid);
     if (pw) {
-    	*uidp = pw->pw_uid;
+        *uidp = pw->pw_uid;
         *dirp = xstrdup(pw->pw_dir);
     /* N.B. Passwd lookup failure of numerical user arg is not fatal.
      * In testing, we pass in arbitrary uid's to trigger hardwired response
-     * from getquota_test(), and we don't want test results to be dependent 
+     * from getquota_test(), and we don't want test results to be dependent
      * on password file content.
      */
-    } else { 
+    } else {
         *uidp = uid;
         *dirp = xstrdup("/");
     }
@@ -251,7 +251,7 @@ get_login_quota(conf_t config, char *homedir, uid_t uid, List qlist,
 {
     confent_t *cp;
     quota_t q;
-    
+
     if ((cp = conf_get_bylabel(config, homedir, CONF_MATCH_SUBDIR)) == NULL) {
         fprintf(stderr, "%s: could not find quota.conf entry for %s\n",
                 prog, homedir);
@@ -278,7 +278,7 @@ get_all_quota(conf_t config, uid_t uid, List qlist, int skipnolimit)
     while ((cp = conf_next(itr)) != NULL) {
         if (skipnolimit && cp->cf_nolimit)
             continue;
-        q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath, 
+        q = quota_create(cp->cf_label, cp->cf_rhost, cp->cf_rpath,
                           cp->cf_thresh);
         if (quota_get(uid, q)) {
             quota_destroy(q);

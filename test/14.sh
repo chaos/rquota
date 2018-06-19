@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 # Verify that '-' works as config file source
 ./tconf - <<EOT
 #

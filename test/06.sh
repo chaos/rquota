@@ -1,6 +1,8 @@
-#!/bin/sh
+#!/bin/sh -e
 
-cat >x.conf <<EOT
+TMPCONF=$(mktemp)
+cat >$TMPCONF <<EOT
 /foo:test:nothing:0
 EOT
-$PATH_QUOTA -v -f x.conf 103
+$PATH_QUOTA -v -f $TMPCONF 103
+rm -f $TMPCONF

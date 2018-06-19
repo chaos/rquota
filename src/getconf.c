@@ -3,20 +3,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Quota, a remote NFS quota program.
  *  For details, see <http://www.llnl.gov/linux/quota/>.
- *  
+ *
  *  Quota is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Quota is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Quota; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -42,15 +42,15 @@
 #define CONF_MAGIC 0x33221144
 struct conf_struct {
     int conf_magic;
-    List conf_ents; 
+    List conf_ents;
 };
 
 /*
  * Helper for getconfent().  Parse out a field within a string.
  * Replace separators with NULL's and return the field or NULL if at end.
- * 	p (IN/OUT)	string pointer - moved past next separator
- * 	sep (IN)	separator character
- *	RETURN		the base string (now \0 terminated at sep position)
+ *  p (IN/OUT)  string pointer - moved past next separator
+ *  sep (IN)    separator character
+ *  RETURN      the base string (now \0 terminated at sep position)
  */
 static char *
 next_field(char **str, char sep)
@@ -85,7 +85,7 @@ zap_trailing_spaces(char *str)
 
 /*
  * Read/parse the next configuration file entry.
- * 	RETURN		config file entry (caller must free)
+ *  RETURN      config file entry (caller must free)
  */
 static confent_t *
 getconfent(FILE *f)
@@ -135,7 +135,7 @@ freeconfent(confent_t *e)
 conf_t
 conf_init(char *path)
 {
-    conf_t cp; 
+    conf_t cp;
     FILE *f = stdin;
     confent_t *e;
 
@@ -144,7 +144,7 @@ conf_init(char *path)
             perror(path);
             exit(1);
         }
-    } 
+    }
 
     cp = (conf_t)xmalloc(sizeof(struct conf_struct));
     cp->conf_magic = CONF_MAGIC;
@@ -155,11 +155,11 @@ conf_init(char *path)
 
     if (strcmp(path, "-") != 0)
         fclose(f);
-        
+
     return cp;
 }
 
-void 
+void
 conf_fini(conf_t cp)
 {
     assert(cp);

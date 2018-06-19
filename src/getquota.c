@@ -3,20 +3,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Quota, a remote quota program.
  *  For details, see <http://www.llnl.gov/linux/quota/>.
- *  
+ *
  *  Quota is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Quota is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Quota; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -105,7 +105,7 @@ quota_get_test(uid_t uid, quota_t q)
             q->q_bytes_state = EXPIRED;
             q->q_files_used = 455555;
             q->q_files_softlim = 1024*1024;
-            q->q_files_hardlim = 1024*1024; 
+            q->q_files_hardlim = 1024*1024;
             q->q_files_state = UNDER;
             break;
         case 102:   /* test 04, 05 - expired file quota */
@@ -115,7 +115,7 @@ quota_get_test(uid_t uid, quota_t q)
             q->q_bytes_state = UNDER;
             q->q_files_used = 455555;
             q->q_files_softlim = 1024;
-            q->q_files_hardlim = 1024; 
+            q->q_files_hardlim = 1024;
             q->q_files_state = EXPIRED;
             break;
         case 103:   /* test 06 - high usage (73PB / 17 trillion files) */
@@ -150,7 +150,7 @@ quota_get_test(uid_t uid, quota_t q)
 }
 #endif
 
-int 
+int
 quota_get(uid_t uid, quota_t q)
 {
     int rc;
@@ -165,13 +165,13 @@ quota_get(uid_t uid, quota_t q)
 #endif
     } else if (!strcmp(q->q_rhost, "lustre")) {
 #if HAVE_LIBLUSTREAPI
-        rc = quota_get_lustre(uid, q);        
+        rc = quota_get_lustre(uid, q);
 #else
         fprintf(stderr, "%s: not configured with lustre support\n", prog);
         rc = 1;
 #endif
     } else {
-        rc = quota_get_nfs(uid, q);        
+        rc = quota_get_nfs(uid, q);
     }
     return rc;
 }
@@ -272,7 +272,7 @@ quota_cmp_files_reverse(quota_t x, quota_t y)
 void
 quota_report_heading(void)
 {
-    printf("%-10s %-11s %-11s %-11s %-12s %-12s %-12s\n", "User", 
+    printf("%-10s %-11s %-11s %-11s %-12s %-12s %-12s\n", "User",
             "Space-used", "Space-soft", "Space-hard",
             "Files-used", "Files-soft", "Files-hard");
 }
@@ -289,7 +289,7 @@ quota_report(quota_t x, unsigned long *bsize)
     assert(x->q_magic == QUOTA_MAGIC);
     if (x->q_name) {
         printf("%-10s %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n",
-            x->q_name, 
+            x->q_name,
             x->q_bytes_used    / *bsize,
             x->q_bytes_softlim / *bsize,
             x->q_bytes_hardlim / *bsize,
@@ -298,7 +298,7 @@ quota_report(quota_t x, unsigned long *bsize)
             x->q_files_hardlim);
     } else {
         printf("%-10u %-11llu %-11llu %-11llu %-12llu %-12llu %-12llu\n",
-            x->q_uid, 
+            x->q_uid,
             x->q_bytes_used    / *bsize,
             x->q_bytes_softlim / *bsize,
             x->q_bytes_hardlim / *bsize,
@@ -327,7 +327,7 @@ quota_report_h(quota_t x, unsigned long *bsize)
             x->q_files_softlim,
             x->q_files_hardlim);
     } else {
-        printf("%-10u %-11s %-11s %-11s %-12llu %-12llu %-12llu\n", x->q_uid, 
+        printf("%-10u %-11s %-11s %-11s %-12llu %-12llu %-12llu\n", x->q_uid,
             used, soft, hard,
             x->q_files_used,
             x->q_files_softlim,
@@ -341,10 +341,10 @@ quota_report_usageonly(quota_t x, unsigned long *bsize)
 {
     assert(x->q_magic == QUOTA_MAGIC);
     if (x->q_name) {
-        printf("%-10s %-11llu %-12llu\n", x->q_name, 
+        printf("%-10s %-11llu %-12llu\n", x->q_name,
             x->q_bytes_used / *bsize, x->q_files_used);
     } else {
-        printf("%-10u %-11llu %-12llu\n", x->q_uid, 
+        printf("%-10u %-11llu %-12llu\n", x->q_uid,
             x->q_bytes_used / *bsize, x->q_files_used);
     }
     return 0;
@@ -375,7 +375,7 @@ quota_print_heading(char *name)
 }
 
 /* helper for quota_print() */
-static void 
+static void
 daystr(qstate_t state, unsigned long long secs, char *str, int len)
 {
     float days;
@@ -427,19 +427,19 @@ report_warning(quota_t q, char *label, char *prefix)
             break;
         case NOTSTARTED:
             size2str(q->q_bytes_used - q->q_bytes_softlim, over, sizeof(over));
-            printf("%sOver block quota on %s, remove %s within [7 days].\n", 
+            printf("%sOver block quota on %s, remove %s within [7 days].\n",
                     prefix, label, over);
             msg++;
             break;
         case STARTED:
             size2str(q->q_bytes_used - q->q_bytes_softlim, over, sizeof(over));
-            printf("%sOver block quota on %s, remove %s within %.1f days.\n", 
-                    prefix, label, over, 
+            printf("%sOver block quota on %s, remove %s within %.1f days.\n",
+                    prefix, label, over,
                     (float)q->q_bytes_secleft / (24*60*60));
             msg++;
             break;
         case EXPIRED:
-            printf("%sOver block quota on %s, time limit expired.\n", 
+            printf("%sOver block quota on %s, time limit expired.\n",
                     prefix, label);
             msg++;
             break;
@@ -450,19 +450,19 @@ report_warning(quota_t q, char *label, char *prefix)
             break;
         case NOTSTARTED:
             size2str(q->q_files_used - q->q_files_softlim, over, sizeof(over));
-            printf("%sOver file quota on %s, remove %s files within [7 days].\n", 
+            printf("%sOver file quota on %s, remove %s files within [7 days].\n",
                     prefix, label, over);
             msg++;
             break;
         case STARTED:
             size2str(q->q_files_used - q->q_files_softlim, over, sizeof(over));
             printf("%sOver file quota on %s, remove %s files within %.1f days.\n",
-                    prefix, label, over, 
+                    prefix, label, over,
                     (float)q->q_files_secleft / (24*60*60));
             msg++;
             break;
         case EXPIRED:
-            printf("%sOver file quota on %s, time limit expired\n", 
+            printf("%sOver file quota on %s, time limit expired\n",
                     prefix, label);
             msg++;
             break;
@@ -471,7 +471,7 @@ report_warning(quota_t q, char *label, char *prefix)
 }
 
 /* helper for quota_print() */
-static void 
+static void
 report_usage(quota_t q, char *label)
 {
     char used[16], soft[16], hard[16], days[16];
@@ -569,7 +569,7 @@ quota_print_justwarn(quota_t q, int *msgcount)
 
 int
 quota_print_justwarn_realpath(quota_t q, int *msgcount)
-{  
+{
     assert(q->q_magic == QUOTA_MAGIC);
     *msgcount += report_warning(q, make_realpath(q), "");
     return 0;
