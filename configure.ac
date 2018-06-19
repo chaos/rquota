@@ -72,6 +72,7 @@ AC_CONFIG_FILES( \
   Makefile \
   rquota.spec \
   src/liblsd/Makefile \
+  src/libutil/Makefile \
   src/Makefile \
   test/Makefile \
   man/Makefile \

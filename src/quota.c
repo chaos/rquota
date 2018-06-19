@@ -45,9 +45,10 @@
 #include <libgen.h>
 #include <errno.h>
 
-#include "getconf.h"
+#include "src/libutil/getconf.h"
+#include "src/libutil/util.h"
+
 #include "getquota.h"
-#include "util.h"
 
 static void usage(void);
 static void alarm_handler(int arg);

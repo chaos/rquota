@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "getconf.h"
+#include "src/libutil/getconf.h"
 
 static void print_conf_ent(char *key, confent_t *e);
 static void usage(void);

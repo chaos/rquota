@@ -38,8 +38,9 @@
 #include <assert.h>
 #include <errno.h>
 
+#include "src/libutil/util.h"
+
 #include "rquota.h"
-#include "util.h"
 #include "getquota.h"
 #include "getquota_private.h"
 

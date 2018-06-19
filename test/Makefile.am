@@ -14,12 +14,9 @@ TESTS = runtests
 
 CLEANFILES = *.out *.diff
 
-AM_CFLAGS = -I$(top_srcdir)/src
-
 tconf_SOURCES = tconf.c
 tconf_LDADD = \
-	$(top_builddir)/src/getconf.o \
-	$(top_builddir)/src/util.o \
+	$(top_builddir)/src/libutil/libutil.a \
 	$(top_builddir)/src/liblsd/liblsd.a
 
 EXTRA_DIST = \
