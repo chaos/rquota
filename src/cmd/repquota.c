@@ -58,7 +58,10 @@ static void uidscan(confent_t *conf, List qlist, List uids, int getusername);
 char *prog;
 int debug = 0;
 
-#define OPTIONS "u:b:dHrsFf:UpTDnh"
+extern double quota_nfs_timeout;
+extern double quota_nfs_retry_timeout;
+
+#define OPTIONS "u:b:dHrsFf:UpTDnhN:R:"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
 static const struct option longopts[] = {
@@ -76,6 +79,9 @@ static const struct option longopts[] = {
     {"debug",            no_argument,        0, 'D'},
     {"nouserlookup",     no_argument,        0, 'n'},
     {"human-readable",   no_argument,        0, 'h'},
+    {"nfs-timeout",      required_argument,  0, 'N'},
+    {"nfs-retry-timeout",required_argument,  0, 'R'},
+
     {0, 0, 0, 0},
 };
 #else
@@ -160,6 +166,12 @@ main(int argc, char *argv[])
                 break;
             case 'h':   /* --human-readable */
                 hopt = 1;
+                break;
+            case 'N':   /* --nfs-timeout SECS */
+                quota_nfs_timeout = strtod (optarg, NULL);
+                break;
+            case 'R':   /* --nfs-retry-timeout SECS */
+                quota_nfs_retry_timeout = strtod (optarg, NULL);
                 break;
             default:
                 usage();
@@ -273,7 +285,11 @@ usage(void)
   "  -L,--nolimits          do not include quota limits in report\n"
   "  -n,--nouserlookup      do not try to map uid's to user names\n"
   "  -f,--config            use a config file other than %s\n"
-                , prog, _PATH_QUOTA_CONF);
+  "  -N,--nfs-timeout=SEC   set per filesystem NFS timeout (%.2fs default)\n"
+  "  -R,--nfs-retry-timeout=SEC    set NFS retry timeout (%.2fs default)\n"
+                , prog, _PATH_QUOTA_CONF,
+                quota_nfs_timeout,
+                quota_nfs_retry_timeout);
     exit(1);
 }
 
