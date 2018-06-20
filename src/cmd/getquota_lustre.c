@@ -40,8 +40,9 @@
 #endif
 #include <assert.h>
 
-#include "list.h"
-#include "util.h"
+#include "src/liblsd/list.h"
+#include "src/libutil/util.h"
+
 #include "getquota.h"
 #include "getquota_private.h"
 
