@@ -1,3 +1,4 @@
+AM_CFLAGS = @GCCWARN@
 AM_CPPFLAGS = -I$(top_srcdir)
 
 check_PROGRAMS = tconf

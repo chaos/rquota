@@ -22,7 +22,7 @@ AM_MAINTAINER_MODE
 AC_PROG_CC
 AM_PROG_CC_C_O
 if test "$GCC" = yes; then
-  GCCWARN="-Wall -Wno-unused"
+  GCCWARN="-Wall -Wno-unused -Werror"
   AC_SUBST([GCCWARN])
   # Lustre libraries are 64-bit only on ppc64
   AC_MSG_CHECKING([whether to force 64-bit mode on ppc64])
