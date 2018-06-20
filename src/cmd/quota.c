@@ -60,7 +60,7 @@ static void get_login_quota(conf_t config, char *homedir, uid_t uid,
 static void get_all_quota(conf_t config, uid_t uid, List qlist,
                           int skipnolimit);
 
-#define OPTIONS "f:rvlt:Td"
+#define OPTIONS "f:rvlt:TdN:R:"
 #if HAVE_GETOPT_LONG
 #define GETOPT(ac,av,opt,lopt) getopt_long(ac,av,opt,lopt,NULL)
 static const struct option longopts[] = {
@@ -71,6 +71,8 @@ static const struct option longopts[] = {
     {"config",           required_argument,  0, 'f'},
     {"selftest",         no_argument,        0, 'T'},
     {"debug",            no_argument,        0, 'd'},
+    {"nfs-timeout",      required_argument,  0, 'N'},
+    {"nfs-retry-timeout",required_argument,  0, 'R'},
     {0, 0, 0, 0},
 };
 #else
@@ -79,6 +81,9 @@ static const struct option longopts[] = {
 
 char *prog;
 int debug = 0;
+
+extern double quota_nfs_timeout;
+extern double quota_nfs_retry_timeout;
 
 int
 main(int argc, char *argv[])
@@ -124,6 +129,12 @@ main(int argc, char *argv[])
 #endif
         case 'd':   /* --debug (undocumented) */
             debug = 1;
+            break;
+        case 'N':   /* --nfs-timeout SECS */
+            quota_nfs_timeout = strtod (optarg, NULL);
+            break;
+        case 'R':   /* --nfs-retry-timeout SECS */
+            quota_nfs_retry_timeout = strtod (optarg, NULL);
             break;
         default:
             usage();
@@ -181,7 +192,7 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
-    fprintf(stderr, "Usage: %s [-vlr] [-t sec] [-f conffile] [user]\n", prog);
+    fprintf(stderr, "Usage: %s [-vlr] [-t sec] [-N sec] [-R sec] [-f conffile] [user]\n", prog);
     exit(1);
 }
 
