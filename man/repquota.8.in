@@ -10,10 +10,10 @@ repquota \- report file system quota information
 generates a report of quota limits and usage information for all users
 of the specified file system.
 .SH OPTIONS
-.TP 
+.TP
 \fI-d\fR, \fI--dirscan\fR
 Report on users who own top-level directories in the target file system.
-.TP 
+.TP
 \fI-p\fR, \fI--pwscan\fR
 Report on users from the password file.
 .TP
@@ -51,6 +51,15 @@ Suppress user lookup and report only uid's in the quota report.
 .TP
 \fI-h\fR, \fI--human-readable\fR
 Include human-readable space units in the quota report.
+.TP
+\fI-N\fR, \fI--nfs-timeout\fR \fIseconds\fR
+If a response to a single UDP NFS rquota RPC, including retries,
+is not received within this timeout, the RPC is aborted with a timeout error
+(default 2.5 seconds).
+.TP
+\fI-R\fR, \fI--nfs-retry-timeout\fR \fIseconds\fR
+If a response to a single UDP NFS rquota RPC is not received within this
+timeout, the request is retransmitted (default 0.5 seconds).
 .SH "FILES"
 @X_SYSCONFDIR@/quota.conf
 .SH "CAVEATS"

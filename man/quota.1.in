@@ -2,28 +2,28 @@
 .SH NAME
 quota \- display file system quota information
 .SH SYNOPSIS
-.B quota 
+.B quota
 .I "[-v] [-l] [-t sec] [-r] [-f configfile] [user]"
 .br
 .SH DESCRIPTION
-.B quota 
-displays file system usage and quota limits for ``user''.  
+.B quota
+displays file system usage and quota limits for ``user''.
 .LP
 Quotas can be independently established for disk storage space
 and number of files.
 If a quota is not imposed, it will appear as ``n/a'' in \fIquota -v\fR output.
 .LP
-Hard quotas are enforced by the file system; for example, 
-a \fIwrite(2)\fR which would exceed the hard disk usage quota will 
+Hard quotas are enforced by the file system; for example,
+a \fIwrite(2)\fR which would exceed the hard disk usage quota will
 fail with ENOSPC.
 .LP
 Soft quotas are advisory for a configurable grace period, then are
-enforced as hard quotas.  
+enforced as hard quotas.
 .SH OPTIONS
 Run without arguments, \fIquota\fR only reports quota violations.
 It is intended to run in a login script to notify users when they
 need to take action.  The following arguments are available:
-.TP 
+.TP
 \fI-v\fR, \fI--verbose\fR
 Report on file systems even if quota limits are not exceeded.
 .TP
@@ -40,6 +40,15 @@ config file.
 \fI-f\fR, \fI--config\fR \fIconfigfile\fR
 loads a configuration file other than the default (see FILES below).
 A file name of \f-\fR indicates standard input.
+.TP
+\fI-N\fR, \fI--nfs-timeout\fR \fIseconds\fR
+If a response to a single UDP NFS rquota RPC, including retries,
+is not received within this timeout, the RPC is aborted with a timeout error
+(default 2.5 seconds).
+.TP
+\fI-R\fR, \fI--nfs-retry-timeout\fR \fIseconds\fR
+If a response to a single UDP NFS rquota RPC is not received within this
+timeout, the request is retransmitted (default 0.5 seconds).
 .TP
 \fIuser\fR
 View the quota of another user.
