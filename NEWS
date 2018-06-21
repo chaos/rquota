@@ -1,4 +1,25 @@
 ========================================================================
+rquota-2.2.12 Release Notes                                   2018-06-21
+========================================================================
+
+* NFS: decrease rquota RPC timeouts from 25s with 5s retries
+  to 2.5s with 0.5s retries (issue #7)
+
+* Add quota and repquota option for tuning rquota RPC timeouts.
+
+* Fix "make distcheck" (issue #11)
+
+* Drop META file and derive version from git (issue #4)
+
+* Misc build system and source cleanup (issue #3, #8)
+
+* Add NFS rquota RPC test client and server
+
+* travis-ci: enable building in travis (issue #6)
+
+* travis-ci: build with lustre (issue #10)
+
+========================================================================
 rquota-2.2.11 Release Notes                                   2015-03-17
 ========================================================================
 
