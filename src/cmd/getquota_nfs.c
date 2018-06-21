@@ -50,6 +50,9 @@
 extern char *prog;
 extern int debug;
 
+double quota_nfs_timeout = 2.5;         // default sunrpc 25s
+double quota_nfs_retry_timeout = 0.5;   // default sunrpc 5s
+
 /* Normalize reply from quirky servers.
  */
 static void
@@ -105,6 +108,12 @@ set_state(unsigned long long used, unsigned long long soft,
     return state;
 }
 
+static void tv_double (double t, struct timeval *tv)
+{
+        tv->tv_sec = t;
+            tv->tv_usec = (t - tv->tv_sec)*1E6;
+}
+
 int
 quota_get_nfs(uid_t uid, quota_t q)
 {
@@ -113,6 +122,7 @@ quota_get_nfs(uid_t uid, quota_t q)
     getquota_args args;
     getquota_rslt *result;
     CLIENT *cl = NULL;
+    struct timeval tv;
     int rc = -1; /* fail */
 
     assert(q->q_magic == QUOTA_MAGIC);
@@ -141,6 +151,20 @@ quota_get_nfs(uid_t uid, quota_t q)
     cl->cl_auth = authunix_create(lhost, uid, getgid(), 0, NULL);
     if (cl->cl_auth == NULL) {
         fprintf(stderr, "%s: %s\n", prog, clnt_sperror(cl, "authunix"));
+        goto done;
+    }
+
+    /* github issue #7 - alter default RPC timeouts
+     * of 5s retry timeout, 25s total timeout
+     */
+    tv_double (quota_nfs_retry_timeout, &tv);
+    if (!clnt_control (cl, CLSET_RETRY_TIMEOUT, (char *)&tv)) {
+        fprintf(stderr, "%s: clnt_control CLSET_RETRY_TIMEOUT\n", prog);
+        goto done;
+    }
+    tv_double (quota_nfs_timeout, &tv);
+    if (!clnt_control (cl, CLSET_TIMEOUT, (char *)&tv)) {
+        fprintf(stderr, "%s: clnt_control CLSET_TIMEOUT\n", prog);
         goto done;
     }
 
