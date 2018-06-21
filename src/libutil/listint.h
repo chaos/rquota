@@ -22,6 +22,8 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
+#include "src/liblsd/list.h"
+
 List listint_create(char *s);
 int  listint_member(List l, unsigned long u);
 void listint_destroy(List l);

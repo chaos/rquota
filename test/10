@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+TEST=$(basename $0)
+cat >$TEST.conf <<EOT
+/foo:test:nothing:0
+EOT
+$PATH_REPQUOTA -n -b 1m -f $TEST.conf -u 100-102,104-106 /foo >$TEST.out
+diff -u $TEST_SRCDIR/$TEST.exp $TEST.out

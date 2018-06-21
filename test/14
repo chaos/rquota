@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # Verify that '-' works as config file source
-./tconf - <<EOT
+$TEST_BUILDDIR/tconf - <<EOT
 #
 # Comment
 #

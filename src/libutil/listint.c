@@ -30,7 +30,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "list.h"
 #include "listint.h"
 
 #ifdef WITH_LSD_NOMEM_ERROR_FUNC

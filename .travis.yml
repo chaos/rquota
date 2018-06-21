@@ -1,0 +1,21 @@
+language: c
+
+sudo: false
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    sources:
+    packages:
+
+script:
+ - scripts/build-install-lustre.sh
+ - ./autogen.sh
+ - export LD_LIBRARY_PATH=$HOME/local/lib:${LD_LIBRARY_PATH}
+ - export CPPFLAGS=-I${HOME}/local/include
+ - export LDFLAGS=-L${HOME}/local/lib
+ - ./configure  --with-lustre
+ - make distcheck

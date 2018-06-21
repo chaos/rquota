@@ -22,7 +22,7 @@ AM_MAINTAINER_MODE
 AC_PROG_CC
 AM_PROG_CC_C_O
 if test "$GCC" = yes; then
-  GCCWARN="-Wall -Wno-unused"
+  GCCWARN="-Wall -Wno-unused -Werror"
   AC_SUBST([GCCWARN])
   # Lustre libraries are 64-bit only on ppc64
   AC_MSG_CHECKING([whether to force 64-bit mode on ppc64])
@@ -33,6 +33,10 @@ if test "$GCC" = yes; then
     AC_MSG_RESULT([no])
   fi
 fi
+AC_PROG_RANLIB
+AC_PATH_PROG([RPCGEN], [rpcgen], [no])
+AM_CONDITIONAL([HAVE_RPCGEN], [test "x$ac_cv_path_RPCGEN" != "xno"])
+
 
 ##
 # Checks for header files.
@@ -70,6 +74,10 @@ AC_DEFINE(WITH_LSD_NOMEM_ERROR_FUNC, 1, [Define lsd_fatal_error])
 AC_CONFIG_FILES( \
   Makefile \
   rquota.spec \
+  src/liblsd/Makefile \
+  src/libutil/Makefile \
+  src/librpc/Makefile \
+  src/cmd/Makefile \
   src/Makefile \
   test/Makefile \
   man/Makefile \

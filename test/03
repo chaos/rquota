@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+TEST=$(basename $0)
+cat >$TEST.conf <<EOT
+/foo:test:nothing:0
+EOT
+$PATH_QUOTA -f $TEST.conf 101 >$TEST.out
+diff -u $TEST_SRCDIR/$TEST.exp $TEST.out >$TEST.diff

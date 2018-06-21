@@ -43,11 +43,11 @@
 #include <libgen.h>
 #include <sys/stat.h>
 
-#include "list.h"
-#include "getconf.h"
+#include "src/libutil/getconf.h"
+#include "src/libutil/util.h"
+#include "src/libutil/listint.h"
+
 #include "getquota.h"
-#include "listint.h"
-#include "util.h"
 
 static void usage(void);
 static void add_quota(confent_t *cp, List qlist, uid_t uid, char *name);
@@ -352,7 +352,8 @@ dirscan(confent_t *cp, List qlist, List uids, int getusername)
             if ((pw = getpwuid(sb.st_uid)))
                 snprintf (name, sizeof(name), "%s", pw->pw_name);
             else
-                snprintf (name, sizeof(name), "[%s]", dp->d_name);
+                snprintf (name, sizeof(name), "[%.*s]",
+                          (int)sizeof (name) - 3, dp->d_name);
             add_quota(cp, qlist, sb.st_uid, name);
         } else
             add_quota(cp, qlist, sb.st_uid, NULL);
