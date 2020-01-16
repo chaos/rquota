@@ -23,6 +23,14 @@
 \*****************************************************************************/
 
 typedef enum { NONE, UNDER, NOTSTARTED, STARTED, EXPIRED } qstate_t;
+/*
+ * NONE     quotas not set
+ * UNDER    used < soft
+ * NOTSTARTED  soft < used < hard && no grace period set - NFS only
+ * STARTED  soft < used < hard && now < grace_expiration
+ * EXPIRED  hard < used || (soft < used < hard && now >= grace_expiration)
+ */
+
 #define QUOTA_MAGIC 0x3434aaaf
 struct quota_struct {
     int                q_magic;
