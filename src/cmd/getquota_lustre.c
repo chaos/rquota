@@ -59,7 +59,10 @@ set_state(unsigned long long used, unsigned long long soft,
     else if (hard && used > hard)
         state = EXPIRED;
     else if (soft && used > soft)
-        state = xtim > now ? STARTED : NOTSTARTED;
+        if (xtim)
+            state = xtim > now ? STARTED : EXPIRED;
+        else
+            state = UNDER;
     else
         state = UNDER;
 
