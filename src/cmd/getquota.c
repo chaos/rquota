@@ -419,7 +419,7 @@ report_warning(quota_t q, char *label, char *prefix)
         case NONE:
             break;
         case UNDER:
-            if (over_thresh(q->q_bytes_used, q->q_bytes_hardlim, q->q_thresh)) {
+            if (over_thresh(q->q_bytes_used, q->q_bytes_softlim, q->q_thresh)) {
                 printf("%sBlock usage on %s has exceeded %d%% of quota.\n",
                     prefix, label, q->q_thresh);
                 msg++;
