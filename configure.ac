@@ -40,6 +40,8 @@ if test "$RPCGEN" = no; then
   AC_MSG_ERROR([Unable to find rpcgen, required to get quotas for NFS file systems])
 fi
 
+AC_LIBTIRPC
+
 ##
 # Checks for header files.
 ##
