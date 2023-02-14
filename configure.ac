@@ -36,7 +36,9 @@ fi
 AC_PROG_RANLIB
 AC_PATH_PROG([RPCGEN], [rpcgen], [no])
 AM_CONDITIONAL([HAVE_RPCGEN], [test "x$ac_cv_path_RPCGEN" != "xno"])
-
+if test "$RPCGEN" = no; then
+  AC_MSG_ERROR([Unable to find rpcgen, required to get quotas for NFS file systems])
+fi
 
 ##
 # Checks for header files.
