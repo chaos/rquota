@@ -3,7 +3,8 @@ AM_CFLAGS = @GCCWARN@
 AM_CPPFLAGS = \
 	-D_PATH_QUOTA_CONF=\"@X_SYSCONFDIR@/quota.conf\" \
 	-I$(top_srcdir) \
-	-I$(top_builddir)
+	-I$(top_builddir) \
+	$(LIBTIRPC_CFLAGS)
 
 bin_PROGRAMS = quota repquota
 
@@ -17,7 +18,8 @@ repquota_LDADD = $(common_ldadd)
 common_ldadd = \
 	$(top_builddir)/src/liblsd/liblsd.a \
 	$(top_builddir)/src/libutil/libutil.a \
-	$(top_builddir)/src/librpc/librpc.a
+	$(top_builddir)/src/librpc/librpc.a \
+	$(LIBTIRPC)
 
 common_sources = \
 	getquota.c \

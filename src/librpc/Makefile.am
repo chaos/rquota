@@ -4,6 +4,7 @@ AM_CFLAGS = @GCCWARN@
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
+	-I/usr/include/tirpc \
 	-include rquota.h
 
 noinst_LIBRARIES = librpc.a
