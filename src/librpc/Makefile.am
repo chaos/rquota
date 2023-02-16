@@ -4,7 +4,7 @@ AM_CFLAGS = @GCCWARN@
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
-	-I/usr/include/tirpc \
+	$(LIBTIRPC_CFLAGS) \
 	-include rquota.h
 
 noinst_LIBRARIES = librpc.a
@@ -38,12 +38,12 @@ check_PROGRAMS = \
 
 rquota_clnt_test_SOURCES = \
 	rquota_clnt_test.c
-rquota_clnt_test_LDADD = librpc.a
+rquota_clnt_test_LDADD = librpc.a $(LIBTIRPC)
 
 rquota_svc_test_SOURCES = \
 	rquota_svc_main.c \
 	rquota_svc_test.c
-rquota_svc_test_LDADD = librpc.a
+rquota_svc_test_LDADD = librpc.a $(LIBTIRPC)
 
 rquota_svc_main.o: rquota.h
 
